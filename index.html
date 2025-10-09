@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FCIC</title>
+
+  <!-- ✅ PWA + ICON SETUP -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="Logo.png">
+  <meta name="theme-color" content="#ff9800">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FCIC">
+  <link rel="apple-touch-icon" href="Logo.png">
+  
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: gray;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(0deg, orangered);
+      padding: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+      z-index: 998;
+    }
+
+    .header h1 {
+  font-size: 2.5em; /* was 1.2em — much larger now */
+  margin: 0;
+  color: gold;
+  text-align: center;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 8px rgba(255, 165, 0, 0.7), 0 0 15px rgba(255, 140, 0, 0.5);
+}
+
+    /* Page Container */
+    .page-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 50px;
+      margin-bottom: 50px;
+      overflow-y: auto;
+      box-sizing: border-box;
+      background: linear-gradient(0deg, orange, orangered);
+    }
+
+    .page {
+      display: none;
+      flex-direction: column;
+      padding: 10px;
+      color: #fff;
+      min-height: calc(100vh - 115px);
+    }
+    .page.active { display: flex; }
+
+    /* Calendar layout */
+    .calendar-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin: 2px;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .calendar {
+      background: linear-gradient(0deg, orange, orangered);
+      padding: 10px;
+      border-radius: 8px;
+      flex: 1;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 5px;
+    }
+
+    .calendar-header button {
+      background: orange;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .calendar-header button:hover { background: darkorange; }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: 61px;
+      gap: 5px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      padding-bottom: 10px;
+    }
+
+    .day {
+      border-radius: 5px;
+      background: lightgrey;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding: 4px;
+      cursor: default;
+    }
+
+    .day-name {
+      font-weight: bold;
+      text-align: center;
+      background: orange;
+      padding: 3px 0;
+      border-radius: 4px;
+      color: white;
+      font-size: 0.9em;
+    }
+
+    .day-number {
+      font-size: 0.85em;
+      font-weight: bold;
+      color: darkred;
+      position: absolute;
+      top: 4px;
+      right: 6px;
+    }
+
+    .day.has-note { cursor: pointer; }
+    .day.has-note:hover { background: orange; color: white; }
+    .today { background: orange; font-weight: bold; box-shadow: 0 0 6px rgba(0,0,0,0.4); }
+
+    .note {
+      font-size: 0.7em;
+      margin-top: 18px;
+      color: orangered;
+      text-align: left;
+      word-break: break-word;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .faded {
+      background: #f7f5f3 !important;
+      color: #999 !important;
+      cursor: default !important;
+      pointer-events: none;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      padding: 20px;
+      width: 90vw;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .modal-content h3 { margin-top: 0; font-size: 1.1em; }
+    .modal-note { white-space: pre-wrap; font-size: 0.9em; line-height: 1.4em; margin-top: 10px; color: #333; }
+    .close-btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; background: #a9a9a9; color: white; }
+
+    /* Footer Buttons */
+    .page-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      gap: 8px;
+      box-sizing: border-box;
+      background: linear-gradient(0deg, orangered, orange);
+      z-index: 998;
+    }
+
+    .page-buttons button {
+      flex: 1;
+      padding: 10px 0;
+      border: none;
+      background: gray;
+      color: white;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .page-buttons button:hover {
+      background: darkorange;
+      transform: scale(1.05);
+    }
+
+    /* Fullscreen logo */
+    #fullscreenLogo {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      cursor: pointer;
+    }
+
+    #fullscreenLogo img {
+      width: 180px;
+      height: auto;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Inventory styles */
+    #inventory {
+      background: linear-gradient(0deg, orange,gold, orangered);
+      color: #000;
+      overflow-y: auto;
+    }
+
+    #inventory .controls {
+      background: linear-gradient(0deg, orangered, orangered);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      padding: 15px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid #ccc;
+    }
+
+    #inventory input, #inventory select {
+      padding: 10px 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    #inventory .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      width: 100%;
+      padding: 0 10px 30px;
+      box-sizing: border-box;
+    }
+
+    #inventory .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      text-align: center;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    #inventory .card:hover { transform: scale(1.03); }
+    #inventory .card img { width: 100%; height: 140px; object-fit: cover; border-radius: 6px; }
+    #inventory .name { font-size: 14px; margin-top: 6px; color: #333; font-weight: bold; }
+    #inventory .category, #inventory .stock { font-size: 12px; color: #555; margin-top: 4px; }
+    #inventory .stock { color: green; }
+    #inventory .stock.low { color: red; font-weight: bold; }
+
+    #inventory .popup {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+
+    #inventory .popup-content {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      animation: popIn 0.25s ease;
+      text-align: center;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+   
+    #inventory .popup-content {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  width: 90vw;               /* responsive width */
+  max-width: 500px;          /* keeps nice proportion on desktop */
+  max-height: 90vh;          /* fits within viewport height */
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  animation: popIn 0.25s ease;
+  text-align: center;
+  position: relative;
+  box-sizing: border-box;
+  transform: translateY(0); /* keep centered */
+  }
+
+#inventory .popup img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .header h1 { font-size: 1em; }
+      .calendar-grid { gap: 3px; }
+      #fullscreenLogo img { width: 320px; }
+      #inventory .card img { height: 120px; }
+    }
+
+    @media (max-width: 768px) {
+    .header h1 {
+    font-size: 1.2em;
+    text-shadow: 0 0 6px rgba(255, 165, 0, 0.6);
+    }
+    }
+
+    @media (max-width: 768px) {
+  #inventory .popup-content {
+    width: 95vw;
+    max-height: 85vh;
+    padding: 15px;
+    border-radius: 12px;
+  }
+
+  #inventory .popup img {
+    height: auto;
+    max-height: 40vh;
+  }
+  }
+
+  @media (max-width: 768px) {
+  #inventory .popup-content {
+    width: 95vw;
+    max-height: 85vh;
+    padding: 15px;
+    border-radius: 12px;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+  <div id="fullscreenLogo"><img src="FC.png" alt="FCIC Logo" /></div>
+
+  <div class="header"><h1>FAST CAL INDUSTRIAL CORP</h1></div>
+
+  <div class="main">
+    <div class="page-container">
+      <div id="home" class="page active">
+        <div class="calendar-container">
+          <div class="calendar">
+            <div class="calendar-header">
+              <button onclick="prevMonth()">&#8592;</button>
+              <h2 id="monthYear"></h2>
+              <button onclick="nextMonth()">&#8594;</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="advances" class="page"><h2>Advances</h2></div>
+      <div id="leave" class="page"><h2>Leave</h2></div>
+      <div id="ot" class="page"><h2>Overtime</h2></div>
+
+      <!-- ✅ INVENTORY MERGED HERE -->
+      <div id="inventory" class="page">
+        <div class="controls">
+          <input type="text" id="searchBox" placeholder="Search items...">
+          <select id="categoryFilter">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+        <div id="gallery" class="grid">Loading...</div>
+
+        <div id="popup" class="popup">
+          <span class="popup-close">&times;</span>
+          <div class="popup-content" id="popupContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-buttons">
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('advances')">Advances</button>
+    <button onclick="showPage('leave')">Leave</button>
+    <button onclick="showPage('ot')">OT</button>
+    <button onclick="showPage('inventory')">Inventory</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="noteModal">
+    <div class="modal-content">
+      <h3 id="modalDate"></h3>
+      <div id="modalNote" class="modal-note"></div>
+      <div style="text-align:right; margin-top:10px;">
+        <button class="close-btn" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* === CALENDAR SCRIPT === */
+    const API_URL = "https://script.google.com/macros/s/AKfycbxPRZ5z99wqScavTh5rBpl45xS4BUm6kE1bAAocAQ6hUD8QNgTcy7MyZbrHV9Cjq8Ob/exec";
+    const calendarGrid = document.getElementById("calendarGrid");
+    const monthYear = document.getElementById("monthYear");
+    const noteModal = document.getElementById("noteModal");
+    const modalDate = document.getElementById("modalDate");
+    const modalNote = document.getElementById("modalNote");
+    const fullscreenLogo = document.getElementById("fullscreenLogo");
+    let currentDate = new Date();
+    let notes = {};
+
+    fullscreenLogo.addEventListener("click", async () => {
+      fullscreenLogo.style.display = "none";
+      try { await document.documentElement.requestFullscreen(); } catch {}
+    });
+
+    async function loadNotes() {
+      try {
+        const res = await fetch(API_URL);
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : [];
+        notes = {};
+        data.forEach(n => { notes[n.date] = n.note; });
+        renderCalendar();
+      } catch (err) { console.error("Error loading notes:", err); }
+    }
+
+    function renderCalendar() {
+      calendarGrid.innerHTML = "";
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      monthYear.textContent = currentDate.toLocaleString("default", { month: "long" }) + " " + year;
+      const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      dayNames.forEach(d => {
+        const dn = document.createElement("div");
+        dn.className = "day-name"; dn.textContent = d;
+        calendarGrid.appendChild(dn);
+      });
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const d = document.createElement("div");
+        d.className = "day faded";
+        d.innerHTML = `<div class="day-number">${daysInPrevMonth - i}</div>`;
+        calendarGrid.appendChild(d);
+      }
+
+      const today = new Date();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${year}-${month+1}-${day}`;
+        const note = notes[dateKey] || "";
+        const div = document.createElement("div");
+        div.className = "day";
+        if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) div.classList.add("today");
+        if (note) {
+          div.classList.add("has-note");
+          div.innerHTML = `<div class="day-number">${day}</div><div class="note">${note}</div>`;
+          div.onclick = () => openModal(dateKey, note);
+        } else {
+          div.innerHTML = `<div class="day-number">${day}</div>`;
+        }
+        calendarGrid.appendChild(div);
+      }
+
+      const total = firstDay + daysInMonth;
+      const nextDays = 42 - total;
+      for (let i = 1; i <= nextDays; i++) {
+        const d = document.createElement("div");
+        d.className = "day faded";
+        d.innerHTML = `<div class="day-number">${i}</div>`;
+        calendarGrid.appendChild(d);
+      }
+    }
+
+    function openModal(dateKey, note) {
+      const [y, m, d] = dateKey.split("-");
+      modalDate.textContent = new Date(y, m-1, d).toLocaleDateString("default", {weekday:"long", year:"numeric", month:"long", day:"numeric"});
+      modalNote.textContent = note || "(No notes)";
+      noteModal.style.display = "flex";
+    }
+
+    function closeModal() { noteModal.style.display = "none"; }
+    function prevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
+    function nextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    loadNotes();
+    setInterval(loadNotes, 60000);
+
+    /* === INVENTORY SCRIPT === */
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxKiRZFf3NvMVXAwWXl2q1vU7nSfoe3AIB-yUdGjKgzZDDRkgAkstn-2W2amzSgMLyN9A/exec";
+    let allItems = [], filteredItems = [];
+    const popup = document.getElementById("popup");
+    const popupContent = document.getElementById("popupContent");
+    const popupClose = document.querySelector(".popup-close");
+
+    function renderGallery() {
+      const container = document.getElementById("gallery");
+      container.innerHTML = "";
+      if (!filteredItems.length) {
+        container.innerHTML = "<p>No matching items found.</p>";
+        return;
+      }
+      filteredItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.onclick = () => {
+          popup.style.display = "flex";
+          popupContent.innerHTML = `
+            <img src="${item.thumb}" alt="${item.name}">
+            <h3>${item.name}</h3>
+            <p><strong>Category:</strong> ${item.category}</p>
+            <p><strong>Stock:</strong> ${item.stock}</p>
+          `;
+        };
+        card.innerHTML = `
+          <img src="${item.thumb}" alt="${item.name}">
+          <div class="name">${item.name}</div>
+          <div class="category">Category: ${item.category}</div>
+          <div class="stock ${parseInt(item.stock)<=5?'low':''}">Stock: ${item.stock}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function applyFilters() {
+      const cat = document.getElementById("categoryFilter").value.toLowerCase();
+      const search = document.getElementById("searchBox").value.toLowerCase();
+      filteredItems = allItems.filter(i =>
+        (cat === "all" || (i.category||"").toLowerCase() === cat) &&
+        (i.name||"").toLowerCase().includes(search)
+      );
+      renderGallery();
+    }
+
+    async function loadData() {
+      const res = await fetch(WEBAPP_URL);
+      allItems = await res.json();
+      filteredItems = allItems;
+      const cats = [...new Set(allItems.map(i => i.category).filter(Boolean))];
+      const sel = document.getElementById("categoryFilter");
+      cats.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.toLowerCase(); opt.textContent = c;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener("change", applyFilters);
+      document.getElementById("searchBox").addEventListener("input", applyFilters);
+      renderGallery();
+    }
+
+    popupClose.onclick = () => popup.style.display = "none";
+    popup.onclick = e => { if (e.target === popup) popup.style.display = "none"; };
+
+    loadData();
+  </script>
+</body>
+</html>
