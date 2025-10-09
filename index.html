@@ -137,14 +137,19 @@
     }
 
     .day-name {
-      font-weight: bold;
-      text-align: center;
-      background: orange;
-      padding: 3px 0;
-      border-radius: 4px;
-      color: white;
-      font-size: 0.9em;
-    }
+  font-weight: bold;
+  text-align: center;
+  background: orange;
+  padding: 3px 0;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.9em;
+  display: flex;              /* 🟢 add this */
+  justify-content: center;    /* 🟢 centers horizontally */
+  align-items: center;        /* 🟢 centers vertically */
+  height: 55px;               /* 🟢 same height as day cells for perfect alignment */
+  box-sizing: border-box;
+}
 
     .day-number {
       font-size: 0.85em;
