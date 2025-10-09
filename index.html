@@ -490,10 +490,14 @@
     let currentDate = new Date();
     let notes = {};
 
-    fullscreenLogo.addEventListener("click", async () => {
-      fullscreenLogo.style.display = "none";
-      try { await document.documentElement.requestFullscreen(); } catch {}
-    });
+    // 🪄 Auto-hide logo after 2.5 seconds (no fullscreen)
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    fullscreenLogo.style.transition = "opacity 0.8s ease";
+    fullscreenLogo.style.opacity = "0";
+    setTimeout(() => fullscreenLogo.style.display = "none", 800);
+  }, 2500);
+});
 
     async function loadNotes() {
       try {
