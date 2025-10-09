@@ -160,7 +160,16 @@
       right: 6px;
     }
 
-    .day.has-note { cursor: pointer; }
+    .day.has-note {
+  background: #ffeaa7;
+  border: 1px solid #f1c40f;
+}
+.day.today.has-note {
+  background: orangered;
+  color: white;
+  box-shadow: 0 0 10px rgba(255, 69, 0, 0.7);
+}
+
     .day.has-note:hover { background: orange; color: white; }
     .today { background: orange; font-weight: bold; box-shadow: 0 0 6px rgba(0,0,0,0.4); }
 
