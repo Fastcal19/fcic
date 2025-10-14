@@ -23,7 +23,7 @@
     overflow: hidden;
   }
 
-  /* ✅ Collapsible Sidebar */
+  /* ✅ Sidebar */
   .sidebar {
     width: 220px;
     background: linear-gradient(180deg, orangered, orange);
@@ -111,7 +111,7 @@
     margin-left: 220px;
     transition: margin-left 0.3s ease;
   }
-  .collapsed + .main {
+  .sidebar.collapsed + .main {
     margin-left: 70px;
   }
 
@@ -130,7 +130,7 @@
     z-index: 998;
     transition: left 0.3s ease;
   }
-  .collapsed + .main .header {
+  .sidebar.collapsed + .main .header {
     left: 70px;
   }
 
@@ -163,7 +163,7 @@
   }
   .page.active { display: flex; }
 
-  /* Fullscreen logo */
+  /* Splash */
   #fullscreenLogo {
     position: fixed;
     top: 0; left: 0;
@@ -186,18 +186,27 @@
     to { opacity: 1; transform: scale(1); }
   }
 
+  /* ✅ Mobile Auto-Collapse */
   @media (max-width: 768px) {
     .sidebar {
-      width: 70px;
+      width: 70px !important;
+    }
+    .sidebar span.label {
+      opacity: 0 !important;
+      width: 0 !important;
+      overflow: hidden;
     }
     .main {
-      margin-left: 70px;
+      margin-left: 70px !important;
     }
     .header {
-      left: 70px;
+      left: 70px !important;
     }
     .header h1 {
       font-size: 1.2em;
+    }
+    .toggle-btn {
+      display: none; /* Hide toggle on mobile */
     }
   }
 </style>
@@ -234,10 +243,12 @@
   </div>
 
 <script>
-  // ✅ Sidebar Toggle
+  // ✅ Sidebar Toggle (desktop only)
   function toggleSidebar() {
     const sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("collapsed");
+    if (window.innerWidth > 768) {
+      sidebar.classList.toggle("collapsed");
+    }
   }
 
   // ✅ Page Navigation
