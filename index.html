@@ -23,7 +23,7 @@
     overflow: hidden;
   }
 
-  /* ✅ Sidebar */
+  /* ✅ Sidebar Base */
   .sidebar {
     width: 220px;
     background: linear-gradient(180deg, orangered, orange);
@@ -36,15 +36,12 @@
     top: 0;
     bottom: 0;
     left: 0;
-    z-index: 999;
+    z-index: 1001;
     box-shadow: 2px 0 6px rgba(0,0,0,0.2);
-    transition: width 0.3s ease;
+    transition: all 0.3s ease;
     overflow-x: hidden;
   }
-
-  .sidebar.collapsed {
-    width: 70px;
-  }
+  .sidebar.collapsed { width: 70px; }
 
   .sidebar button {
     background: none;
@@ -61,26 +58,13 @@
     align-items: center;
     gap: 10px;
   }
-
   .sidebar button:hover,
-  .sidebar button.active {
-    background: rgba(255,255,255,0.2);
-  }
+  .sidebar button.active { background: rgba(255,255,255,0.2); }
 
-  .sidebar.collapsed button {
-    justify-content: center;
-    padding: 16px 0;
-  }
+  .sidebar.collapsed button { justify-content: center; padding: 16px 0; }
 
-  .sidebar span.label {
-    transition: opacity 0.3s;
-  }
-
-  .sidebar.collapsed span.label {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-  }
+  .sidebar span.label { transition: opacity 0.3s; }
+  .sidebar.collapsed span.label { opacity: 0; width: 0; overflow: hidden; }
 
   /* ✅ Toggle Button */
   .toggle-btn {
@@ -95,12 +79,22 @@
     height: 35px;
     cursor: pointer;
     box-shadow: 0 0 5px rgba(0,0,0,0.3);
-    transition: transform 0.3s ease;
     font-size: 18px;
+    z-index: 1100;
   }
   .toggle-btn:hover { background: darkorange; }
 
-  /* ✅ Main Content */
+  /* ✅ Overlay (for mobile slide-in) */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+  }
+  .overlay.active { display: block; }
+
+  /* ✅ Main Area */
   .main {
     flex: 1;
     display: flex;
@@ -111,11 +105,9 @@
     margin-left: 220px;
     transition: margin-left 0.3s ease;
   }
-  .sidebar.collapsed + .main {
-    margin-left: 70px;
-  }
+  .sidebar.collapsed + .main { margin-left: 70px; }
 
-  /* Header */
+  /* ✅ Header */
   .header {
     position: fixed;
     top: 0;
@@ -130,55 +122,41 @@
     z-index: 998;
     transition: left 0.3s ease;
   }
-  .sidebar.collapsed + .main .header {
-    left: 70px;
-  }
+  .sidebar.collapsed + .main .header { left: 70px; }
 
   .header h1 {
     font-size: 2em;
     margin: 0;
     color: gold;
-    text-align: center;
     font-weight: 900;
     letter-spacing: 1.5px;
-    text-shadow: 0 0 8px rgba(255, 165, 0, 0.7), 0 0 15px rgba(255, 140, 0, 0.5);
+    text-shadow: 0 0 8px rgba(255,165,0,0.7), 0 0 15px rgba(255,140,0,0.5);
   }
 
-  /* Pages */
+  /* ✅ Pages */
   .page-container {
     flex: 1;
     display: flex;
     flex-direction: column;
     margin-top: 80px;
     overflow: hidden;
-    box-sizing: border-box;
     background: linear-gradient(0deg, orange, orangered);
   }
-  .page {
-    display: none;
-    flex-direction: column;
-    padding: 10px;
-    color: #fff;
-    min-height: calc(100vh - 115px);
-  }
+  .page { display: none; flex-direction: column; padding: 10px; color: #fff; }
   .page.active { display: flex; }
 
-  /* Splash */
+  /* ✅ Splash */
   #fullscreenLogo {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background: white;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2000;
-    cursor: pointer;
   }
   #fullscreenLogo img {
     width: 250px;
-    height: auto;
     animation: fadeIn 1s ease-in-out;
   }
   @keyframes fadeIn {
@@ -186,27 +164,24 @@
     to { opacity: 1; transform: scale(1); }
   }
 
-  /* ✅ Mobile Auto-Collapse */
+  /* ✅ Mobile: Slide-In Sidebar */
   @media (max-width: 768px) {
     .sidebar {
-      width: 70px !important;
+      left: -220px;
+      width: 220px !important;
+      padding-top: 80px;
     }
-    .sidebar span.label {
-      opacity: 0 !important;
-      width: 0 !important;
-      overflow: hidden;
-    }
-    .main {
-      margin-left: 70px !important;
-    }
-    .header {
-      left: 70px !important;
-    }
-    .header h1 {
-      font-size: 1.2em;
-    }
+    .sidebar.active { left: 0; }
+    .sidebar span.label { opacity: 1 !important; width: auto !important; }
+    .main { margin-left: 0 !important; }
+    .header { left: 0 !important; }
     .toggle-btn {
-      display: none; /* Hide toggle on mobile */
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      right: auto;
+      z-index: 1101;
+      display: block;
     }
   }
 </style>
@@ -216,6 +191,9 @@
   <!-- ✅ Splash -->
   <div id="fullscreenLogo"><img src="FC.png" alt="FCIC Logo" /></div>
 
+  <!-- ✅ Overlay for mobile -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
   <!-- ✅ Sidebar -->
   <div class="sidebar" id="sidebar">
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
@@ -223,7 +201,7 @@
     <button onclick="showPage('advances')">💰 <span class="label">Advances</span></button>
     <button onclick="showPage('leave')">🗓️ <span class="label">Leave</span></button>
     <button onclick="showPage('ot')">⏱️ <span class="label">OT</span></button>
-    <button onclick="showPage('inventory')">📦 <span class="label">Inventory</span></button>
+    <button onclick="openInventory()">📦 <span class="label">Inventory</span></button>
   </div>
 
   <!-- ✅ Main Area -->
@@ -238,27 +216,10 @@
       <div id="advances" class="page"><h2>Advances</h2></div>
       <div id="leave" class="page"><h2>Leave</h2></div>
       <div id="ot" class="page"><h2>OT</h2></div>
-      <div id="inventory" class="page"><h2>Inventory</h2></div>
     </div>
   </div>
 
 <script>
-  // ✅ Sidebar Toggle (desktop only)
-  function toggleSidebar() {
-    const sidebar = document.getElementById("sidebar");
-    if (window.innerWidth > 768) {
-      sidebar.classList.toggle("collapsed");
-    }
-  }
-
-  // ✅ Page Navigation
-  function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-  }
-
   // ✅ Splash fade-out
   window.addEventListener("load", () => {
     setTimeout(() => {
@@ -268,6 +229,40 @@
       setTimeout(() => fs.style.display = "none", 800);
     }, 2500);
   });
+
+  // ✅ Sidebar toggle
+  function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    if (window.innerWidth <= 768) {
+      sidebar.classList.toggle("active");
+      overlay.classList.toggle("active");
+    } else {
+      sidebar.classList.toggle("collapsed");
+    }
+  }
+
+  // ✅ Close sidebar on mobile tap outside
+  function closeSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+  }
+
+  // ✅ Navigation between pages
+  function showPage(id) {
+    if (window.innerWidth <= 768) closeSidebar();
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+
+  // ✅ Inventory page
+  function openInventory() {
+    window.location.href = "inventory.html";
+  }
 </script>
 
 </body>
