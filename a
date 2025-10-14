@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login - Secure Access (Debug)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      width: 400px;
+    }
+    h1 { font-size: 22px; margin-bottom: 8px; }
+    p { color: #555; font-size: 14px; }
+    .email { font-weight: 600; color: #222; }
+    #debugBox {
+      margin-top: 15px;
+      background: #fafafa;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 12px;
+      text-align: left;
+      max-height: 120px;
+      overflow: auto;
+      display: block;
+    }
+  </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div class="card">
+    <h1>Sign in with Google</h1>
+    <p>FCIC employees only.</p>
+    <div id="g_id_button"></div>
+    <p id="message">Not signed in.</p>
+    <p id="user-email" class="email" style="display:none;"></p>
+    <div id="result" style="margin-top:12px;"></div>
+    <div id="debugBox"><pre id="debugLog"></pre></div>
+  </div>
+
+  <script>
+const CLIENT_ID = '493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com';
+const SPREADSHEET_ID = '1SXWrCfjz0jCdP3rhVqb2-z2tcgL38-6ptwNNkXG8aVk';
+const RANGE = 'Users!A2:B10'; // Email + Role
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly openid email profile';
+let tokenClient, accessToken, signedInEmail;
+
+function logDebug(msg) {
+  const log = document.getElementById('debugLog');
+  log.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+  log.scrollTop = log.scrollHeight;
+}
+
+window.onload = function() {
+  logDebug('Initializing...');
+
+  // Existing session
+  const existingUser = localStorage.getItem('loggedUser');
+  const existingRole = localStorage.getItem('userRole');
+  if (existingUser && existingRole) {
+    logDebug(`Existing session for ${existingUser} (${existingRole})`);
+    document.getElementById('message').textContent = 'Already signed in.';
+    document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Checking latest access rights...</h3>`;
+    signedInEmail = existingUser;
+    refreshRole(existingUser);
+    return;
+  }
+
+  // Google OAuth setup
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (tokenResponse) => {
+      if (tokenResponse.error) {
+        logDebug('Token error: ' + tokenResponse.error);
+        document.getElementById('message').textContent = 'Authorization failed.';
+        return;
+      }
+      accessToken = tokenResponse.access_token;
+      logDebug('Access token acquired');
+      await fetchSheetAndCheck();
+    }
+  });
+
+  google.accounts.id.initialize({
+    client_id: CLIENT_ID,
+    callback: handleIdToken,
+    ux_mode: 'popup'
+  });
+
+  google.accounts.id.renderButton(
+    document.getElementById('g_id_button'),
+    { theme: 'outline', size: 'large' }
+  );
+
+  logDebug('Sign-in button ready');
+};
+
+function handleIdToken(response) {
+  const payload = decodeJwt(response.credential);
+  signedInEmail = payload.email;
+  document.getElementById('message').textContent = 'Checking authorization...';
+  document.getElementById('user-email').style.display = 'block';
+  document.getElementById('user-email').textContent = signedInEmail;
+  logDebug('Signed in as ' + signedInEmail);
+
+  try {
+    tokenClient.requestAccessToken({ prompt: 'none' });
+  } catch {
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+  }
+}
+
+function decodeJwt(jwt) {
+  const base64 = jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(decodeURIComponent(atob(base64).split('').map(
+    c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+  ).join('')));
+}
+
+async function fetchSheetAndCheck() {
+  try {
+    logDebug('Fetching Google Sheet...');
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`;
+    const resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + accessToken } });
+    const text = await resp.text();
+    logDebug('Raw text (first 200 chars): ' + text.slice(0, 200));
+
+    const data = JSON.parse(text);
+    if (!data.values) {
+      logDebug('⚠️ No rows returned — check sheet name or range.');
+      document.getElementById('result').innerHTML = `<h3 style="color:red;">🚫 No data found in ${RANGE}</h3>`;
+      return;
+    }
+
+    const rows = data.values;
+    const user = signedInEmail.trim().toLowerCase();
+    let role = null;
+
+    logDebug(`Looking for: ${user}`);
+    for (const row of rows) {
+      const email = (row[0] || '').trim().toLowerCase();
+      const roleValue = (row[1] || '').trim().toLowerCase();
+      logDebug(`Row → email:"${email}" role:"${roleValue}"`);
+      if (email === user) {
+        role = roleValue;
+        logDebug(`✅ Match found for ${email} as ${role}`);
+        break;
+      }
+    }
+
+    if (!role) {
+      logDebug('❌ No matching email in sheet');
+      document.getElementById('result').innerHTML =
+        `<h3 style="color:red;">🚫 Access Denied</h3><p>${signedInEmail} not found in sheet.</p>`;
+      return;
+    }
+
+    // --- normalize and route ---
+    localStorage.setItem('loggedUser', signedInEmail);
+    localStorage.setItem('userRole', role);
+    document.getElementById('result').innerHTML =
+      `<h3 style="color:green;">✅ Access Granted (${role})</h3>`;
+
+    setTimeout(() => {
+      if (role === 'admin') {
+        window.location.href = 'admin.html';
+      } else if (['staff', 'employee', 'user'].includes(role)) {
+        window.location.href = 'employee.html';
+      } else {
+        logDebug(`Unknown role value: "${role}"`);
+        document.getElementById('result').innerHTML =
+          `<h3 style="color:red;">🚫 Unknown role "${role}"</h3>`;
+      }
+    }, 1000);
+
+  } catch (e) {
+    logDebug('Fetch error: ' + e.message);
+    document.getElementById('result').innerHTML =
+      `<p style="color:red;">Error: ${e.message}</p>`;
+  }
+}
+
+
+async function refreshRole(email) {
+  try {
+    logDebug('Refreshing role from Sheet...');
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=AIzaSyA-CmD5bKuCOrVZlSY_bkCCc_YVQqpuUUI`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    const rows = data.values || [];
+    let role = null;
+    for (const row of rows) {
+      const sheetEmail = (row[0] || '').trim().toLowerCase();
+      if (sheetEmail === email.toLowerCase()) {
+        role = (row[1] || '').trim().toLowerCase();
+        break;
+      }
+    }
+
+    if (role) {
+      logDebug(`Role refreshed: ${role}`);
+      localStorage.setItem('userRole', role);
+      document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Verified (${role})</h3>`;
+      setTimeout(() => {
+        if (role === 'admin') window.location.href = 'admin.html';
+        else if (role === 'staff' || role === 'employee') window.location.href = 'employee.html';
+      }, 1000);
+    } else {
+      logDebug('Access revoked.');
+      localStorage.clear();
+      document.getElementById('result').innerHTML = `<h3 style="color:red;">🚫 Access revoked.</h3>`;
+    }
+  } catch (err) {
+    logDebug('Role refresh failed: ' + err.message);
+  }
+}
+</script>
+
+</body>
+</html>
