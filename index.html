@@ -85,31 +85,14 @@ function logDebug(msg) {
 
 window.onload = () => {
   logDebug('Initializing...');
-
-  const existingUser = localStorage.getItem('loggedUser');
-  const existingRole = localStorage.getItem('userRole');
-
-  if (existingUser && existingRole) {
-    logDebug(`Existing session for ${existingUser} (${existingRole})`);
-    document.getElementById('message').textContent = 'Already signed in.';
-    document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Checking latest access rights...</h3>`;
-    refreshRole(existingUser);
-  }
-
   document.getElementById('loginBtn').addEventListener('click', handleLogin);
 };
 
 async function handleLogin() {
   const input = document.getElementById('username').value.trim().toLowerCase();
   const password = document.getElementById('password').value.trim();
-
-  if (!input || !password) {
-    alert('Please enter both email/username and password.');
-    return;
-  }
-
+  if (!input || !password) return alert('Please enter both fields.');
   logDebug(`Attempting login for ${input}`);
-  document.getElementById('message').textContent = 'Checking credentials...';
   await checkCredentials(input, password);
 }
 
@@ -118,51 +101,51 @@ async function checkCredentials(input, password) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
     const resp = await fetch(url);
     const data = await resp.json();
+    console.log('Sheet data:', data); // <--- Check this in browser console
 
-    const rows = data.values || [];
+    if (!data.values) {
+      logDebug('❌ No data returned. Check Sheet sharing permissions.');
+      document.getElementById('result').innerHTML = `<p style="color:red;">No data received from Google Sheet.</p>`;
+      return;
+    }
+
+    const rows = data.values;
+    logDebug(`✅ Fetched ${rows.length} rows from Sheet`);
+    logDebug('Sample first row: ' + JSON.stringify(rows[0]));
+
     let found = null;
 
     for (const row of rows) {
-      if (row.length < 4) continue;
+      const [email, username, pass, role, name] = [
+        (row[0] || '').trim().toLowerCase(),
+        (row[1] || '').trim().toLowerCase(),
+        (row[2] || '').trim(),
+        (row[3] || '').trim().toLowerCase(),
+        (row[4] || '').trim()
+      ];
 
-      const sheetEmail = (row[0] || '').trim().toLowerCase();
-      const sheetUsername = (row[1] || '').trim().toLowerCase();
-      const sheetPassword = (row[2] || '').trim();
-      const sheetRole = (row[3] || '').trim().toLowerCase();
-      const sheetName = (row[4] || '').trim();
+      // Debug each row
+      logDebug(`Checking: ${email}/${username}/${role}`);
 
-      // Match either email or username
-      if ((input === sheetEmail || input === sheetUsername) && sheetPassword === password) {
-        found = { email: sheetEmail, username: sheetUsername, role: sheetRole, name: sheetName };
+      if ((input === email || input === username) && pass === password) {
+        found = { email, username, role, name };
         break;
       }
     }
 
     if (found) {
-      logDebug(`✅ Access granted to ${found.username || found.email} as ${found.role}`);
-      document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Access Granted (${found.role})</h3>`;
-
-      localStorage.setItem('loggedUser', found.email || found.username);
-      localStorage.setItem('userRole', found.role);
-      localStorage.setItem('userName', found.name);
-      signedInEmail = found.email;
-
-      setTimeout(() => {
-        if (found.role === 'admin') {
-          window.location.href = 'admin.html';
-        } else {
-          window.location.href = 'employee.html';
-        }
-      }, 1000);
+      logDebug(`✅ Match found for ${found.username || found.email}`);
+      document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Logged in as ${found.role}</h3>`;
     } else {
-      logDebug('❌ Invalid credentials.');
-      document.getElementById('result').innerHTML = `<h3 style="color:red;">🚫 Access Denied</h3><p>Invalid username, email, or password.</p>`;
+      logDebug('❌ Invalid credentials. No match found.');
+      document.getElementById('result').innerHTML = `<h3 style="color:red;">🚫 Invalid credentials</h3>`;
     }
   } catch (err) {
-    logDebug('Fetch error: ' + err.message);
-    document.getElementById('result').innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+    logDebug('⚠️ Error: ' + err.message);
+    document.getElementById('result').innerHTML = `<p style="color:red;">${err.message}</p>`;
   }
 }
+
 
 async function refreshRole(identifier) {
   try {
