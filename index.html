@@ -72,7 +72,7 @@
 
   <script>
 const SPREADSHEET_ID = '1SXWrCfjz0jCdP3rhVqb2-z2tcgL38-6ptwNNkXG8aVk';
-const RANGE = 'Users!A2:C100'; // Email | Role | Password
+const RANGE = 'Users!A2:E100'; // Email | Username | Password | Role | Name
 const API_KEY = 'AIzaSyA-CmD5bKuCOrVZlSY_bkCCc_YVQqpuUUI';
 
 let signedInEmail = null;
@@ -100,20 +100,20 @@ window.onload = () => {
 };
 
 async function handleLogin() {
-  const email = document.getElementById('username').value.trim().toLowerCase();
+  const input = document.getElementById('username').value.trim().toLowerCase();
   const password = document.getElementById('password').value.trim();
 
-  if (!email || !password) {
-    alert('Please enter both email and password.');
+  if (!input || !password) {
+    alert('Please enter both email/username and password.');
     return;
   }
 
-  logDebug(`Attempting login for ${email}`);
+  logDebug(`Attempting login for ${input}`);
   document.getElementById('message').textContent = 'Checking credentials...';
-  await checkCredentials(email, password);
+  await checkCredentials(input, password);
 }
 
-async function checkCredentials(email, password) {
+async function checkCredentials(input, password) {
   try {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
     const resp = await fetch(url);
@@ -123,21 +123,28 @@ async function checkCredentials(email, password) {
     let found = null;
 
     for (const row of rows) {
-      const sheetEmail = (row[0] || '').trim().toLowerCase();
-      const sheetRole = (row[1] || '').trim().toLowerCase();
-      const sheetPassword = (row[2] || '').trim();
+      if (row.length < 4) continue;
 
-      if (sheetEmail === email && sheetPassword === password) {
-        found = { email: sheetEmail, role: sheetRole };
+      const sheetEmail = (row[0] || '').trim().toLowerCase();
+      const sheetUsername = (row[1] || '').trim().toLowerCase();
+      const sheetPassword = (row[2] || '').trim();
+      const sheetRole = (row[3] || '').trim().toLowerCase();
+      const sheetName = (row[4] || '').trim();
+
+      // Match either email or username
+      if ((input === sheetEmail || input === sheetUsername) && sheetPassword === password) {
+        found = { email: sheetEmail, username: sheetUsername, role: sheetRole, name: sheetName };
         break;
       }
     }
 
     if (found) {
-      logDebug(`✅ Access granted to ${found.email} as ${found.role}`);
+      logDebug(`✅ Access granted to ${found.username || found.email} as ${found.role}`);
       document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Access Granted (${found.role})</h3>`;
-      localStorage.setItem('loggedUser', found.email);
+
+      localStorage.setItem('loggedUser', found.email || found.username);
       localStorage.setItem('userRole', found.role);
+      localStorage.setItem('userName', found.name);
       signedInEmail = found.email;
 
       setTimeout(() => {
@@ -149,7 +156,7 @@ async function checkCredentials(email, password) {
       }, 1000);
     } else {
       logDebug('❌ Invalid credentials.');
-      document.getElementById('result').innerHTML = `<h3 style="color:red;">🚫 Access Denied</h3><p>Invalid username or password.</p>`;
+      document.getElementById('result').innerHTML = `<h3 style="color:red;">🚫 Access Denied</h3><p>Invalid username, email, or password.</p>`;
     }
   } catch (err) {
     logDebug('Fetch error: ' + err.message);
@@ -157,7 +164,7 @@ async function checkCredentials(email, password) {
   }
 }
 
-async function refreshRole(email) {
+async function refreshRole(identifier) {
   try {
     logDebug('Refreshing role from Sheet...');
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
@@ -168,9 +175,12 @@ async function refreshRole(email) {
     let role = null;
 
     for (const row of rows) {
+      if (row.length < 4) continue;
       const sheetEmail = (row[0] || '').trim().toLowerCase();
-      if (sheetEmail === email.toLowerCase()) {
-        role = (row[1] || '').trim().toLowerCase();
+      const sheetUsername = (row[1] || '').trim().toLowerCase();
+
+      if (sheetEmail === identifier.toLowerCase() || sheetUsername === identifier.toLowerCase()) {
+        role = (row[3] || '').trim().toLowerCase();
         break;
       }
     }
