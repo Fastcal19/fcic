@@ -72,10 +72,8 @@
 
   <script>
 const SPREADSHEET_ID = '1SXWrCfjz0jCdP3rhVqb2-z2tcgL38-6ptwNNkXG8aVk';
-const RANGE = 'Users!A2:E100'; // Email | Username | Password | Role | Name
+const RANGE = 'Users!A2:E10'; // adjust if more rows
 const API_KEY = 'AIzaSyA-CmD5bKuCOrVZlSY_bkCCc_YVQqpuUUI';
-
-let signedInEmail = null;
 
 function logDebug(msg) {
   const log = document.getElementById('debugLog');
@@ -83,68 +81,25 @@ function logDebug(msg) {
   log.scrollTop = log.scrollHeight;
 }
 
-window.onload = () => {
-  logDebug('Initializing...');
-  document.getElementById('loginBtn').addEventListener('click', handleLogin);
-};
-
-async function handleLogin() {
-  const input = document.getElementById('username').value.trim().toLowerCase();
-  const password = document.getElementById('password').value.trim();
-  if (!input || !password) return alert('Please enter both fields.');
-  logDebug(`Attempting login for ${input}`);
-  await checkCredentials(input, password);
-}
-
-async function checkCredentials(input, password) {
+window.onload = async () => {
+  logDebug('Fetching sheet data for inspection...');
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
   try {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
     const resp = await fetch(url);
     const data = await resp.json();
-    console.log('Sheet data:', data); // <--- Check this in browser console
-
-    if (!data.values) {
-      logDebug('❌ No data returned. Check Sheet sharing permissions.');
-      document.getElementById('result').innerHTML = `<p style="color:red;">No data received from Google Sheet.</p>`;
-      return;
-    }
-
-    const rows = data.values;
-    logDebug(`✅ Fetched ${rows.length} rows from Sheet`);
-    logDebug('Sample first row: ' + JSON.stringify(rows[0]));
-
-    let found = null;
-
-    for (const row of rows) {
-      const [email, username, pass, role, name] = [
-        (row[0] || '').trim().toLowerCase(),
-        (row[1] || '').trim().toLowerCase(),
-        (row[2] || '').trim(),
-        (row[3] || '').trim().toLowerCase(),
-        (row[4] || '').trim()
-      ];
-
-      // Debug each row
-      logDebug(`Checking: ${email}/${username}/${role}`);
-
-      if ((input === email || input === username) && pass === password) {
-        found = { email, username, role, name };
-        break;
-      }
-    }
-
-    if (found) {
-      logDebug(`✅ Match found for ${found.username || found.email}`);
-      document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Logged in as ${found.role}</h3>`;
+    console.log('Sheet data:', data);
+    if (data.values) {
+      logDebug(`✅ Rows fetched: ${data.values.length}`);
+      data.values.forEach((r, i) => {
+        logDebug(`${i + 1}: ${JSON.stringify(r)}`);
+      });
     } else {
-      logDebug('❌ Invalid credentials. No match found.');
-      document.getElementById('result').innerHTML = `<h3 style="color:red;">🚫 Invalid credentials</h3>`;
+      logDebug('❌ No data returned — check sharing permissions.');
     }
   } catch (err) {
-    logDebug('⚠️ Error: ' + err.message);
-    document.getElementById('result').innerHTML = `<p style="color:red;">${err.message}</p>`;
+    logDebug('Error: ' + err.message);
   }
-}
+};
 
 
 async function refreshRole(identifier) {
