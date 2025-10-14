@@ -20,13 +20,29 @@
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
       text-align: center;
-      align-items: center;
-      justify-content: center;
       width: 400px;
     }
     h1 { font-size: 22px; margin-bottom: 8px; }
-    p { color: #555; font-size: 14px; }
-    .email { font-weight: 600; color: #222; }
+    p { color: #555; font-size: 14px; margin: 6px 0; }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 6px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      margin-top: 8px;
+    }
+    button:hover { background: #0056b3; }
     #debugBox {
       margin-top: 15px;
       background: #fafafa;
@@ -37,28 +53,29 @@
       text-align: left;
       max-height: 120px;
       overflow: auto;
-      display: block;
     }
   </style>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <div class="card">
-    <h1>Sign in with Google</h1>
+    <h1>Sign In</h1>
     <p>FCIC employees only.</p>
-    <div id="g_id_button"></div>
+
+    <input type="text" id="username" placeholder="Email or Username" autocomplete="off" />
+    <input type="password" id="password" placeholder="Password" autocomplete="off" />
+    <button id="loginBtn">Login</button>
+
     <p id="message">Not signed in.</p>
-    <p id="user-email" class="email" style="display:none;"></p>
     <div id="result" style="margin-top:12px;"></div>
     <div id="debugBox"><pre id="debugLog"></pre></div>
   </div>
 
   <script>
-const CLIENT_ID = '493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com';
 const SPREADSHEET_ID = '1SXWrCfjz0jCdP3rhVqb2-z2tcgL38-6ptwNNkXG8aVk';
-const RANGE = 'Users!A2:B10'; // Email + Role
-const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly openid email profile';
-let tokenClient, accessToken, signedInEmail;
+const RANGE = 'Users!A2:C100'; // Email | Role | Password
+const API_KEY = 'AIzaSyA-CmD5bKuCOrVZlSY_bkCCc_YVQqpuUUI';
+
+let signedInEmail = null;
 
 function logDebug(msg) {
   const log = document.getElementById('debugLog');
@@ -66,146 +83,90 @@ function logDebug(msg) {
   log.scrollTop = log.scrollHeight;
 }
 
-window.onload = function() {
+window.onload = () => {
   logDebug('Initializing...');
 
-  // Existing session
   const existingUser = localStorage.getItem('loggedUser');
   const existingRole = localStorage.getItem('userRole');
+
   if (existingUser && existingRole) {
     logDebug(`Existing session for ${existingUser} (${existingRole})`);
     document.getElementById('message').textContent = 'Already signed in.';
     document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Checking latest access rights...</h3>`;
-    signedInEmail = existingUser;
     refreshRole(existingUser);
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', handleLogin);
+};
+
+async function handleLogin() {
+  const email = document.getElementById('username').value.trim().toLowerCase();
+  const password = document.getElementById('password').value.trim();
+
+  if (!email || !password) {
+    alert('Please enter both email and password.');
     return;
   }
 
-  // Google OAuth setup
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: async (tokenResponse) => {
-      if (tokenResponse.error) {
-        logDebug('Token error: ' + tokenResponse.error);
-        document.getElementById('message').textContent = 'Authorization failed.';
-        return;
-      }
-      accessToken = tokenResponse.access_token;
-      logDebug('Access token acquired');
-      await fetchSheetAndCheck();
-    }
-  });
-
-  google.accounts.id.initialize({
-    client_id: CLIENT_ID,
-    callback: handleIdToken,
-    ux_mode: 'popup'
-  });
-
-  google.accounts.id.renderButton(
-    document.getElementById('g_id_button'),
-    { theme: 'outline', size: 'large' }
-  );
-
-  logDebug('Sign-in button ready');
-};
-
-function handleIdToken(response) {
-  const payload = decodeJwt(response.credential);
-  signedInEmail = payload.email;
-  document.getElementById('message').textContent = 'Checking authorization...';
-  document.getElementById('user-email').style.display = 'block';
-  document.getElementById('user-email').textContent = signedInEmail;
-  logDebug('Signed in as ' + signedInEmail);
-
-  try {
-    tokenClient.requestAccessToken({ prompt: 'none' });
-  } catch {
-    tokenClient.requestAccessToken({ prompt: 'consent' });
-  }
+  logDebug(`Attempting login for ${email}`);
+  document.getElementById('message').textContent = 'Checking credentials...';
+  await checkCredentials(email, password);
 }
 
-function decodeJwt(jwt) {
-  const base64 = jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-  return JSON.parse(decodeURIComponent(atob(base64).split('').map(
-    c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-  ).join('')));
-}
-
-async function fetchSheetAndCheck() {
+async function checkCredentials(email, password) {
   try {
-    logDebug('Fetching Google Sheet...');
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`;
-    const resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + accessToken } });
-    const text = await resp.text();
-    logDebug('Raw text (first 200 chars): ' + text.slice(0, 200));
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
 
-    const data = JSON.parse(text);
-    if (!data.values) {
-      logDebug('⚠️ No rows returned — check sheet name or range.');
-      document.getElementById('result').innerHTML = `<h3 style="color:red;">🚫 No data found in ${RANGE}</h3>`;
-      return;
-    }
+    const rows = data.values || [];
+    let found = null;
 
-    const rows = data.values;
-    const user = signedInEmail.trim().toLowerCase();
-    let role = null;
-
-    logDebug(`Looking for: ${user}`);
     for (const row of rows) {
-      const email = (row[0] || '').trim().toLowerCase();
-      const roleValue = (row[1] || '').trim().toLowerCase();
-      logDebug(`Row → email:"${email}" role:"${roleValue}"`);
-      if (email === user) {
-        role = roleValue;
-        logDebug(`✅ Match found for ${email} as ${role}`);
+      const sheetEmail = (row[0] || '').trim().toLowerCase();
+      const sheetRole = (row[1] || '').trim().toLowerCase();
+      const sheetPassword = (row[2] || '').trim();
+
+      if (sheetEmail === email && sheetPassword === password) {
+        found = { email: sheetEmail, role: sheetRole };
         break;
       }
     }
 
-    if (!role) {
-      logDebug('❌ No matching email in sheet');
-      document.getElementById('result').innerHTML =
-        `<h3 style="color:red;">🚫 Access Denied</h3><p>${signedInEmail} not found in sheet.</p>`;
-      return;
+    if (found) {
+      logDebug(`✅ Access granted to ${found.email} as ${found.role}`);
+      document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Access Granted (${found.role})</h3>`;
+      localStorage.setItem('loggedUser', found.email);
+      localStorage.setItem('userRole', found.role);
+      signedInEmail = found.email;
+
+      setTimeout(() => {
+        if (found.role === 'admin') {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'employee.html';
+        }
+      }, 1000);
+    } else {
+      logDebug('❌ Invalid credentials.');
+      document.getElementById('result').innerHTML = `<h3 style="color:red;">🚫 Access Denied</h3><p>Invalid username or password.</p>`;
     }
-
-    // --- normalize and route ---
-    localStorage.setItem('loggedUser', signedInEmail);
-    localStorage.setItem('userRole', role);
-    document.getElementById('result').innerHTML =
-      `<h3 style="color:green;">✅ Access Granted (${role})</h3>`;
-
-    setTimeout(() => {
-      if (role === 'admin') {
-        window.location.href = 'admin.html';
-      } else if (['staff', 'employee', 'user'].includes(role)) {
-        window.location.href = 'employee.html';
-      } else {
-        logDebug(`Unknown role value: "${role}"`);
-        document.getElementById('result').innerHTML =
-          `<h3 style="color:red;">🚫 Unknown role "${role}"</h3>`;
-      }
-    }, 1000);
-
-  } catch (e) {
-    logDebug('Fetch error: ' + e.message);
-    document.getElementById('result').innerHTML =
-      `<p style="color:red;">Error: ${e.message}</p>`;
+  } catch (err) {
+    logDebug('Fetch error: ' + err.message);
+    document.getElementById('result').innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
   }
 }
-
 
 async function refreshRole(email) {
   try {
     logDebug('Refreshing role from Sheet...');
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=AIzaSyA-CmD5bKuCOrVZlSY_bkCCc_YVQqpuUUI`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
     const resp = await fetch(url);
     const data = await resp.json();
 
     const rows = data.values || [];
     let role = null;
+
     for (const row of rows) {
       const sheetEmail = (row[0] || '').trim().toLowerCase();
       if (sheetEmail === email.toLowerCase()) {
@@ -220,7 +181,7 @@ async function refreshRole(email) {
       document.getElementById('result').innerHTML = `<h3 style="color:green;">✅ Verified (${role})</h3>`;
       setTimeout(() => {
         if (role === 'admin') window.location.href = 'admin.html';
-        else if (role === 'staff' || role === 'employee') window.location.href = 'employee.html';
+        else window.location.href = 'employee.html';
       }, 1000);
     } else {
       logDebug('Access revoked.');
@@ -231,7 +192,6 @@ async function refreshRole(email) {
     logDebug('Role refresh failed: ' + err.message);
   }
 }
-</script>
-
+  </script>
 </body>
 </html>
