@@ -1,269 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FCIC</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fast Cal Industrial Corp</title>
 
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="Logo.png">
-<meta name="theme-color" content="#ff9800">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FCIC">
-<link rel="apple-touch-icon" href="Logo.png">
+  <!-- Icon Library -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    height: 100vh;
-    display: flex;
-    background: #fff;
-    overflow: hidden;
-  }
-
-  /* ✅ Sidebar Base */
-  .sidebar {
-    width: 220px;
-    background: linear-gradient(180deg, orangered, orange);
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    padding-top: 80px;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1001;
-    box-shadow: 2px 0 6px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
-    overflow-x: hidden;
-  }
-  .sidebar.collapsed { width: 70px; }
-
-  .sidebar button {
-    background: none;
-    border: none;
-    color: white;
-    padding: 16px;
-    text-align: left;
-    font-size: 1em;
-    cursor: pointer;
-    font-weight: bold;
-    width: 100%;
-    transition: background 0.3s, padding-left 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .sidebar button:hover,
-  .sidebar button.active { background: rgba(255,255,255,0.2); }
-
-  .sidebar.collapsed button { justify-content: center; padding: 16px 0; }
-
-  .sidebar span.label { transition: opacity 0.3s; }
-  .sidebar.collapsed span.label { opacity: 0; width: 0; overflow: hidden; }
-
-  /* ✅ Toggle Button */
-  .toggle-btn {
-    position: absolute;
-    top: 15px;
-    right: -18px;
-    background: orangered;
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    cursor: pointer;
-    box-shadow: 0 0 5px rgba(0,0,0,0.3);
-    font-size: 18px;
-    z-index: 1100;
-  }
-  .toggle-btn:hover { background: darkorange; }
-
-  /* ✅ Overlay (for mobile slide-in) */
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 1000;
-  }
-  .overlay.active { display: block; }
-
-  /* ✅ Main Area */
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background: gray;
-    overflow: hidden;
-    margin-left: 220px;
-    transition: margin-left 0.3s ease;
-  }
-  .sidebar.collapsed + .main { margin-left: 70px; }
-
-  /* ✅ Header */
-  .header {
-    position: fixed;
-    top: 0;
-    left: 220px;
-    right: 0;
-    background: linear-gradient(0deg, orangered, orangered);
-    padding: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    z-index: 998;
-    transition: left 0.3s ease;
-  }
-  .sidebar.collapsed + .main .header { left: 70px; }
-
-  .header h1 {
-    font-size: 2em;
-    margin: 0;
-    color: gold;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-    text-shadow: 0 0 8px rgba(255,165,0,0.7), 0 0 15px rgba(255,140,0,0.5);
-  }
-
-  /* ✅ Pages */
-  .page-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: 80px;
-    overflow: hidden;
-    background: linear-gradient(0deg, orange, orangered);
-  }
-  .page { display: none; flex-direction: column; padding: 10px; color: #fff; }
-  .page.active { display: flex; }
-
-  /* ✅ Splash */
-  #fullscreenLogo {
-    position: fixed;
-    inset: 0;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-  }
-  #fullscreenLogo img {
-    width: 250px;
-    animation: fadeIn 1s ease-in-out;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  /* ✅ Mobile: Slide-In Sidebar */
-  @media (max-width: 768px) {
-    .sidebar {
-      left: -220px;
-      width: 220px !important;
-      padding-top: 80px;
+  <style>
+    /* --- RESET & BASE --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #222;
+      background-color: #fff;
+      overflow-x: hidden;
     }
-    .sidebar.active { left: 0; }
-    .sidebar span.label { opacity: 1 !important; width: auto !important; }
-    .main { margin-left: 0 !important; }
-    .header { left: 0 !important; }
-    .toggle-btn {
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      right: auto;
-      z-index: 1101;
-      display: block;
+
+    /* --- HEADER --- */
+    header {
+      background: linear-gradient(90deg, gold, #ff6f00);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
-  }
-</style>
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-section img {
+      height: 50px;
+    }
+    nav a {
+      color: white;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #000;
+    }
+    .login-icon {
+      background: white;
+      color: #ff6f00;
+      border-radius: 50%;
+      padding: 10px 12px;
+      margin-left: 15px;
+      font-size: 1.2rem;
+      transition: background 0.3s, color 0.3s;
+      cursor: pointer;
+    }
+    .login-icon:hover {
+      background: #ffe0b2;
+      color: #ff6f00;
+    }
+
+    /* --- HERO --- */
+    .hero {
+      position: relative;
+      height: 90vh;
+      background: url('https://images.unsplash.com/photo-1581091870627-3a7b1e3b6f3f?auto=format&fit=crop&w=1500&q=80') center/cover no-repeat;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    /* Electric Wave Animation */
+    .electric-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2), transparent 70%),
+                  repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0, rgba(255,255,255,0.2) 5px, transparent 10px);
+      animation: electricMove 6s linear infinite;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+    @keyframes electricMove {
+      0% { background-position: 0 0, 0 0; }
+      100% { background-position: 400px 0, 800px 0; }
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+      animation: flicker 2s infinite;
+    }
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 24%, 55% { opacity: 0.6; }
+    }
+    .hero p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      max-width: 600px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
+    .hero button {
+      margin-top: 2rem;
+      padding: 0.8rem 2rem;
+      border: none;
+      background: #ff9800;
+      color: white;
+      font-size: 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .hero button:hover {
+      background: #e68900;
+      transform: scale(1.05);
+    }
+
+    /* --- SERVICES --- */
+    .services {
+      padding: 4rem 2rem;
+      background: #f9f9f9;
+      text-align: center;
+    }
+    .services h2 {
+      font-size: 2rem;
+      color: #ff6f00;
+      margin-bottom: 2rem;
+    }
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .service {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    .service:hover {
+      transform: translateY(-5px);
+    }
+    .service img {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 1rem;
+    }
+    .service h3 {
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+    /* --- CONTACT --- */
+    .contact {
+      background: linear-gradient(90deg, #ff9800, #ff6f00);
+      color: white;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    .contact h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .contact p {
+      font-size: 1.1rem;
+    }
+    .contact a {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.8rem 2rem;
+      background: white;
+      color: #ff6f00;
+      font-weight: bold;
+      border-radius: 30px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .contact a:hover {
+      background: #ffe0b2;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      background: #222;
+      color: #ccc;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+    footer a {
+      color: #ffb74d;
+      text-decoration: none;
+      margin: 0 5px;
+      transition: color 0.3s;
+    }
+    footer a:hover {
+      color: #fff;
+    }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero p { font-size: 1rem; }
+      header { flex-direction: column; align-items: flex-start; }
+      nav { margin-top: 1rem; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- ✅ Splash -->
-  <div id="fullscreenLogo"><img src="FC.png" alt="FCIC Logo" /></div>
-
-  <!-- ✅ Overlay for mobile -->
-  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-  <!-- ✅ Sidebar -->
-  <div class="sidebar" id="sidebar">
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-    <button onclick="showPage('home')" class="active">🏠 <span class="label">Home</span></button>
-    <button onclick="showPage('advances')">💰 <span class="label">Advances</span></button>
-    <button onclick="showPage('leave')">🗓️ <span class="label">Leave</span></button>
-    <button onclick="showPage('ot')">⏱️ <span class="label">OT</span></button>
-    <button onclick="openInventory()">📦 <span class="label">Inventory</span></button>
-  </div>
-
-  <!-- ✅ Main Area -->
-  <div class="main">
-    <div class="header"><h1>FAST CAL INDUSTRIAL CORP</h1></div>
-
-    <div class="page-container">
-      <div id="home" class="page active">
-        <h2>Home</h2>
-        <p>Calendar and announcements here...</p>
-      </div>
-      <div id="advances" class="page"><h2>Advances</h2></div>
-      <div id="leave" class="page"><h2>Leave</h2></div>
-      <div id="ot" class="page"><h2>OT</h2></div>
+  <header>
+    <div class="logo-section">
+      <img src="fcic logo.png" alt="FCIC Logo">
+      <span style="font-weight:bold; font-size:1.2rem;"></span>
     </div>
-  </div>
+    <nav>
+      <a href="#services">Services</a>
+      <a href="#contact">Contact</a>
+      <i class="fas fa-user login-icon" title="Log In"></i>
+    </nav>
+  </header>
 
-<script>
-  // ✅ Splash fade-out
-  window.addEventListener("load", () => {
-    setTimeout(() => {
-      const fs = document.getElementById("fullscreenLogo");
-      fs.style.transition = "opacity 0.8s ease";
-      fs.style.opacity = "0";
-      setTimeout(() => fs.style.display = "none", 800);
-    }, 2500);
-  });
+  <section class="hero">
+    <div class="electric-overlay"></div>
+    <h1>Reliable Electrical Services You Can Trust ⚡</h1>
+    <p>Fast Cal Industrial Corp provides safe, efficient, and professional electrical solutions for homes and businesses — done right the first time.</p>
+    <button onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">
+      Get a Free Quote
+    </button>
+  </section>
 
-  // ✅ Sidebar toggle
-  function toggleSidebar() {
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    if (window.innerWidth <= 768) {
-      sidebar.classList.toggle("active");
-      overlay.classList.toggle("active");
-    } else {
-      sidebar.classList.toggle("collapsed");
-    }
-  }
+  <section id="services" class="services">
+    <h2>Our Services</h2>
+    <div class="service-grid">
+      <div class="service">
+        <img src="https://cdn-icons-png.flaticon.com/512/3242/3242257.png" alt="Wiring">
+        <h3>Electrical Wiring</h3>
+        <p>Safe and efficient wiring installation and upgrades for residential, commercial, and industrial projects.</p>
+      </div>
+      <div class="service">
+        <img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png" alt="Maintenance">
+        <h3>Maintenance & Repairs</h3>
+        <p>Reliable troubleshooting and repair for electrical systems, ensuring continuous and safe operation.</p>
+      </div>
+      <div class="service">
+        <img src="https://cdn-icons-png.flaticon.com/512/2387/2387635.png" alt="Lighting">
+        <h3>Lighting Solutions</h3>
+        <p>Indoor and outdoor lighting design and installation to enhance safety, functionality, and aesthetics.</p>
+      </div>
+      <div class="service">
+        <img src="https://cdn-icons-png.flaticon.com/512/2659/2659360.png" alt="Industrial">
+        <h3>Industrial Automation</h3>
+        <p>Custom electrical automation systems designed for efficiency and productivity in industrial applications.</p>
+      </div>
+    </div>
+  </section>
 
-  // ✅ Close sidebar on mobile tap outside
-  function closeSidebar() {
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    sidebar.classList.remove("active");
-    overlay.classList.remove("active");
-  }
+  <section id="contact" class="contact">
+    <h2>Contact Us</h2>
+    <p>✉️ fastcalindustrialcorp@gmail.com</p>
+    <p>Serving Metro Manila and nearby provinces</p>
+    <a href="mailto:fastcalindustrialcorp@gmail.com">Send an Inquiry</a>
+  </section>
 
-  // ✅ Navigation between pages
-  function showPage(id) {
-    if (window.innerWidth <= 768) closeSidebar();
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-  }
-
-  // ✅ Inventory page
-  function openInventory() {
-    window.location.href = "inventory.html";
-  }
-</script>
+  <footer>
+    &copy; 2025 Fast Cal Industrial Corp. All rights reserved.
+    <br>
+    <a href="privacy-policy.html" target="_blank">Privacy Policy</a> |
+    <a href="terms-of-service.html" target="_blank">Terms & Conditions</a>
+  </footer>
 
 </body>
 </html>
