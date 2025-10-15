@@ -194,44 +194,6 @@
       color: #fff;
     }
 
-    /* --- MODALS --- */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 2000;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
-      overflow-y: auto;
-      padding: 2rem;
-    }
-    .modal-content {
-      background: white;
-      color: #333;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 2rem;
-      border-radius: 10px;
-      line-height: 1.7;
-    }
-    .modal-content h1, .modal-content h2 {
-      color: #FF8C00;
-    }
-    .modal-content h2 {
-      border-bottom: 2px solid #FFD580;
-      padding-bottom: 4px;
-    }
-    .close-btn {
-      float: right;
-      font-size: 1.5rem;
-      color: #999;
-      cursor: pointer;
-      transition: color 0.3s;
-    }
-    .close-btn:hover {
-      color: #000;
-    }
-
     /* --- RESPONSIVE --- */
     @media (max-width: 768px) {
       .hero h1 { font-size: 2.2rem; }
@@ -303,111 +265,9 @@
   <footer>
     &copy; 2025 Fast Cal Industrial Corp. All rights reserved. Develop by JCE
     <br>
-    <a id="openPrivacy">Privacy Policy</a> |
-    <a id="openTerms">Terms & Conditions</a>
+    <a href="https://fcic.xyz/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> |
+    <a href="https://fcic.xyz/terms" target="_blank" rel="noopener noreferrer">Terms & Conditions</a>
   </footer>
 
-  <!-- PRIVACY POLICY MODAL -->
-  <div id="privacyModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="closePrivacy">&times;</span>
-      <h1>Privacy Policy</h1>
-      <p><strong>Last updated:</strong> October 14, 2025</p>
-      <section>
-        <h2>Introduction</h2>
-        <p>Fast Cal Industrial Corp develops and operates internal web applications used for business management, including HR, payroll, attendance, and company portals. We value your trust and are committed to protecting your personal information.</p>
-      </section>
-      <section>
-        <h2>Information We Collect</h2>
-        <ul>
-          <li><strong>Google Account Information</strong> — your name, email address, and profile ID when you sign in using Google authentication.</li>
-          <li><strong>Employee Records</strong> — such as employee ID, department, position, and attendance or payroll data.</li>
-          <li><strong>Usage Information</strong> — device type or browser details.</li>
-        </ul>
-      </section>
-      <section>
-        <h2>How We Use the Information</h2>
-        <ul>
-          <li>To verify user identity and role (Admin or Staff)</li>
-          <li>To manage HR, payroll, and attendance records</li>
-          <li>To improve functionality and security</li>
-        </ul>
-      </section>
-      <section>
-        <h2>Data Security</h2>
-        <p>We use access restrictions, encryption, and Google Cloud security features. Only authorized personnel have access to HR-related information.</p>
-      </section>
-      <section>
-        <h2>Contact Us</h2>
-        <p>📧 fastcalacctg@gmail.com<br>📍 Fast Cal Industrial Corp, Santa Rosa, Laguna, Philippines</p>
-      </section>
-      <section>
-        <h2>Policy Updates</h2>
-        <p>We may update this Privacy Policy periodically with a new “Last Updated” date.</p>
-      </section>
-    </div>
-  </div>
-
-  <!-- TERMS & CONDITIONS MODAL -->
-  <div id="termsModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="closeTerms">&times;</span>
-      <h1>Terms of Service</h1>
-      <p><strong>Last updated:</strong> October 14, 2025</p>
-      <section>
-        <h2>Introduction</h2>
-        <p>Welcome to the internal web applications of <strong>Fast Cal Industrial Corp</strong>. These Terms govern your access and use of our HR, payroll, attendance, and internal portals.</p>
-      </section>
-      <section>
-        <h2>Eligibility and Access</h2>
-        <p>Access is limited to authorized personnel. Users must sign in using company-verified Google accounts. Unauthorized access is prohibited.</p>
-      </section>
-      <section>
-        <h2>User Responsibilities</h2>
-        <ul>
-          <li>Keep login credentials secure.</li>
-          <li>Use the system for company purposes only.</li>
-          <li>Report any system issues to IT.</li>
-        </ul>
-      </section>
-      <section>
-        <h2>Data and Privacy</h2>
-        <p>Your data is handled according to our Privacy Policy.</p>
-      </section>
-      <section>
-        <h2>System Availability</h2>
-        <p>We strive for uptime but may have maintenance-related downtime.</p>
-      </section>
-      <section>
-        <h2>Intellectual Property</h2>
-        <p>All system components are owned by Fast Cal Industrial Corp.</p>
-      </section>
-      <section>
-        <h2>Contact Information</h2>
-        <p>📧 fastcalacctg@gmail.com<br>📍 Santa Rosa, Laguna, Philippines</p>
-      </section>
-    </div>
-  </div>
-
-  <!-- SCRIPT -->
-  <script>
-    const privacyModal = document.getElementById('privacyModal');
-    const termsModal = document.getElementById('termsModal');
-    const openPrivacy = document.getElementById('openPrivacy');
-    const openTerms = document.getElementById('openTerms');
-    const closePrivacy = document.getElementById('closePrivacy');
-    const closeTerms = document.getElementById('closeTerms');
-
-    openPrivacy.onclick = () => privacyModal.style.display = 'block';
-    closePrivacy.onclick = () => privacyModal.style.display = 'none';
-    openTerms.onclick = () => termsModal.style.display = 'block';
-    closeTerms.onclick = () => termsModal.style.display = 'none';
-
-    window.onclick = (e) => {
-      if (e.target === privacyModal) privacyModal.style.display = 'none';
-      if (e.target === termsModal) termsModal.style.display = 'none';
-    };
-    
-  </script>
 </body>
 </html>
