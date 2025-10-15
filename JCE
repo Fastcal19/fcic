@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fast Cal Industrial Corp</title>
+
+  <!-- Icon Library -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    /* --- RESET & BASE --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #222;
+      background-color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* --- HEADER --- */
+    header {
+      background: linear-gradient(90deg, gold, #ff6f00);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-section img {
+      height: 50px;
+    }
+    nav a {
+      color: white;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #000;
+    }
+    .login-icon {
+      background: white;
+      color: #ff6f00;
+      border-radius: 50%;
+      padding: 10px 12px;
+      margin-left: 15px;
+      font-size: 1.2rem;
+      transition: background 0.3s, color 0.3s;
+      cursor: pointer;
+    }
+    .login-icon:hover {
+      background: #ffe0b2;
+      color: #ff6f00;
+    }
+
+    /* --- HERO --- */
+    .hero {
+      position: relative;
+      height: 90vh;
+      background: url('https://images.unsplash.com/photo-1581091870627-3a7b1e3b6f3f?auto=format&fit=crop&w=1500&q=80') center/cover no-repeat;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    /* Electric Wave Animation */
+    .electric-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2), transparent 70%),
+                  repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0, rgba(255,255,255,0.2) 5px, transparent 10px);
+      animation: electricMove 6s linear infinite;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+    @keyframes electricMove {
+      0% { background-position: 0 0, 0 0; }
+      100% { background-position: 400px 0, 800px 0; }
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+      animation: flicker 2s infinite;
+    }
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 24%, 55% { opacity: 0.6; }
+    }
+    .hero p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      max-width: 600px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
+    .hero button {
+      margin-top: 2rem;
+      padding: 0.8rem 2rem;
+      border: none;
+      background: #ff9800;
+      color: white;
+      font-size: 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .hero button:hover {
+      background: #e68900;
+      transform: scale(1.05);
+    }
+
+    /* --- SERVICES --- */
+    .services {
+      padding: 4rem 2rem;
+      background: #f9f9f9;
+      text-align: center;
+    }
+    .services h2 {
+      font-size: 2rem;
+      color: #ff6f00;
+      margin-bottom: 2rem;
+    }
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .service {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    .service:hover {
+      transform: translateY(-5px);
+    }
+    .service img {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 1rem;
+    }
+    .service h3 {
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+    /* --- CONTACT --- */
+    .contact {
+      background: linear-gradient(90deg, #ff9800, #ff6f00);
+      color: white;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    .contact h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .contact p {
+      font-size: 1.1rem;
+    }
+    .contact a {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.8rem 2rem;
+      background: white;
+      color: #ff6f00;
+      font-weight: bold;
+      border-radius: 30px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .contact a:hover {
+      background: #ffe0b2;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      background: #222;
+      color: #ccc;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+    footer a {
+      color: #ffb74d;
+      text-decoration: none;
+      margin: 0 5px;
+      transition: color 0.3s;
+    }
+    footer a:hover {
+      color: #fff;
+    }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero p { font-size: 1rem; }
+      header { flex-direction: column; align-items: flex-start; }
+      nav { margin-top: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-section">
+      <img src="fcic logo.png" alt="FCIC Logo">
+      <span style="font-weight:bold; font-size:1.2rem;"></span>
+    </div>
+    <nav>
+      <a href="#services">Services</a>
+      <a href="#contact">Contact</a>
+      <i class="fas fa-user login-icon" title="Log In"></i>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="electric-overlay"></div>
+    <h1>Reliable Electrical Services You Can Trust ⚡</h1>
+    <p>Fast Cal Industrial Corp provides safe, efficient, and professional electrical solutions for homes and businesses — done right the first time.</p>
+    <button onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">
+      Get a Free Quote
+    </button>
+  </section>
+
+  <section id="services" class="services">
+    <h2>Our Services</h2>
+    <div class="service-grid">
+      <div class="service">
+        <img src="https://cdn-icons-png.flaticon.com/512/3242/3242257.png" alt="Wiring">
+        <h3>Electrical Wiring</h3>
+        <p>Safe and efficient wiring installation and upgrades for residential, commercial, and industrial projects.</p>
+      </div>
+      <div class="service">
+        <img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png" alt="Maintenance">
+        <h3>Maintenance & Repairs</h3>
+        <p>Reliable troubleshooting and repair for electrical systems, ensuring continuous and safe operation.</p>
+      </div>
+      <div class="service">
+        <img src="https://cdn-icons-png.flaticon.com/512/2387/2387635.png" alt="Lighting">
+        <h3>Lighting Solutions</h3>
+        <p>Indoor and outdoor lighting design and installation to enhance safety, functionality, and aesthetics.</p>
+      </div>
+      <div class="service">
+        <img src="https://cdn-icons-png.flaticon.com/512/2659/2659360.png" alt="Industrial">
+        <h3>Industrial Automation</h3>
+        <p>Custom electrical automation systems designed for efficiency and productivity in industrial applications.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <h2>Contact Us</h2>
+    <p>✉️ fastcalindustrialcorp@gmail.com</p>
+    <p>Serving Metro Manila and nearby provinces</p>
+    <a href="mailto:fastcalindustrialcorp@gmail.com">Send an Inquiry</a>
+  </section>
+
+  <footer>
+    &copy; 2025 Fast Cal Industrial Corp. All rights reserved.
+    <br>
+    <a href="privacy-policy.html" target="_blank">Privacy Policy</a> |
+    <a href="terms-of-service.html" target="_blank">Terms & Conditions</a>
+  </footer>
+
+</body>
+</html>
