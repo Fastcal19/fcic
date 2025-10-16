@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fast Cal Industrial Corp</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 200px;
+      background: #FF8C00;
+      color: black;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      justify-content: space-between;
+    }
+    .sidebar h2 { margin: 0 0 20px; text-align: center; }
+    .sidebar a {
+      color: black;
+      text-decoration: none;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 6px;
+      display: block;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .sidebar a:hover { background: #FFD580; }
+    .submenu { display: none; flex-direction: column; margin-left: 15px; }
+    .submenu a { font-weight: normal; font-size: 14px; padding: 8px; margin: 3px 0; }
+    .expandable { cursor: pointer; }
+
+    /* Logout button */
+    .logout-btn {
+      margin-top: 20px;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .logout-btn:hover {
+      background: #555;
+    }
+
+    /* Main content */
+    .main { flex: 1; background: gray; display: flex; flex-direction: column; overflow: auto; }
+    iframe {
+      flex: 1;
+      width: calc(100% - 40px);
+      margin: 20px;
+      border-radius: 10px;
+      background: #FFD580;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border: none;
+    }
+
+    .logo-box {
+      width: 200px;
+      height: 144px;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .logo-box img { width: 95%; height: 95%; object-fit: fill; border-radius: 10px; }
+
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div>
+      <h2 class="logo-box"><img src="fcic logo.png" alt="Logo"></h2>
+      <a onclick="showPage('dashboard')">Home</a>
+      <a onclick="showPage('leave')">Leave</a>
+      <a onclick="showPage('advances')">Advances</a>
+      <a onclick="showPage('overtime')">Overtime</a>
+      <a onclick="showPage('inventory')">Inventory</a>
+    </div>
+
+    <!-- ✅ Logout Button -->
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+    <iframe id="mainFrame" src="Admin Dashboard.html"></iframe>
+
+    <!-- Portals Page -->
+    <div id="portalsPage">
+      <h2>Portals</h2>
+      <div class="portals-grid" id="portalsGrid"></div>
+    </div>
+  </div>
+
+  <script>
+    function toggleMenu(id) {
+      const menu = document.getElementById(id);
+      const isOpen = menu.style.display === "flex";
+      document.querySelectorAll(".submenu").forEach(sm => sm.style.display = "none");
+      document.querySelectorAll(".expandable").forEach(exp => exp.textContent = exp.textContent.replace("▾", "▸"));
+      if (!isOpen) {
+        menu.style.display = "flex";
+        event.target.textContent = event.target.textContent.replace("▸", "▾");
+      }
+    }
+
+    function showPage(page) {
+      const iframe = document.getElementById("mainFrame");
+      const portals = document.getElementById("portalsPage");
+
+      iframe.style.display = "none";
+      portals.style.display = "none";
+
+      if (page === "portals") {
+        portals.style.display = "block";
+        loadPortals();
+      } else {
+        iframe.style.display = "block";
+        if (page === "dashboard") iframe.src = "Admin Dashboard.html";
+        if (page === "employees") iframe.src = "Admin Employee.html";
+        if (page === "attendance") iframe.src = "HR_Attendance.html";
+        if (page === "payroll") iframe.src = "HR_Payroll.html";
+        if (page === "reports") iframe.src = "Reports.html";
+        if (page === "inventoryOverview") iframe.src = "FCIC Inventory.html";
+        if (page === "inventoryList") iframe.src = "Inventory List.html";
+        if (page === "requests") iframe.src = "Requests.html";
+      }
+    }
+
+    // ---------------- Portals dynamic fetch ----------------
+    const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
+
+    async function loadPortals() {
+      try {
+        const res = await fetch(PORTALS_URL);
+        const portals = await res.json();
+        const grid = document.getElementById("portalsGrid");
+        grid.innerHTML = "";
+
+        portals.forEach(p => {
+          const card = document.createElement("div");
+          card.className = "portal-card";
+          card.onclick = () => window.open(p.url, "_blank");
+          const imgSrc = p.thumb || p.logo || "default_logo.png";
+          card.innerHTML = `
+            <img src="${imgSrc}" alt="${p.name}">
+            <p>${p.name}</p>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Failed to load portals:", err);
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
