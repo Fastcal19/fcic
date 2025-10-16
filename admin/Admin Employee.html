@@ -179,6 +179,24 @@
       .photo-card img{width:100%;height:auto}
       table{min-width:600px}
     }
+
+    /* ✅ Mobile: Show only first 3 columns */
+@media (max-width: 768px) {
+  #employeesTable th,
+  #employeesTable td {
+    display: none;
+  }
+  #employeesTable th:nth-child(-n+3),
+  #employeesTable td:nth-child(-n+3) {
+    display: table-cell;
+  }
+
+  /* Optional: make table scrollable horizontally */
+  .table-container {
+    overflow-x: auto;
+  }
+}
+
   </style>
 </head>
 <body>
