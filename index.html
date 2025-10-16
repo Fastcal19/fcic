@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fast Cal Industrial Corp</title>
 
-  <!-- Icon Library -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
-    /* --- RESET & BASE --- */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,7 +17,6 @@
       overflow-x: hidden;
     }
 
-    /* --- HEADER --- */
     header {
       background: linear-gradient(70deg, white, orangered);
       color: white;
@@ -30,14 +28,8 @@
       top: 0;
       z-index: 1000;
     }
-    .logo-section {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .logo-section img {
-      height: 50px;
-    }
+    .logo-section { display: flex; align-items: center; gap: 10px; }
+    .logo-section img { height: 50px; }
     nav a {
       color: white;
       margin-left: 20px;
@@ -45,9 +37,7 @@
       font-weight: bold;
       transition: color 0.3s;
     }
-    nav a:hover {
-      color: #000;
-    }
+    nav a:hover { color: #000; }
     .login-icon {
       background: white;
       color: #ff6f00;
@@ -58,12 +48,8 @@
       transition: background 0.3s, color 0.3s;
       cursor: pointer;
     }
-    .login-icon:hover {
-      background: #ffe0b2;
-      color: #ff6f00;
-    }
+    .login-icon:hover { background: #ffe0b2; color: #ff6f00; }
 
-    /* --- HERO --- */
     .hero {
       position: relative;
       height: 90vh;
@@ -75,7 +61,6 @@
       text-align: center;
       color: white;
       padding: 2rem;
-      overflow: hidden;
     }
     .hero h1 {
       font-size: 3rem;
@@ -103,22 +88,10 @@
       cursor: pointer;
       transition: background 0.3s, transform 0.2s;
     }
-    .hero button:hover {
-      background: #e68900;
-      transform: scale(1.05);
-    }
+    .hero button:hover { background: #e68900; transform: scale(1.05); }
 
-    /* --- SERVICES --- */
-    .services {
-      padding: 4rem 2rem;
-      background: #f9f9f9;
-      text-align: center;
-    }
-    .services h2 {
-      font-size: 2rem;
-      color: #ff6f00;
-      margin-bottom: 2rem;
-    }
+    .services { padding: 4rem 2rem; background: #f9f9f9; text-align: center; }
+    .services h2 { font-size: 2rem; color: #ff6f00; margin-bottom: 2rem; }
     .service-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -133,33 +106,18 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       transition: transform 0.3s;
     }
-    .service:hover {
-      transform: translateY(-5px);
-    }
-    .service img {
-      width: 60px;
-      height: 60px;
-      margin-bottom: 1rem;
-    }
-    .service h3 {
-      color: #333;
-      margin-bottom: 1rem;
-    }
+    .service:hover { transform: translateY(-5px); }
+    .service img { width: 60px; height: 60px; margin-bottom: 1rem; }
+    .service h3 { color: #333; margin-bottom: 1rem; }
 
-    /* --- CONTACT --- */
     .contact {
       background: linear-gradient(90deg, #ff9800, #ff6f00);
       color: white;
       text-align: center;
       padding: 3rem 2rem;
     }
-    .contact h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-    .contact p {
-      font-size: 1.1rem;
-    }
+    .contact h2 { font-size: 2rem; margin-bottom: 1rem; }
+    .contact p { font-size: 1.1rem; }
     .contact a {
       display: inline-block;
       margin-top: 1.5rem;
@@ -171,11 +129,8 @@
       text-decoration: none;
       transition: background 0.3s;
     }
-    .contact a:hover {
-      background: #ffe0b2;
-    }
+    .contact a:hover { background: #ffe0b2; }
 
-    /* --- FOOTER --- */
     footer {
       background: #222;
       color: #ccc;
@@ -183,18 +138,54 @@
       padding: 1rem;
       font-size: 0.9rem;
     }
-    footer a {
-      color: #ffb74d;
-      text-decoration: none;
-      margin: 0 5px;
-      cursor: pointer;
-      transition: color 0.3s;
-    }
-    footer a:hover {
-      color: #fff;
-    }
+    footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
+    footer a:hover { color: #fff; }
 
-    /* --- RESPONSIVE --- */
+    /* LOGIN MODAL */
+    #loginModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    #loginBox {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+      position: relative;
+    }
+    #loginBox input {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #loginBox button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #loginBox .manual-btn { background: orangered; color: white; }
+    #loginBox .gmail-btn { background: #4285F4; color: white; }
+    #closeModal {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #888;
+    }
+    #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
+
     @media (max-width: 768px) {
       .hero h1 { font-size: 2.2rem; }
       .hero p { font-size: 1rem; }
@@ -221,9 +212,7 @@
   <section class="hero">
     <h1>Reliable Electrical Services You Can Trust ⚡</h1>
     <p>Fast Cal Industrial Corp provides safe, efficient, and professional electrical solutions for homes and businesses — done right the first time.</p>
-    <button onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">
-      Get a Free Quote
-    </button>
+    <button onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get a Free Quote</button>
   </section>
 
   <!-- SERVICES -->
@@ -263,12 +252,98 @@
 
   <!-- FOOTER -->
   <footer>
-  &copy; 2025 Fast Cal Industrial Corp. All rights reserved. Develop by JCE
-  <br>
-  <a href="/privacy-policy/">Privacy Policy</a> |
-  <a href="/terms/">Terms & Conditions</a>
-</footer>
+    &copy; 2025 Fast Cal Industrial Corp. All rights reserved.<br>
+    <a href="/privacy-policy/">Privacy Policy</a> |
+    <a href="/terms/">Terms & Conditions</a>
+  </footer>
 
+  <!-- LOGIN MODAL -->
+  <div id="loginModal">
+    <div id="loginBox">
+      <span id="closeModal">&times;</span>
+      <h3>Login</h3>
+      <input id="username" placeholder="Username"><br>
+      <input id="password" type="password" placeholder="Password"><br>
+      <button class="manual-btn" onclick="manualLogin()">Login</button>
+      <hr>
+      <button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
+      <p id="loginStatus"></p>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbyUNWxfDW9I3lK_Q8gRzVmJpYND2wk1-TF-heVa2AxiTh8MSBNQ--GdKo1xjwD78VyOUQ/exec"; // Replace with your actual deployed Apps Script Web App URL
+
+    // Modal handlers
+    const modal = document.getElementById('loginModal');
+    document.querySelector('.login-icon').onclick = () => modal.style.display = 'flex';
+    document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
+    window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
+
+    // Manual login
+    async function manualLogin() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      document.getElementById('loginStatus').textContent = "⏳ Checking...";
+      try {
+        const res = await fetch(webAppUrl, {
+          method: "POST",
+          body: JSON.stringify({ method: "manual", username, password })
+        });
+        const data = await res.json();
+        handleLoginResponse(data);
+      } catch {
+        document.getElementById('loginStatus').textContent = "❌ Network error.";
+      }
+    }
+
+    // Gmail login
+    function gmailLogin() {
+      google.accounts.id.initialize({
+        client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
+        callback: handleCredentialResponse
+      });
+      google.accounts.id.prompt();
+    }
+
+    async function handleCredentialResponse(response) {
+      const userInfo = parseJwt(response.credential);
+      const res = await fetch(webAppUrl, {
+        method: "POST",
+        body: JSON.stringify({ method: "gmail", email: userInfo.email })
+      });
+      const data = await res.json();
+      handleLoginResponse(data);
+    }
+
+    // Handle both manual and Gmail login response
+    function handleLoginResponse(response) {
+      const status = document.getElementById('loginStatus');
+      if (response.success) {
+        localStorage.setItem("role", response.role);
+        localStorage.setItem("username", response.name);
+        status.style.color = "green";
+        status.textContent = "✅ Welcome, " + response.name;
+        setTimeout(() => {
+          modal.style.display = 'none';
+          if (response.role === "Admin") location.href = "admin.html";
+          else if (response.role === "Purchaser") location.href = "purchaser.html";
+          else location.href = "staff.html";
+        }, 1000);
+      } else {
+        status.style.color = "red";
+        status.textContent = response.message || "❌ Invalid username or password.";
+      }
+    }
+
+    function parseJwt(token) {
+      return JSON.parse(atob(token.split('.')[1]));
+    }
+  </script>
+
+  <!-- Google Identity API -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 </body>
 </html>
