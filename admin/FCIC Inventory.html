@@ -38,7 +38,7 @@
         grid-template-columns: repeat(2, 1fr);
       }
       .page-controls {
-        display: none; /* hide pagination on mobile */
+        display: none; /* hide pagination only on mobile */
       }
     }
 
@@ -93,7 +93,7 @@
     }
 
     .page-controls {
-      display: none !important;
+      display: flex;
       align-items: center;
       gap: 8px;
       margin-left: auto;
@@ -152,7 +152,7 @@
     <select id="categoryFilter">
       <option value="all">All Categories</option>
     </select>
-    <div class="page-controls">
+    <div class="page-controls" id="paginationControls">
       <button id="prevBtn">⬅ Prev</button>
       <span id="pageInfo"></span>
       <button id="nextBtn">Next ➡</button>
@@ -174,11 +174,19 @@
     let filteredItems = [];
     let currentPage = 1;
     const itemsPerPage = 18;
-    const isMobile = window.innerWidth <= 768; // ✅ detect mobile view
+    let isMobile = window.innerWidth <= 768;
 
     const popup = document.getElementById("popup");
     const popupContent = document.getElementById("popupContent");
     const popupClose = document.querySelector(".popup-close");
+    const paginationControls = document.getElementById("paginationControls");
+
+    // ✅ Detect screen resize and toggle pagination visibility dynamically
+    window.addEventListener("resize", () => {
+      isMobile = window.innerWidth <= 768;
+      paginationControls.style.display = isMobile ? "none" : "flex";
+      renderGallery();
+    });
 
     function renderGallery() {
       const container = document.getElementById("gallery");
@@ -186,13 +194,14 @@
 
       if (!filteredItems || filteredItems.length === 0) {
         container.innerHTML = "<p>No matching items found.</p>";
-        document.getElementById("pageInfo").textContent = "";
+        const info = document.getElementById("pageInfo");
+        if (info) info.textContent = "";
         return;
       }
 
       let pageItems;
       if (isMobile) {
-        // ✅ show all items in one scrollable page on mobile
+        // ✅ Show all items in one scrollable page on mobile
         pageItems = filteredItems;
       } else {
         const start = (currentPage - 1) * itemsPerPage;
@@ -279,6 +288,7 @@
       document.getElementById("categoryFilter").addEventListener("change", applyFilters);
       document.getElementById("searchBox").addEventListener("input", applyFilters);
 
+      // ✅ Only enable pagination events on desktop
       if (!isMobile) {
         document.getElementById("prevBtn").addEventListener("click", () => {
           if (currentPage > 1) {
@@ -294,6 +304,9 @@
           }
         });
       }
+
+      // Set pagination visibility properly at load
+      paginationControls.style.display = isMobile ? "none" : "flex";
 
       renderGallery();
     }
