@@ -3,49 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fast Cal Industrial Corp</title>
+  <title>FCIC Web App</title>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      display: flex;
       height: 100vh;
-      overflow: hidden;
+      display: flex;
     }
 
     /* Sidebar */
     .sidebar {
-      width: 200px;
+      width: 220px;
       background: #FF8C00;
-      color: black;
+      color: #000;
       display: flex;
       flex-direction: column;
-      padding: 20px;
       justify-content: space-between;
+      padding: 20px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #333 #FFB347;
       transition: transform 0.3s ease-in-out;
       z-index: 1000;
     }
 
-    .sidebar h2 { margin: 0 0 20px; text-align: center; }
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-track { background: #FFD580; }
+    .sidebar::-webkit-scrollbar-thumb { background-color: #333; border-radius: 3px; }
+
+    /* Mobile hidden state */
+    .sidebar.hidden {
+      transform: translateX(-100%);
+    }
+
+    .logo-box {
+      width: 160px;
+      height: 160px;
+      background: #fff;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .logo-box img {
+      width: 90%;
+      height: 90%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
     .sidebar a {
-      color: black;
+      color: #000;
       text-decoration: none;
       padding: 10px;
-      margin: 5px 0;
-      border-radius: 6px;
       display: block;
+      border-radius: 6px;
       font-weight: bold;
-      cursor: pointer;
+      margin: 5px 0;
     }
-    .sidebar a:hover { background: #FFD580; }
+    .sidebar a:hover {
+      background: #FFD580;
+    }
 
-    .submenu { display: none; flex-direction: column; margin-left: 15px; }
-    .submenu a { font-weight: normal; font-size: 14px; padding: 8px; margin: 3px 0; }
-    .expandable { cursor: pointer; }
-
-    /* Logout button */
     .logout-btn {
-      margin-top: 10px;
       background: #333;
       color: #fff;
       border: none;
@@ -53,167 +80,123 @@
       padding: 10px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
+      margin-top: 10px;
     }
-    .logout-btn:hover { background: #555; }
 
     /* Main content */
     .main {
       flex: 1;
-      background: gray;
+      background: #ccc;
+      margin-left: 220px;
       display: flex;
       flex-direction: column;
+      transition: margin-left 0.3s ease;
       overflow: auto;
-      position: relative;
     }
 
     iframe {
       flex: 1;
-      width: calc(100% - 40px);
-      margin: 20px;
-      border-radius: 10px;
-      background: linear-gradient(180deg, gold, orangered);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       border: none;
+      border-radius: 10px;
+      margin: 20px;
+      background: linear-gradient(180deg, gold, orangered);
     }
 
-    /* Logo */
-    .logo-box {
-      width: 200px;
-      height: 200px;
-      background-color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-    .logo-box img { width: 95%; height: 95%; object-fit: fill; border-radius: 10px; }
-
-    /* Portals Page */
-    #portalsPage { display: none; padding: 20px; }
-    #portalsPage h2 { margin-bottom: 20px; font-size: 22px; font-weight: bold; }
-    .portals-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 30px;
-      justify-items: center;
-    }
-    
-    /* ✅ Mobile adjustments */
+    /* Toggle button for mobile */
     .menu-toggle {
       display: none;
       position: fixed;
-      top: 5px;
-      left: 5px;
+      top: 10px;
+      left: 10px;
       background: orangered;
-      color: #fff;
+      color: white;
       border: none;
       font-size: 22px;
       border-radius: 6px;
-      padding: 6px 14px;
+      padding: 6px 12px;
+      z-index: 1101;
       cursor: pointer;
-      z-index: 1100;
     }
 
     @media (max-width: 768px) {
       .sidebar {
-        position: fixed;
-        height: 100%;
         transform: translateX(-100%);
+        width: 75%;
       }
       .sidebar.active {
         transform: translateX(0);
       }
+      .main {
+        margin-left: 0;
+      }
       .menu-toggle {
         display: block;
-      }
-      iframe {
-        width: 100%;
-        margin: 0;
-        border-radius: 0;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar" id="sidebar">
+  <button class="menu-toggle" id="menuToggle">☰</button>
+
+  <aside class="sidebar" id="sidebar">
     <div>
-      <h2 class="logo-box"><img src="fcic logo.png" alt="Logo"></h2>
-      <a onclick="showPage('dashboard')">Home</a>
+      <div class="logo-box">
+        <img src="fcic logo.png" alt="Logo">
+      </div>
+      <a onclick="showPage('dashboard')">Dashboard</a>
       <a onclick="showPage('leave')">Leave</a>
       <a onclick="showPage('overtime')">Overtime</a>
-      <a onclick="showPage('advances')">Advances</a>
-      <a onclick="showPage('inventory')">Inventory</a>      
+      <a onclick="showPage('inventory')">Inventory</a>
     </div>
-
     <button class="logout-btn" onclick="logout()">Logout</button>
-  </div>
+  </aside>
 
-  <!-- Main content -->
   <div class="main">
-    <!-- ✅ Mobile Menu Toggle Button -->
-    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-
     <iframe id="mainFrame" src="dashboard.html"></iframe>
-
-    <div id="portalsPage">
-      <h2>Portals</h2>
-      <div class="portals-grid" id="portalsGrid"></div>
-    </div>
   </div>
 
   <script>
-    function toggleMenu(id) {
-      const menu = document.getElementById(id);
-      const isOpen = menu.style.display === "flex";
-      document.querySelectorAll(".submenu").forEach(sm => sm.style.display = "none");
-      document.querySelectorAll(".expandable").forEach(exp => exp.textContent = exp.textContent.replace("▾", "▸"));
-      if (!isOpen) {
-        menu.style.display = "flex";
-        event.target.textContent = event.target.textContent.replace("▸", "▾");
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menuToggle');
+    let autoHideTimer;
+
+    // Toggle sidebar (for mobile)
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('active');
+      if (sidebar.classList.contains('active')) startAutoHide();
+      else clearTimeout(autoHideTimer);
+    });
+
+    // Auto-hide sidebar after 3 seconds (mobile only)
+    function startAutoHide() {
+      clearTimeout(autoHideTimer);
+      if (window.innerWidth <= 768) {
+        autoHideTimer = setTimeout(() => {
+          sidebar.classList.remove('active');
+        }, 3000);
       }
     }
 
+    // Reset timer when sidebar is interacted with
+    sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
+    sidebar.addEventListener('mouseleave', startAutoHide);
+
+    // Also reset timer on link clicks (mobile)
+    sidebar.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) sidebar.classList.remove('active');
+      });
+    });
+
+    // Page loading
     function showPage(page) {
       const iframe = document.getElementById("mainFrame");
-      const portals = document.getElementById("portalsPage");
-      iframe.style.display = "none";
-      portals.style.display = "none";
-
-      if (page === "portals") {
-        portals.style.display = "block";
-        loadPortals();
-      } else {
-        iframe.style.display = "block";
-        const pages = {
-          dashboard: "dashboard.html",
-          employees: "Admin Employee.html",
-          attendance: "HR_Attendance.html",
-          payroll: "HR_Payroll.html",
-          reports: "Reports.html",
-          inventoryOverview: "FCIC Inventory.html",
-          inventoryList: "Inventory List.html",
-          requests: "Requests.html",
-        };
-        iframe.src = pages[page];
-      }
-
-      // Hide sidebar on mobile when navigating
-      if (window.innerWidth <= 768) {
-        document.getElementById('sidebar').classList.remove('active');
-      }
+      iframe.src = page + ".html";
     }
-   
+
+    // Dummy logout
     function logout() {
-      localStorage.clear();
-      window.location.href = '/';
-    }
-
-    // ✅ Sidebar Toggle (Mobile)
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
+      alert("Logged out");
     }
   </script>
 </body>
