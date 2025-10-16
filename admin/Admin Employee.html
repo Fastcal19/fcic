@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employees — Fast Cal Industrial Corp</title>
+  <style>
+    :root{--accent:#F4A460}
+    body {
+      margin:0;
+      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size:13px;
+      background:#FAEBD7;
+      color:#111;
+    }
+    .container{padding:18px}
+    h2{margin:0 0 12px 0}
+
+    .table-container {
+      height:calc(100vh - 120px);
+      overflow:auto;
+      border:1px solid #ccc;
+      border-radius:8px;
+      background:#fff;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    #employeesTable tbody tr:nth-child(odd){background:#f9f9f9}
+    #employeesTable tbody tr:nth-child(even){background:#fff}
+    #employeesTable tbody tr:hover{background:#ffe4b5}
+
+    #employeesTable tbody tr:hover td:nth-child(1),
+    #employeesTable tbody tr:hover td:nth-child(2),
+    #employeesTable tbody tr:hover td:nth-child(3) {
+      background:#ffe4b5;
+    }
+
+    table {
+      border-collapse:collapse;
+      table-layout:auto;
+      width:100%;
+      background:#fff;
+    }
+    th,td {
+      border:2px solid #ddd;
+      padding:8px;
+      word-wrap:break-word;
+      white-space:nowrap;
+    }
+
+    thead th {
+      position:sticky;
+      top:0;
+      background:linear-gradient(1deg,#FFA500,#FFD700);
+      text-align:center;
+      font-weight:700;
+      z-index:5;
+    }
+
+    /* Frozen columns */
+    th:nth-child(1){width:30px;text-align:center; position:sticky;top:0; left:0;background:linear-gradient(1deg,#FFA500,#FFD700);z-index:8; border-right: 2px solid #ccc;}
+    td:nth-child(1){width:30px;text-align:center;position:sticky;left:0;background:#fff;z-index:6; border-right: 2px solid #ccc;}
+
+    th:nth-child(2){width:40px;text-align:center; position:sticky;top:0; left:20px;background:linear-gradient(1deg,#FFA500,#FFD700);z-index:8; border-right: 2px solid #ccc;}
+    td:nth-child(2){width:40px;text-align:center; position:sticky;left:20px;background:#fff;z-index:6; border-right: 2px solid #ccc;}
+
+    th:nth-child(3){width:180px;text-align:center; position:sticky;top:0; left:55px; background:linear-gradient(1deg,#FFA500,#FFD700);z-index:8; border-right: 2px solid #ccc;}
+    td:nth-child(3){ min-width:180px;text-align:left; position:sticky;left:55px;background:#fff;z-index:6 }
+
+    thead th:nth-child(1),
+    thead th:nth-child(2),
+    thead th:nth-child(3){z-index:7}
+
+    th,td{text-align:center}
+    td:nth-child(3){text-align:left}
+    td:nth-child(15){text-align:right}
+
+    a.emp-link{color:#0b63c6;text-decoration:none;font-weight:600}
+    a.emp-link:hover{text-decoration:underline}
+
+    /* --- Modal --- */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:1000}
+    .modal.open{display:flex}
+
+    /* Modal content is horizontal: left (scrollable) + right (fixed photo) */
+    .modal-content{
+      background:#fff;
+      padding:18px;
+      border-radius:8px;
+      width:880px;
+      max-width:96%;
+      max-height:90vh;          
+      display:flex;
+      gap:18px;
+      position:relative;
+      box-sizing:border-box;
+    }
+
+    /* left area (details) scrolls independently */
+    .modal-left {
+      flex:1;
+      overflow:auto;
+      max-height: calc(90vh - 36px); 
+      padding-right: 4px;
+      box-sizing:border-box;
+    }
+
+    /* right area (photo) is fixed width */
+    .modal-right {
+      width:370px;
+      flex-shrink:0;
+      display:flex;
+      align-items:flex-start;
+    }
+
+    .details-section { margin-bottom: 18px; }
+    .details-section h3 {
+      margin-bottom: 10px;
+      font-size: 16px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 6px;
+    }
+
+    /* Two-column rows */
+    .detail-row {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    /* label column: fixed width + right aligned so values line up */
+    .detail-label {
+      width: 120px;
+      font-weight: 700;
+      flex-shrink: 0;
+      text-align: left
+      padding-right: 12px;
+      box-sizing: border-box;
+    }
+    .detail-value {
+      flex: 1;
+      word-wrap: break-word;
+      white-space: normal; /* allow wrapping */
+      text-align: left;
+    }
+
+
+    .photo-card {
+      background:#fafafa;
+      border:1px solid #ddd;
+      border-radius:10px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    }
+    .photo-card img{
+      width:350px;
+      height:350px;
+      object-fit:cover;
+      border-radius:8px;
+    }
+    .photo-card span{
+      margin-top:8px;
+      font-size:12px;
+      color:#444;
+    }
+
+    .section{margin-bottom:12px}
+    .section-title{font-weight:700;margin-bottom:6px}
+    .section strong{display:inline-block;width:140px}
+
+    #checklistModal .modal-content{flex-direction:column;max-width:500px}
+    #columnChecklist label{display:block;margin:5px 0}
+
+    @media(max-width:640px){
+      .modal-content{flex-direction:column}
+      .photo-card img{width:100%;height:auto}
+      table{min-width:600px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="employeesPage">
+    <div class="header-container">
+      <h2>Employees</h2>
+      <button onclick="openChecklistModal()" style="margin-bottom:10px;">⚙️ Column Settings</button>
+    </div>
+
+    <div class="table-container">
+      <table id="employeesTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>EN</th>
+            <th>EMPLOYEE NAME</th>
+            <th>MARITAL STATUS</th>
+            <th>BIRTHDATE</th>
+            <th>AGE</th>
+            <th>GENDER</th>
+            <th>ADDRESS</th>
+            <th>CONTACT NUMBER</th>
+            <th>EMAIL ADDRESS</th>
+            <th>TIN</th>
+            <th>SSS</th>
+            <th>PHILHEALTH</th>
+            <th>PAG-IBIG</th>
+            <th>DATE HIRED</th>
+            <th>DESIGNATION</th>
+            <th>SALARY</th>
+            <th>CONTACT NAME</th>
+            <th>CONTACT NUMBER</th>
+            <th>ADDRESS</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Employee Modal -->
+    <div id="employeeModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-left">
+          <h3>Employee Details</h3>
+          <div id="basicDetails" class="section"></div>
+          <div class="section"><div class="section-title">Employment Details</div><div id="employmentDetails"></div></div>
+          <div class="section"><div class="section-title">Emergency Contact</div><div id="emergencyContact"></div></div>
+        </div>
+        <div class="modal-right">
+          <div class="photo-card">
+            <img id="employeePhoto" src="employee1.jpg" alt="Employee Photo">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column Settings -->
+    <div id="checklistModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeChecklistModal()">&times;</span>
+        <h3>Show / Hide Columns</h3>
+        <div id="columnChecklist"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EMPLOYEES_URL = "https://script.google.com/macros/s/AKfycbzV3fJh832S_9b_Nd4eDnH3Xdgof-dNqTJOmmkf7UbkpBTmt1PT9cgWk27JYnVr21Sg/exec?type=employees";
+    window.activeEmployees = [];
+
+    function safeNumber(val){
+      if(val===undefined||val===null) return NaN;
+      const n=Number(String(val).replace(/[,\s\u00A0]+/g,''));
+      return isNaN(n)?NaN:n;
+    }
+    function formatCurrencyPH(val){
+      const n=safeNumber(val);
+      if(isNaN(n)) return val||'';
+      return '₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+    }
+
+    async function loadEmployees(){
+      const tbody = document.querySelector('#employeesTable tbody');
+      tbody.innerHTML = '';
+      try {
+        const res = await fetch(EMPLOYEES_URL);
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="20">No data</td></tr>';
+          return;
+        }
+
+        const activeData = data.filter(emp => String((emp['STATUS']||'')).toLowerCase() === 'active');
+        if (activeData.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="20">No active employees</td></tr>';
+          return;
+        }
+
+        window.activeEmployees = activeData.map(emp => {
+          let normalized = {...emp};
+          if(emp.photo||emp.thumb){
+            normalized.photo = emp.photo||'';
+            normalized.thumb = emp.thumb||'';
+          } else if(emp.PHOTO){
+            const match = String(emp.PHOTO).match(/[-\w]{25,}/);
+            if(match){
+              normalized.photo = `https://drive.google.com/uc?export=view&id=${match[0]}`;
+              normalized.thumb = `https://drive.google.com/thumbnail?id=${match[0]}`;
+            } else {
+              normalized.photo = '';
+              normalized.thumb = '';
+            }
+          } else {
+            normalized.photo = '';
+            normalized.thumb = '';
+          }
+          return normalized;
+        });
+
+        window.activeEmployees.forEach((emp,i)=>{
+          const tr = document.createElement('tr');
+          const name = (emp['LAST NAME']||'') + (emp['FIRST NAME']? ', '+emp['FIRST NAME']:'') + (emp['MIDDLE NAME']? ', '+emp['MIDDLE NAME']:'');
+          tr.innerHTML = `
+            <td>${i+1}</td>
+            <td>${emp['EN']||''}</td>
+            <td><a class="emp-link" href="javascript:void(0)" onclick="openModal(${i})">${name||emp['EN']}</a></td>
+            <td>${emp['MARITAL STATUS']||''}</td>
+            <td>${emp['BIRTHDATE'] ? new Date(emp['BIRTHDATE']).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}) : ''}</td>
+            <td>${emp['AGE']||''}</td>
+            <td>${emp['GENDER']||''}</td>
+            <td>${emp['ADDRESS']||''}</td>
+            <td>${emp['CONTACT NUMBER']||''}</td>
+            <td>${emp['EMAIL ADDRESS']||''}</td>
+            <td>${emp['TIN']||''}</td>
+            <td>${emp['SSS']||''}</td>
+            <td>${emp['PHILHEALTH']||''}</td>
+            <td>${emp['PAG-IBIG']||''}</td>
+            <td>${emp['DATE HIRED'] ? new Date(emp['DATE HIRED']).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}) : ''}</td>
+            <td>${emp['DESIGNATION']||''}</td>
+            <td>${formatCurrencyPH(emp['SALARY'])}</td>
+            <td>${emp['E.CONTACT NAME']||''}</td>
+            <td>${emp['E.CONTACT NUMBER']||''}</td>
+            <td>${emp['E.ADDRESS']||''}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch(err){
+        console.error('Failed to load employees', err);
+        tbody.innerHTML = "<tr><td colspan='20'>Error loading data</td></tr>";
+      }
+    }
+
+    function openModal(index){
+      const emp = window.activeEmployees[index];
+      if (!emp) return;
+
+      document.getElementById('employeeModal').classList.add('open');
+
+      // --- Basic Details ---
+      const basicDetails = [
+        {label:'Employee No', value:emp['EN']||''},
+        {label:'Last Name', value:emp['LAST NAME']||''},
+        {label:'First Name', value:emp['FIRST NAME']||''},
+        {label:'Middle Name', value:emp['MIDDLE NAME']||''},
+        {label:'Marital Status', value:emp['MARITAL STATUS']||''},
+        {label:'Age', value:emp['AGE']||''},
+        {label:'Address', value:emp['ADDRESS']||''},
+        {label:'Gender', value:emp['GENDER']||''},
+        {label:'Contact', value:emp['CONTACT NUMBER']||''},
+        {label:'Email', value:emp['EMAIL ADDRESS']||''},
+        {label:'TIN', value:emp['TIN']||''},
+        {label:'SSS', value:emp['SSS']||''},
+        {label:'PhilHealth', value:emp['PHILHEALTH']||''},
+        {label:'Pag-IBIG', value:emp['PAG-IBIG']||''},
+      ];
+      document.getElementById('basicDetails').innerHTML = basicDetails.map(d =>
+        `<div class="detail-row">
+          <div class="detail-label">${d.label}:</div>
+          <div class="detail-value">${d.value}</div>
+        </div>`
+      ).join('');
+
+      // --- Employment Details ---
+      const employmentDetails = [
+        {label:'Date Hired', value: emp['DATE HIRED'] ? new Date(emp['DATE HIRED']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : ''},
+        {label:'Length of Service', value: getLengthOfService(emp['DATE HIRED'])},
+        {label:'Designation', value: emp['DESIGNATION']||''},
+        {label:'Salary', value: formatCurrencyPH(emp['SALARY'])},
+      ];
+      document.getElementById('employmentDetails').innerHTML = employmentDetails.map(d =>
+        `<div class="detail-row">
+          <div class="detail-label">${d.label}:</div>
+          <div class="detail-value">${d.value}</div>
+        </div>`
+      ).join('');
+
+      // --- Emergency Contact ---
+      const emergencyContact = [
+        {label:'Name', value: emp['E.CONTACT NAME']||''},
+        {label:'Contact No', value: emp['E.CONTACT NUMBER']||''},
+        {label:'Address', value: emp['E.ADDRESS']||''},
+      ];
+      document.getElementById('emergencyContact').innerHTML = emergencyContact.map(d =>
+        `<div class="detail-row">
+          <div class="detail-label">${d.label}:</div>
+          <div class="detail-value">${d.value}</div>
+        </div>`
+      ).join('');
+
+      // --- Employee Photo ---
+      const imgEl = document.getElementById('employeePhoto');
+      const photoUrl = emp.thumb || emp.photo || emp.PHOTO || 'employee1.jpg';
+      imgEl.src = photoUrl;
+      imgEl.onerror = function(){ this.onerror=null; this.src='employee1.jpg'; };
+    }
+
+    function getLengthOfService(dateHired){
+      if (!dateHired) return '';
+      const hired = new Date(dateHired);
+      if (isNaN(hired)) return '';
+      const today = new Date();
+      let years = today.getFullYear() - hired.getFullYear();
+      let months = today.getMonth() - hired.getMonth();
+      let days = today.getDate() - hired.getDate();
+      if(days<0){ months-=1; days+=new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
+      if(months<0){ years-=1; months+=12; }
+      let str='';
+      if(years>0) str+=years+(years===1?' year':' years');
+      if(months>0) str+=(str?', ':'')+months+(months===1?' month':' months');
+      if(!str) str='Less than a month';
+      return str;
+    }
+
+    function closeModal(){document.getElementById('employeeModal').classList.remove('open');}
+    window.onclick=function(e){
+      if(e.target===document.getElementById('employeeModal'))closeModal();
+      if(e.target===document.getElementById('checklistModal'))closeChecklistModal();
+    }
+    window.addEventListener('load',loadEmployees);
+
+    // Column Settings
+    function openChecklistModal(){buildChecklist();document.getElementById("checklistModal").classList.add("open");}
+    function closeChecklistModal(){document.getElementById("checklistModal").classList.remove("open");}
+
+    function buildChecklist() {
+      const table = document.querySelector("#employeesTable");
+      const checklistDiv = document.getElementById("columnChecklist");
+      checklistDiv.innerHTML = "";
+      if (!table) return;
+
+      const headerCells = table.querySelectorAll("thead th");
+
+      headerCells.forEach((th, index) => {
+        if(index < 3) return;
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = th.style.display !== "none";
+        checkbox.dataset.colIndex = index;
+        checkbox.addEventListener("change", (e) => {
+          const colIndex = e.target.dataset.colIndex;
+          const show = e.target.checked;
+          table.querySelectorAll("tr").forEach(row => {
+            if (row.children[colIndex]) {
+              row.children[colIndex].style.display = show ? "" : "none";
+            }
+          });
+        });
+        label.appendChild(checkbox);
+        label.append(" " + th.textContent);
+        checklistDiv.appendChild(label);
+      });
+    }
+  </script>
+</body>
+</html>
