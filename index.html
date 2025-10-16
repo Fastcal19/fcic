@@ -39,16 +39,22 @@
     }
     nav a:hover { color: #000; }
     .login-icon {
-      background: white;
-      color: #ff6f00;
-      border-radius: 50%;
-      padding: 10px 12px;
-      margin-left: 15px;
-      font-size: 1.2rem;
-      transition: background 0.3s, color 0.3s;
-      cursor: pointer;
-    }
-    .login-icon:hover { background: #ffe0b2; color: #ff6f00; }
+  position: absolute;
+  right: 20px;  /* distance from the right edge */
+  top: 20px;    /* adjust vertically to match your header height */
+  background: white;
+  color: #ff6f00;
+  border-radius: 50%;
+  padding: 10px 12px;
+  font-size: 1.2rem;
+  transition: background 0.3s, color 0.3s;
+  cursor: pointer;
+}
+.login-icon:hover {
+  background: #ffe0b2;
+  color: #ff6f00;
+}
+
 
     .hero {
       position: relative;
@@ -199,13 +205,8 @@
   <!-- HEADER -->
   <header>
     <div class="logo-section">
-      <img src="FC.png" alt="FCIC Logo">
-    </div>
-    <nav>
-      <a href="#services">Services</a>
-      <a href="#contact">Contact</a>
+      <img src="fcic logo.png" alt="FCIC Logo">
       <i class="fas fa-user login-icon" title="Log In"></i>
-    </nav>
   </header>
 
   <!-- HERO -->
