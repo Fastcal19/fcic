@@ -3,76 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FCIC Web App</title>
+  <title>Fast Cal Industrial Corp</title>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      height: 100vh;
       display: flex;
+      height: 100vh;
+      overflow: hidden;
     }
 
     /* Sidebar */
     .sidebar {
-      width: 220px;
+      width: 200px;
       background: #FF8C00;
-      color: #000;
+      color: black;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 20px;
+      transition: transform 0.3s ease-in-out;
+      z-index: 1000;
       position: fixed;
       left: 0;
       top: 0;
       height: 100vh;
-      overflow-y: auto;
+      padding: 20px;
+      overflow-y: auto;           /* ✅ Enables vertical scroll */
       scrollbar-width: thin;
       scrollbar-color: #333 #FFB347;
-      transition: transform 0.3s ease-in-out;
-      z-index: 1000;
     }
 
-    .sidebar::-webkit-scrollbar { width: 6px; }
-    .sidebar::-webkit-scrollbar-track { background: #FFD580; }
-    .sidebar::-webkit-scrollbar-thumb { background-color: #333; border-radius: 3px; }
+    /* ✅ Scrollbar styling for Chrome/Edge */
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+      background: #FFD580;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background-color: #333;
+      border-radius: 3px;
+    }
 
-    /* Mobile hidden state */
+    /* ✅ Hidden by default (auto-hide) */
     .sidebar.hidden {
       transform: translateX(-100%);
     }
 
-    .logo-box {
-      width: 160px;
-      height: 160px;
-      background: #fff;
-      margin: 0 auto 20px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-    .logo-box img {
-      width: 90%;
-      height: 90%;
-      border-radius: 50%;
-      object-fit: cover;
+    /* Hover area to trigger sidebar */
+    #hoverZone {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 10px;
+      height: 100vh;
+      z-index: 999;
     }
 
+    .sidebar h2 { margin: 0 0 20px; text-align: center; }
     .sidebar a {
-      color: #000;
+      color: black;
       text-decoration: none;
       padding: 10px;
-      display: block;
-      border-radius: 6px;
-      font-weight: bold;
       margin: 5px 0;
+      border-radius: 6px;
+      display: block;
+      font-weight: bold;
+      cursor: pointer;
     }
-    .sidebar a:hover {
-      background: #FFD580;
-    }
+    .sidebar a:hover { background: #FFD580; }
 
+    .submenu { display: none; flex-direction: column; margin-left: 15px; }
+    .submenu a { font-weight: normal; font-size: 14px; padding: 8px; margin: 3px 0; }
+    .expandable { cursor: pointer; }
+
+    /* Logout button */
     .logout-btn {
+      margin-top: 10px;
       background: #333;
       color: #fff;
       border: none;
@@ -80,124 +87,204 @@
       padding: 10px;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 10px;
+      transition: 0.2s;
     }
+    .logout-btn:hover { background: #555; }
 
     /* Main content */
     .main {
       flex: 1;
-      background: #ccc;
-      margin-left: 220px;
+      background: gray;
       display: flex;
       flex-direction: column;
-      transition: margin-left 0.3s ease;
       overflow: auto;
+      position: relative;
+      margin-left: 200px;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* When sidebar hidden */
+    .main.full {
+      margin-left: 0;
     }
 
     iframe {
       flex: 1;
-      border: none;
-      border-radius: 10px;
+      width: calc(100% - 40px);
       margin: 20px;
+      border-radius: 10px;
       background: linear-gradient(180deg, gold, orangered);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border: none;
     }
 
-    /* Toggle button for mobile */
+    /* Logo */
+    .logo-box {
+      width: 200px;
+      height: 200px;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .logo-box img { width: 95%; height: 95%; object-fit: fill; border-radius: 10px; }
+
+    /* Portals Page */
+    #portalsPage { display: none; padding: 20px; }
+    #portalsPage h2 { margin-bottom: 20px; font-size: 22px; font-weight: bold; }
+    .portals-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 30px;
+      justify-items: center;
+    }
+
+    /* ✅ Mobile adjustments */
     .menu-toggle {
       display: none;
       position: fixed;
-      top: 10px;
-      left: 10px;
+      top: 5px;
+      left: 5px;
       background: orangered;
-      color: white;
+      color: #fff;
       border: none;
       font-size: 22px;
       border-radius: 6px;
-      padding: 6px 12px;
-      z-index: 1101;
+      padding: 6px 14px;
       cursor: pointer;
+      z-index: 1100;
     }
 
     @media (max-width: 768px) {
       .sidebar {
+        position: fixed;
+        height: 100%;
         transform: translateX(-100%);
-        width: 75%;
       }
       .sidebar.active {
         transform: translateX(0);
       }
-      .main {
-        margin-left: 0;
-      }
       .menu-toggle {
         display: block;
+      }
+      iframe {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+      }
+      .main {
+        margin-left: 0;
       }
     }
   </style>
 </head>
 <body>
-  <button class="menu-toggle" id="menuToggle">☰</button>
+  <!-- Hover trigger zone for auto-show -->
+  <div id="hoverZone"></div>
 
-  <aside class="sidebar" id="sidebar">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
     <div>
-      <div class="logo-box">
-        <img src="fcic logo.png" alt="Logo">
-      </div>
-      <a onclick="showPage('dashboard')">Dashboard</a>
+      <h2 class="logo-box"><img src="fcic logo.png" alt="Logo"></h2>
+      <a onclick="showPage('dashboard')">Home</a>
       <a onclick="showPage('leave')">Leave</a>
       <a onclick="showPage('overtime')">Overtime</a>
-      <a onclick="showPage('inventory')">Inventory</a>
+      <a onclick="showPage('advances')">Advances</a>
+      <a onclick="showPage('inventory')">Inventory</a>      
     </div>
     <button class="logout-btn" onclick="logout()">Logout</button>
-  </aside>
+  </div>
 
-  <div class="main">
+  <!-- Main content -->
+  <div class="main" id="mainContent">
+    <!-- ✅ Mobile Menu Toggle Button -->
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
     <iframe id="mainFrame" src="dashboard.html"></iframe>
+
+    <div id="portalsPage">
+      <h2>Portals</h2>
+      <div class="portals-grid" id="portalsGrid"></div>
+    </div>
   </div>
 
   <script>
-    const sidebar = document.getElementById('sidebar');
-    const menuToggle = document.getElementById('menuToggle');
-    let autoHideTimer;
-
-    // Toggle sidebar (for mobile)
-    menuToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('active');
-      if (sidebar.classList.contains('active')) startAutoHide();
-      else clearTimeout(autoHideTimer);
-    });
-
-    // Auto-hide sidebar after 3 seconds (mobile only)
-    function startAutoHide() {
-      clearTimeout(autoHideTimer);
-      if (window.innerWidth <= 768) {
-        autoHideTimer = setTimeout(() => {
-          sidebar.classList.remove('active');
-        }, 3000);
+    function toggleMenu(id) {
+      const menu = document.getElementById(id);
+      const isOpen = menu.style.display === "flex";
+      document.querySelectorAll(".submenu").forEach(sm => sm.style.display = "none");
+      document.querySelectorAll(".expandable").forEach(exp => exp.textContent = exp.textContent.replace("▾", "▸"));
+      if (!isOpen) {
+        menu.style.display = "flex";
+        event.target.textContent = event.target.textContent.replace("▸", "▾");
       }
     }
 
-    // Reset timer when sidebar is interacted with
-    sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
-    sidebar.addEventListener('mouseleave', startAutoHide);
-
-    // Also reset timer on link clicks (mobile)
-    sidebar.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) sidebar.classList.remove('active');
-      });
-    });
-
-    // Page loading
     function showPage(page) {
       const iframe = document.getElementById("mainFrame");
-      iframe.src = page + ".html";
+      const portals = document.getElementById("portalsPage");
+      iframe.style.display = "none";
+      portals.style.display = "none";
+
+      if (page === "portals") {
+        portals.style.display = "block";
+        loadPortals();
+      } else {
+        iframe.style.display = "block";
+        const pages = {
+          dashboard: "dashboard.html",
+          employees: "Admin Employee.html",
+          attendance: "HR_Attendance.html",
+          payroll: "HR_Payroll.html",
+          reports: "Reports.html",
+          inventoryOverview: "FCIC Inventory.html",
+          inventoryList: "Inventory List.html",
+          requests: "Requests.html",
+        };
+        iframe.src = pages[page];
+      }
+
+      if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.remove('active');
+      }
+    }
+   
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/';
     }
 
-    // Dummy logout
-    function logout() {
-      alert("Logged out");
+    // ✅ Sidebar Toggle (Mobile)
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
     }
+
+    // ✅ Auto-hide Sidebar for Desktop
+    const sidebar = document.getElementById('sidebar');
+    const main = document.getElementById('mainContent');
+    const hoverZone = document.getElementById('hoverZone');
+    let hideTimeout;
+
+    function startAutoHideTimer() {
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        sidebar.classList.add('hidden');
+        main.classList.add('full');
+      }, 3000); // Auto-hide after 3 seconds
+    }
+
+    hoverZone.addEventListener('mouseenter', () => {
+      sidebar.classList.remove('hidden');
+      main.classList.remove('full');
+    });
+
+    sidebar.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+    sidebar.addEventListener('mouseleave', startAutoHideTimer);
+
+    // Start timer when page loads
+    if (window.innerWidth > 768) startAutoHideTimer();
   </script>
 </body>
 </html>
