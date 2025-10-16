@@ -327,9 +327,9 @@
         status.textContent = "✅ Welcome, " + response.name;
         setTimeout(() => {
           modal.style.display = 'none';
-          if (response.role === "Admin") location.href = "admin.html";
-          else if (response.role === "Purchaser") location.href = "purchaser.html";
-          else location.href = "staff.html";
+          if (response.role === "Admin") location.href = "/admin/";
+          else if (response.role === "Purchaser") location.href = "/purchaser/";
+          else location.href = "/staff/";
         }, 1000);
       } else {
         status.style.color = "red";
