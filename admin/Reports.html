@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>REPORTS</title>
+  <style>
+    html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
+    body { display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+    h2 { margin-top: 0; }
+    .tab { overflow: hidden; border-bottom: 2px solid #ccc; margin-bottom: 10px; }
+    .tab button { background-color: #f1f1f1; border: none; outline: none; cursor: pointer; padding: 10px 16px; transition: background-color 0.3s; font-size: 16px; }
+    .tab button:hover { background-color: #ddd; }
+    .tab button.active { background-color: #fff; border-bottom: 2px solid #007BFF; font-weight: bold; }
+    .tabcontent { display: none; padding: 16px; border: 1px solid #ccc; border-top: none; height: calc(100vh - 200px); overflow: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+    th, td { border: 1px solid #ccc; padding: 8px; word-wrap: break-word; }
+    th { background-color: #f1f1f1; text-align: center; }
+    td { text-align: left; }
+    .filters { margin-bottom: 10px; }
+
+    /* Sales header layout */
+    .sr-header { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .sr-filters { flex:1; display:flex; justify-content:center; gap:10px; align-items:center; }
+    .sr-total { font-weight:bold; margin-left:auto; margin-right:15px; white-space:nowrap; }
+
+    /* Projects header (right-aligned filters) */
+    .pr-header { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom: 8px; }
+    .pr-filters { display:flex; gap:10px; align-items:center; }
+
+    /* Progress bar */
+    .progress-container { background:#eee; border-radius:6px; height:22px; width:100%; position:relative; overflow:hidden; }
+    .progress-bar { background:#4caf50; height:100%; border-radius:6px; text-align:center; color:#fff; font-size:12px; line-height:22px; white-space:nowrap; display:flex; align-items:center; justify-content:center; }
+
+    /* TAB SPECIFIC WIDTHS */
+    #sr th:nth-child(1), #sr td:nth-child(1) { width: 100px; }  
+    #sr th:nth-child(2), #sr td:nth-child(2) { width: 100px; }  
+    #sr th:nth-child(3), #sr td:nth-child(3) { width: 300px; }  
+    #sr th:nth-child(4), #sr td:nth-child(4) { width: 120px; }  
+    #sr th:nth-child(5), #sr td:nth-child(5) { width: auto; }   
+    #sr th:nth-child(6), #sr td:nth-child(6) { width: 120px; }  
+
+    #ar th:nth-child(1), #ar td:nth-child(1) { width: 120px; }  
+    #ar th:nth-child(2), #ar td:nth-child(2) { width: 140px; }  
+    #ar th:nth-child(3), #ar td:nth-child(3) { width: auto; }   
+    #ar th:nth-child(4), #ar td:nth-child(4) { width: 120px; text-align: right; }  
+    #ar th:nth-child(5), #ar td:nth-child(5) { width: 250px; }  
+
+    #ap th:nth-child(1), #ap td:nth-child(1) { width: 60px; text-align: center; }   
+    #ap th:nth-child(2), #ap td:nth-child(2) { width: auto; }   
+    #ap th:nth-child(3), #ap td:nth-child(3) { width: 120px; text-align: right; }  
+    #ap th:nth-child(4), #ap td:nth-child(4) { width: 250px; }  
+
+    #pr th:nth-child(1), #pr td:nth-child(1) { width: 100px; text-align: center; }   
+    #pr th:nth-child(2), #pr td:nth-child(2) { width: 100; }   
+    #pr th:nth-child(3), #pr td:nth-child(3) { width: 120px; text-align: center; }  
+    #pr th:nth-child(4), #pr td:nth-child(4) { width: auto; }  
+    #pr th:nth-child(5), #pr td:nth-child(5) { width: 100px; }  
+    #pr th:nth-child(6), #pr td:nth-child(6) { width: 100px; }  
+    #pr th:nth-child(7), #pr td:nth-child(7) { width: 100px; }  
+    #pr th:nth-child(8), #pr td:nth-child(8) { width: 100px; }  
+
+    #pp th:nth-child(1), #pp td:nth-child(1) { width: 5%; text-align: center; }   
+    #pp th:nth-child(2), #pp td:nth-child(2) { width: 25%; }   
+    #pp th:nth-child(3), #pp td:nth-child(3) { width: 10%; text-align: center; }  
+    #pp th:nth-child(4), #pp td:nth-child(4) { width: 50%; }  
+    #pp th:nth-child(5), #pp td:nth-child(5) { width: 10%; }  
+
+    #pc th:nth-child(1), #pc td:nth-child(1) { width: 10%; text-align: center; }   
+    #pc th:nth-child(2), #pc td:nth-child(2) { width: 30%; }   
+    #pc th:nth-child(3), #pc td:nth-child(3) { width: 7%; text-align: center; }  
+    #pc th:nth-child(4), #pc td:nth-child(4) { width: 46%; }  
+    #pc th:nth-child(5), #pc td:nth-child(5) { width: 7%; }  
+
+    #apTable a { color: inherit; text-decoration: none; cursor: pointer; }
+    #apTable a:hover { text-decoration: none; color: inherit; cursor: hand; }
+
+    #apTable tbody tr:hover { background-color: #f0f8ff; cursor: hand; }
+    #prTable tbody tr.main-row:hover { background-color: #f0f8ff; cursor: pointer; }
+
+    #prTable tbody tr.details-row td { background-color: #f9f9f9; padding-left: 20px; font-style: italic; }
+    .details-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+    .details-table th, .details-table td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+    .details-table th { background-color: #e6f2ff; }
+    .details-table td.amount { text-align: right; }
+
+    .ap-header { display: flex; justify-content: space-between; align-items: center; }
+    .ap-actions { display: flex; align-items: center; gap: 10px; }
+    .ap-total { font-weight: bold; font-size: 16px; }
+    .refresh-btn { cursor: pointer; font-size: 18px; background: none; border: none; }
+    .refresh-btn:hover { color: #007BFF; }
+    .total-row { font-weight: bold; background-color: #f9f9f9; }
+
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+    .modal-content { background-color: #fff; margin: 5% auto; padding: 20px; border: 1px solid #ccc; width: 80%; max-height: 80%; overflow-y: auto; border-radius: 8px; position: relative; }
+    .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+    .close:hover { color: #000; }
+
+    #apModal table th:nth-child(1), #apModal table td:nth-child(1) { width: 120px; text-align: center; }
+    #apModal table th:nth-child(2), #apModal table td:nth-child(2) { width: auto; text-align: center; }
+    #apModal table th:nth-child(3), #apModal table td:nth-child(3),
+    #apModal table th:nth-child(4), #apModal table td:nth-child(4),
+    #apModal table th:nth-child(5), #apModal table td:nth-child(5) { width: 120px; text-align: center; }
+
+/* Project Costing table header - dark gray */
+#pcTable thead th {
+  background-color: #4a4a4a;   /* dark gray */
+  color: #ffffff;              /* white text */
+  font-weight: bold;
+  padding: 8px;
+  text-align: left;
+  border-bottom: 2px solid #2e2e2e; /* slightly darker border */
+}
+
+/* Zebra striping for Project Costing table */
+#pcTable tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;   /* light gray */
+}
+
+#pcTable tbody tr:nth-child(even) {
+  background-color: #ffffff;   /* white */
+}
+
+/* Keep your hover effect above all */
+#pcTable tbody tr:hover {
+  background-color: orange;   /* light antique white highlight */
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+    .spinner, .modal-spinner {
+      display: none;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #3498db;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      z-index: 1100;
+    }
+    .spinner { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .modal-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .pr-filters select {
+      padding: 6px 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+
+  </style>
+</head>
+<body>
+<h2>REPORTS</h2>
+
+<div class="tab">
+  <button class="tablinks" onclick="openTab(event, 'pr')" id="defaultOpen">Projects</button>
+  <button class="tablinks" onclick="openTab(event, 'pp')">Income per Project</button>
+  <button class="tablinks" onclick="openTab(event, 'sr')">Sales</button>
+  <button class="tablinks" onclick="openTab(event, 'ar')">Accounts Receivables</button>
+  <button class="tablinks" onclick="openTab(event, 'ap')">Accounts Payables</button>
+  <button class="tablinks" onclick="openTab(event, 'is')">Income Statement</button>
+  <button class="tablinks" onclick="openTab(event, 'pc')">Project Costing</button>
+</div>
+
+<!-- SALES -->
+<div id="sr" class="tabcontent">
+  <div class="sr-header">
+    <h3>Sales Report</h3>
+
+    <!-- Centered filters area -->
+    <div class="sr-filters">
+      <label for="yearFilter">Year:</label>
+      <select id="yearFilter" onchange="loadSales();loadAccountsReceivables();"></select>
+      <label for="monthFilter">Month:</label>
+      <select id="monthFilter" onchange="loadSales();loadAccountsReceivables();">
+        <option value="">All</option>
+        <option value="0">Jan</option>
+        <option value="1">Feb</option>
+        <option value="2">Mar</option>
+        <option value="3">Apr</option>
+        <option value="4">May</option>
+        <option value="5">Jun</option>
+        <option value="6">Jul</option>
+        <option value="7">Aug</option>
+        <option value="8">Sep</option>
+        <option value="9">Oct</option>
+        <option value="10">Nov</option>
+        <option value="11">Dec</option>
+      </select>
+    </div>
+
+    <!-- Total (updated by loadSales) -->
+    <div id="srTotal" class="sr-total">Total: 0.00</div>
+
+    <!-- Refresh -->
+    <div>
+      <button class="refresh-btn" onclick="loadSales()" title="Refresh">🔄</button>
+    </div>
+  </div>
+
+  <div id="spinner-sr" class="spinner"></div>
+  <table id="srTable">
+    <thead>
+      <tr>
+        <th>DATE</th>
+        <th>INVOICE</th>
+        <th>CUSTOMER</th>
+        <th>PURCHASE ORDER NO</th>
+        <th>DESCRIPTION</th>	
+        <th>AMOUNT</th>
+      </tr>
+    </thead>
+    <tbody id="srBody"></tbody>
+  </table>
+</div>
+
+
+
+<!-- ACCOUNTS RECEIVABLES -->
+<div id="ar" class="tabcontent">
+  <h3>Accounts Receivables</h3>
+  <div id="spinner-ar" class="spinner"></div>
+  <table id="arTable">
+    <thead>
+      <tr>
+        <th>DATE</th>
+        <th>INVOICE #</th>
+        <th>CUSTOMER</th>
+        <th>AMOUNT</th>
+        <th>REMARKS</th>
+      </tr>
+    </thead>
+    <tbody id="arBody"></tbody>
+  </table>
+</div>
+
+
+
+<!-- ACCOUNTS PAYABLES -->
+<div id="ap" class="tabcontent">
+  <div class="ap-header">
+    <h3>Accounts Payables</h3>
+    <div class="ap-actions">
+      <div class="ap-total">Total: 0.00</div>
+      <button class="refresh-btn" onclick="loadAccountsPayables()" title="Refresh">🔄</button>
+    </div>
+  </div>
+  <div id="spinner-ap" class="spinner"></div>
+  <table id="apTable">
+    <thead>
+      <tr>
+        <th>No.</th>
+        <th>NAME</th>
+        <th>AMOUNT</th>
+        <th>REMARKS</th>
+      </tr>
+    </thead>
+    <tbody id="apBody"></tbody>
+  </table>
+</div>
+
+
+<!-- TRANSACTIONS MODAL -->
+<div id="apModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeApModal()">&times;</span>
+    <div id="spinner-apModal" class="modal-spinner"></div>
+    <h3 id="apModalTitle"></h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Debit</th>
+          <th>Credit</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+      <tbody id="apModalBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div id="pr" class="tabcontent">
+  <!-- Header + right-aligned filters -->
+  <div class="pr-header">
+    <h3>Projects</h3>
+    <div class="pr-filters">
+      <label for="prYearFilter">Year:</label>
+      <select id="prYearFilter" onchange="loadProjects()"></select>
+      <label for="prStatusFilter">Status:</label>
+      <select id="prStatusFilter" onchange="loadProjects()">
+        <option value="">All</option>
+        <option value="completed">Completed</option>
+        <option value="ongoing">Ongoing</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="spinner-pr" class="spinner"></div>
+  <table id="prTable">
+    <thead>
+      <tr>
+        <th>DATE</th>
+        <th>CUSTOMER</th>
+        <th>REFERENCE</th>
+        <th>DESCRIPTION</th>
+        <th>AMOUNT</th>
+        <th>INVOICED</th>
+        <th>FOR INVOICE</th>
+        <th>PROGRESS</th>
+      </tr>
+    </thead>
+    <tbody id="prBody"></tbody>
+  </table>
+ </div>
+</div>
+
+<!-- PROFIT PER PROJECT -->
+<div id="pp" class="tabcontent">
+  <!-- Header + right-aligned filters -->
+  <div class="pp-header">
+    <h3>Profit per Project</h3>
+    <div id="spinner-pr" class="spinner"></div>
+  <table id="prTable">
+    <thead>
+      <tr>
+        <th>DATE</th>
+        <th>CUSTOMER</th>
+        <th>REFERENCE</th>
+        <th>DESCRIPTION</th>
+        <th>AMOUNT</th>
+      </tr>
+    </thead>
+    <tbody id="prBody"></tbody>
+  </table>
+ </div>
+</div>
+
+<!-- PROJECT COSTING -->
+<div id="pc" class="tabcontent">
+  <div class="pr-header">
+    <h3>Project Costing</h3>
+    <div class="pr-filters">
+      <select id="pcCustomerDropdown" onchange="applyPCFilters()"><option value="">All Customers</option></select>
+      <select id="pcYearDropdown" onchange="applyPCFilters()"><option value="">All Years</option></select>
+      <select id="pcStatusDropdown" onchange="applyPCFilters()"><option value="">All Status</option></select>
+      <div id="spinner-pc" class="spinner"></div>
+    </div>
+  </div>
+  <table id="pcTable">
+    <thead>
+      <tr>
+        <th>PROJECT NO</th>
+        <th>CUSTOMER</th>
+        <th>REF</th>
+        <th>DESCRIPTION</th>
+        <th>STATUS</th>
+      </tr>
+    </thead>
+    <tbody id="pcBody"></tbody>
+  </table>
+</div>
+
+<script>
+function populatePCDropdowns() {
+  const table = document.getElementById("pcTable");
+  const tr = table.getElementsByTagName("tr");
+  const customerSet = new Set(), yearSet = new Set(), statusSet = new Set();
+  for (let i = 1; i < tr.length; i++) {
+    const tds = tr[i].getElementsByTagName("td");
+    if (tds.length >= 5) {
+      const projectNo = tds[0].textContent.trim();
+      const customer = tds[1].textContent.trim();
+      const status = tds[4].textContent.trim();
+      if (customer) customerSet.add(customer);
+      const yearMatch = projectNo.match(/\b(20\d{2})\b/);
+      if (yearMatch) yearSet.add(yearMatch[1]);
+      if (status) statusSet.add(status);
+    }
+  }
+  function fillDropdown(id, values, label) {
+    const dd = document.getElementById(id);
+    dd.innerHTML = `<option value="">All ${label}</option>`;
+    [...values].sort().forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v; opt.textContent = v; dd.appendChild(opt);
+    });
+  }
+  fillDropdown("pcCustomerDropdown", customerSet, "Customers");
+  fillDropdown("pcYearDropdown", yearSet, "Years");
+  fillDropdown("pcStatusDropdown", statusSet, "Status");
+}
+function applyPCFilters() {
+  const cust = document.getElementById("pcCustomerDropdown").value.toUpperCase();
+  const year = document.getElementById("pcYearDropdown").value;
+  const stat = document.getElementById("pcStatusDropdown").value.toUpperCase();
+  const table = document.getElementById("pcTable");
+  const tr = table.getElementsByTagName("tr");
+  for (let i = 1; i < tr.length; i++) {
+    const tds = tr[i].getElementsByTagName("td");
+    if (tds.length >= 5) {
+      const projectNo = tds[0].textContent || "";
+      const customer = tds[1].textContent || "";
+      const status = tds[4].textContent || "";
+      const matchCustomer = !cust || customer.toUpperCase() === cust;
+      const matchYear = !year || projectNo.includes(year);
+      const matchStatus = !stat || status.toUpperCase() === stat;
+      tr[i].style.display = (matchCustomer && matchYear && matchStatus) ? "" : "none";
+    }
+  }
+}
+document.addEventListener("DOMContentLoaded", populatePCDropdowns);
+</script>
+
+<script>
+function openTab(evt, tabName) {
+  const tabcontent = document.getElementsByClassName("tabcontent");
+  for (let i = 0; i < tabcontent.length; i++) tabcontent[i].style.display = "none";
+  const tablinks = document.getElementsByClassName("tablinks");
+  for (let i = 0; i < tablinks.length; i++) tablinks[i].className = tablinks[i].className.replace(" active", "");
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.className += " active";
+
+  // ✅ Only load data for the opened tab
+  if (tabName === "sr") loadSales();
+  if (tabName === "ar") loadAccountsReceivables();
+  if (tabName === "ap") loadAccountsPayables();
+  if (tabName === "is") IS.html();
+  if (tabName === "pr") loadProjects();
+  if (tabName === "pc") loadProjectCosting();
+}
+
+// === TWO WEB APP URLS ===
+const webAppSales = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
+const webAppPayables = "https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec";
+const webAppProjectCosting = "https://script.google.com/macros/s/AKfycbz24uBOWfrTUTRkXJbt8Sw6qSrssnK_yhAJDLhyJanZY6xiWGyeOPGUG8LxxUlIAiYAIw/exec"; // deploy URL
+
+// Format date helper
+function formatDate(val) {
+  if (!val) return "";
+  const d = new Date(val);
+  if (isNaN(d)) return val;
+  return `${d.getDate()}-${d.toLocaleString("en-US",{month:"short"})}-${d.getFullYear()}`;
+}
+
+// Populate Year filter (original sales/year filter)
+function populateYearFilter() {
+  const yearSelect = document.getElementById("yearFilter");
+  const currentYear = new Date().getFullYear();
+  yearSelect.innerHTML = '<option value="">All</option>';
+  for (let y = currentYear; y >= currentYear - 5; y--) {
+    yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+  yearSelect.value = currentYear; // default
+}
+
+// New: populate Projects year filter (keeps other code untouched)
+function populatePrYearFilter() {
+  const yearSelect = document.getElementById("prYearFilter");
+  const currentYear = new Date().getFullYear();
+  yearSelect.innerHTML = '<option value="">All</option>';
+  for (let y = currentYear; y >= currentYear - 5; y--) {
+    yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+  yearSelect.value = currentYear; // default
+}
+
+// === Load Sales ===
+async function loadSales(silent = false) {
+  const spinner = document.getElementById("spinner-sr");
+  if (!silent) spinner.style.display = "block";
+  try {
+    const res = await fetch(webAppSales + "?sheet=sales");
+    const data = await res.json();
+    const tbody = document.getElementById("srBody");
+    tbody.innerHTML = "";
+    let grandTotal = 0;
+
+    const yearFilter = document.getElementById("yearFilter").value;
+    const monthFilter = document.getElementById("monthFilter").value;
+
+    const filteredRows = data.filter(row => {
+      const status = (row.STATUS || "").toString().trim().toUpperCase();
+      if (status === "" || status === "CANCELLED") return false;
+      const d = new Date(row.DATE);
+      if (isNaN(d)) return false;
+      if (yearFilter && d.getFullYear().toString() !== yearFilter) return false;
+      if (monthFilter !== "" && d.getMonth().toString() !== monthFilter) return false;
+      return true;
+    });
+
+    const grouped = {};
+    filteredRows.forEach(row => {
+      const invoice = row.INVOICE || "NO-INVOICE";
+      if (!grouped[invoice]) {
+        grouped[invoice] = { DATE: row.DATE, INVOICE: invoice, CUSTOMER: row.CUSTOMER || "", PO: row.PO || "", DESCRIPTIONS: [], TOTAL_AMOUNT: 0 };
+      }
+      if (row.DESCRIPTION) grouped[invoice].DESCRIPTIONS.push(row.DESCRIPTION);
+      grouped[invoice].TOTAL_AMOUNT += parseFloat(row.AMOUNT) || 0;
+    });
+
+    const sorted = Object.values(grouped).sort((a,b)=>new Date(b.DATE)-new Date(a.DATE));
+
+    sorted.forEach(item => {
+      grandTotal += item.TOTAL_AMOUNT;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="text-align:left">${formatDate(item.DATE)}</td>
+        <td style="text-align:center">${item.INVOICE}</td>
+        <td>${item.CUSTOMER}</td>
+        <td style="text-align:center">${item.PO}</td>
+        <td>${item.DESCRIPTIONS.join(", ")}</td>
+        <td style="text-align:right">${item.TOTAL_AMOUNT.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const trTotal = document.createElement("tr");
+    trTotal.classList.add("total-row");
+    trTotal.innerHTML = `<td colspan="5" style="text-align:right">TOTAL</td><td style="text-align:right">${grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>`;
+    tbody.appendChild(trTotal);
+
+    // <-- update the header total display
+    const srTotalEl = document.getElementById('srTotal');
+    if (srTotalEl) {
+      srTotalEl.textContent = "Total: " + grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    }
+
+  } catch (err) {
+    console.error("Error loading Sales:", err);
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+// === Load Accounts Receivables ===
+async function loadAccountsReceivables() {
+  const spinner = document.getElementById("spinner-ar");
+  spinner.style.display = "block";
+  try {
+    const res = await fetch(webAppSales + "?sheet=sales");
+    const data = await res.json();
+    const tbody = document.getElementById("arBody");
+    tbody.innerHTML = "";
+    let grandTotal = 0;
+
+    const yearFilter = document.getElementById("yearFilter").value;
+    const monthFilter = document.getElementById("monthFilter").value;
+
+    // ✅ Show only PENDING
+    const arRows = data.filter(row => {
+      const status = (row.STATUS || "").toString().trim().toUpperCase();
+      if (status !== "PENDING") return false;
+      const d = new Date(row.DATE);
+      if (isNaN(d)) return false;
+      if (yearFilter && d.getFullYear().toString() !== yearFilter) return false;
+      if (monthFilter !== "" && d.getMonth().toString() !== monthFilter) return false;
+      return true;
+    });
+
+    const grouped = {};
+    arRows.forEach(row => {
+      const invoice = row.INVOICE || "NO-INVOICE";
+      if (!grouped[invoice]) {
+        grouped[invoice] = { DATE: row.DATE, INVOICE: invoice, CUSTOMER: row.CUSTOMER || "", TOTAL_AMOUNT: 0, REMARKS: "" };
+      }
+      grouped[invoice].TOTAL_AMOUNT += parseFloat(row.AMOUNT) || 0;
+      if (row.REMARKS) grouped[invoice].REMARKS = row.REMARKS;
+    });
+
+    const sorted = Object.values(grouped).sort((a,b)=>new Date(b.DATE)-new Date(a.DATE));
+
+    sorted.forEach(item => {
+      grandTotal += item.TOTAL_AMOUNT;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="text-align:left">${formatDate(item.DATE)}</td>
+        <td style="text-align:center">${item.INVOICE}</td>
+        <td>${item.CUSTOMER}</td>
+        <td style="text-align:right">${item.TOTAL_AMOUNT.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td>${item.REMARKS}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const trTotal = document.createElement("tr");
+    trTotal.classList.add("total-row");
+    trTotal.innerHTML = `<td colspan="3" style="text-align:right">TOTAL</td>
+                         <td style="text-align:right">${grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+                         <td></td>`;
+    tbody.appendChild(trTotal);
+
+  } catch (err) {
+    console.error("Error loading AR:", err);
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+// === Load Accounts Payables ===
+async function loadAccountsPayables() {
+  const spinner = document.getElementById("spinner-ap");
+  spinner.style.display = "block";
+  try {
+    const res = await fetch(webAppPayables + "?type=summary");
+    const data = await res.json();
+    const tbody = document.getElementById("apBody");
+    tbody.innerHTML = "";
+    let grandTotal = 0;
+    let counter = 1;
+
+    // ✅ filter zero balances and sort descending
+    const filtered = data
+      .map(row => ({
+        ...row,
+        AMOUNT: parseFloat(row.AMOUNT) || 0
+      }))
+      .filter(row => row.AMOUNT > 0)
+      .sort((a, b) => b.AMOUNT - a.AMOUNT);
+
+    filtered.forEach(row => {
+      grandTotal += row.AMOUNT;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="text-align:center">${counter++}</td>
+        <td><a onclick="openApModal('${row.NAME}')">${row.NAME}</a></td>
+        <td style="text-align:right">${row.AMOUNT.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td>${row.REMARKS || ""}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const trTotal = document.createElement("tr");
+    trTotal.classList.add("total-row");
+    trTotal.innerHTML = `
+      <td colspan="2" style="text-align:right">TOTAL</td>
+      <td style="text-align:right">${grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td></td>
+    `;
+    tbody.appendChild(trTotal);
+
+    document.querySelector(".ap-total").textContent =
+      "Total: " + grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  } catch (err) {
+    console.error("Error loading AP:", err);
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+
+
+// === Load Projects with expandable details ===
+async function loadProjects() {
+  const spinner = document.getElementById("spinner-pr");
+  spinner.style.display = "block";
+  try {
+    const res = await fetch(webAppSales + "?sheet=projects");
+    const data = await res.json();
+    const tbody = document.getElementById("prBody");
+    tbody.innerHTML = "";
+
+    const yearFilter = document.getElementById("prYearFilter") ? document.getElementById("prYearFilter").value : "";
+    const statusFilter = document.getElementById("prStatusFilter") ? document.getElementById("prStatusFilter").value : "";
+
+    data.forEach(row => {
+      const amount = parseFloat(row.AMOUNT) || 0;
+      const invoiced = parseFloat(row.INVOICED) || 0;
+      const balance = amount - invoiced;
+      const progressRaw = amount ? ((invoiced / amount) * 100) : 0;
+      const progressPct = Math.round(progressRaw);
+      const progressForBar = Math.max(0, Math.min(100, progressPct)); // clamp 0-100
+
+      // Year filter
+      if (yearFilter) {
+        const d = new Date(row.DATE);
+        if (isNaN(d) || d.getFullYear().toString() !== yearFilter) return;
+      }
+
+      // Status filter
+      if (statusFilter === "completed" && progressPct < 100) return;
+      if (statusFilter === "ongoing" && progressPct >= 100) return;
+
+      // --- Main row ---
+      const mainTr = document.createElement("tr");
+      mainTr.classList.add("main-row");
+      mainTr.innerHTML = `
+        <td style="text-align:center">${formatDate(row.DATE)}</td>
+        <td>${row.CUSTOMER || ""}</td>
+        <td style="text-align:center">${row.REFERENCE || ""}</td>
+        <td>${row.DESCRIPTION || ""}</td>
+        <td style="text-align:right">${amount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td style="text-align:right">${invoiced.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td style="text-align:right">${balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td>
+          <div class="progress-container" aria-label="progress ${progressPct}%">
+            <div class="progress-bar" style="width:${progressForBar}%">${progressPct}%</div>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(mainTr);
+
+      // --- Expandable details row (hidden by default) ---
+      const detailsTr = document.createElement("tr");
+      detailsTr.classList.add("details-row");
+      detailsTr.style.display = "none";
+      detailsTr.innerHTML = `<td colspan="8">Loading...</td>`;
+      tbody.appendChild(detailsTr);
+
+      // --- Click handler to toggle details ---
+      mainTr.addEventListener("click", async () => {
+        if (detailsTr.style.display === "none") {
+          detailsTr.style.display = "table-row";
+
+          try {
+            const resInvoices = await fetch(webAppSales + "?sheet=sales");
+            const invoiceData = await resInvoices.json();
+            const po = row.REFERENCE || "";
+            const filtered = invoiceData.filter(r => (r.PO || "") === po);
+
+            if (filtered.length === 0) {
+  detailsTr.innerHTML = `<td colspan="8" style="color:gray">No invoice found for PO: ${po}</td>`;
+} else {
+  let totalAmountLessVat = 0;
+
+  const html = `
+    <table class="details-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(r => {
+          const amount = parseFloat(r.AMOUNT || 0);
+          const vat = parseFloat(r.VAT || 0);
+          const amountLessVat = amount - vat;
+          totalAmountLessVat += amountLessVat;
+          return `
+            <tr>
+              <td>${formatDate(r.DATE)}</td>
+              <td>${(r.INVOICE || "") + (r.DESCRIPTION ? " — " + r.DESCRIPTION : "")}</td>
+              <td class="amount">${amountLessVat.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+            </tr>
+          `;
+        }).join("")}
+        <tr class="total-row">
+          <td colspan="2" style="text-align:right">TOTAL</td>
+          <td class="amount">${totalAmountLessVat.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+  detailsTr.innerHTML = `<td colspan="8">${html}</td>`;
+}
+
+
+          } catch (err) {
+            console.error(err);
+            detailsTr.innerHTML = `<td colspan="8" style="color:red">Failed to load invoice data</td>`;
+          }
+        } else {
+          detailsTr.style.display = "none";
+        }
+      });
+    });
+  } catch (err) {
+    console.error("Error loading Projects:", err);
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+
+
+
+
+// === Load Project Costing ===
+async function loadProjectCosting() {
+  const spinner = document.getElementById("spinner-pc");
+  spinner.style.display = "block";
+  try {
+    // fetch - use your webAppProjectCosting variable (defined earlier in your script)
+    const res = await fetch(webAppProjectCosting + "?sheet=projectCosting");
+    if (!res.ok) {
+      console.error("ProjectCosting fetch HTTP error:", res.status, res.statusText);
+      document.getElementById("pcBody").innerHTML = `<tr><td colspan="5" style="color:red;text-align:center">Fetch error ${res.status}</td></tr>`;
+      return;
+    }
+
+    const data = await res.json();
+    console.log("project costing response:", data);
+
+    const tbody = document.getElementById("pcBody");
+    tbody.innerHTML = "";
+
+    // No data
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:gray">No project data</td></tr>`;
+      return;
+    }
+
+    // data may be: [headerArray, row1Array, row2Array,...]
+    // OR an array of objects. Normalize to rows (array-of-arrays)
+    let rows = [];
+    if (Array.isArray(data[0])) {
+      rows = data.slice(1); // skip header
+    } else if (typeof data[0] === "object") {
+      // map objects -> arrays using common keys
+      rows = data.map(r => [
+        r.PROJECTNO || r["PROJECT NO"] || r.ProjectNo || r["Project No"] || "",
+        r.CUSTOMER || "",
+        r.REFERENCE || "",
+        r.DESCRIPTION || r.DESCRIPTION || "",
+        r.STATUS || ""
+      ]);
+    } else {
+      // unknown format
+      console.error("Unexpected project costing format:", data);
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red">Unexpected data format</td></tr>`;
+      return;
+    }
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:gray">No project rows</td></tr>`;
+      return;
+    }
+
+    // render rows
+    rows.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${row[0] || ""}</td>
+        <td>${row[1] || ""}</td>
+        <td>${row[2] || ""}</td>
+        <td>${row[3] || ""}</td>
+        <td>${row[4] || ""}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // refresh dropdowns
+    populatePCDropdowns();
+
+  } catch (err) {
+    console.error("Error loading Project Costing:", err);
+    document.getElementById("pcBody").innerHTML = `<tr><td colspan="5" style="color:red;text-align:center">Error loading data</td></tr>`;
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+
+
+
+// === Modal for AP Transactions ===
+function formatAmount(val) {
+  const num = parseFloat(val) || 0;
+  return num === 0 ? "" : num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+async function openApModal(name) {
+  const modal = document.getElementById("apModal");
+  const title = document.getElementById("apModalTitle");
+  const tbody = document.getElementById("apModalBody");
+  const spinner = document.getElementById("spinner-apModal");
+
+  modal.style.display = "block";
+  title.textContent = name;
+  tbody.innerHTML = "";
+  spinner.style.display = "block";
+
+  try {
+    // 🔹 Fetch Summary (for beginning balance)
+    const summaryRes = await fetch(webAppPayables + "?type=summary");
+    const summaryData = await summaryRes.json();
+    const supplierSummary = summaryData.find(r => r.NAME === name);
+
+    // 🔹 Fetch Transactions (by supplier name)
+    const txRes = await fetch(webAppPayables + "?name=" + encodeURIComponent(name));
+    const transactions = await txRes.json();
+
+    tbody.innerHTML = "";
+
+    // --- Running balance starts from forwarded balance
+    let runningBalance = supplierSummary ? (parseFloat(supplierSummary.BEGINNING) || 0) : 0;
+
+    // 🔹 Balance Forwarded row
+    if (runningBalance > 0) {
+      const year = new Date().getFullYear();
+      const balRow = document.createElement("tr");
+      balRow.innerHTML = `
+        <td>01-Jan-${year}</td>
+        <td>Balance forwarded</td>
+        <td></td>
+        <td></td>
+        <td style="text-align:right">${runningBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      `;
+      tbody.appendChild(balRow);
+    }
+
+    // 🔹 Transaction rows with computed balance
+    if (transactions && transactions.length > 0) {
+      transactions.forEach(row => {
+        const debit = parseFloat(row.Debit) || 0;
+        const credit = parseFloat(row.Credit) || 0;
+
+        // ✅ Formula: Previous balance − Debit + Credit
+        runningBalance = runningBalance - debit + credit;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.Date ? formatDate(row.Date) : ""}</td>
+          <td>${row.Description || ""}</td>
+          <td style="text-align:right">${formatAmount(debit)}</td>
+          <td style="text-align:right">${formatAmount(credit)}</td>
+          <td style="text-align:right">${runningBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      // If no transactions found
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="5" style="text-align:center; color:gray">No transactions found</td>`;
+      tbody.appendChild(tr);
+    }
+
+  } catch (err) {
+    console.error("Error loading transactions:", err);
+    tbody.innerHTML = `<tr><td colspan="5" style="color:red;text-align:center">Failed to load data</td></tr>`;
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+
+
+
+function closeApModal(){document.getElementById("apModal").style.display="none";}
+
+function formatDate(val) {
+  if (!val) return "";
+  try {
+    const d = new Date(val);
+    if (isNaN(d)) return val;
+
+    const day = String(d.getDate()).padStart(2, '0'); // 2-digit day
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = monthNames[d.getMonth()]; // abbreviated month
+    const year = String(d.getFullYear()).slice(-2); // last 2 digits of year
+
+    return `${day}-${month}-${year}`;
+  } catch (e) {
+    return val;
+  }
+}
+
+// Example:
+console.log(formatDate("2025-09-12")); // "12-Sep-25"
+
+
+
+
+window.onload=function(){
+  populateYearFilter();
+  populatePrYearFilter(); // populate projects year filter (new)
+  document.getElementById("defaultOpen").click();
+  loadProjects();
+};
+</script>
+</body>
+</html>
