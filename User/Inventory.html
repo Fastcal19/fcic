@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 15px;
+      background: #f7f7f7;
+    }
+    .controls {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    input, select, button {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 15px;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      text-align: center;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .name {
+      font-size: 12px;
+      margin-top: 6px;
+      color: #333;
+      font-weight: bold;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+    }
+    .category, .stock {
+      font-size: 11px;
+      margin-top: 3px;
+      color: #666;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .stock {
+      color: green;
+    }
+    .stock.low {
+      color: red;
+      font-weight: bold;
+    }
+    .page-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    /* Popup modal */
+    .popup {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+    .popup-content {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      animation: popIn 0.25s ease;
+      text-align: center;
+      position: relative;
+    }
+    .popup-content img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .popup-close {
+      position: absolute;
+      top: -40px;
+      right: -10px;
+      font-size: 32px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <input type="text" id="searchBox" placeholder="Search items...">
+    <select id="categoryFilter">
+      <option value="all">All Categories</option>
+    </select>
+    <div class="page-controls">
+      <button id="prevBtn">⬅ Prev</button>
+      <span id="pageInfo"></span>
+      <button id="nextBtn">Next ➡</button>
+    </div>
+  </div>
+
+  <div id="gallery" class="grid">Loading...</div>
+
+  <!-- Popup -->
+  <div id="popup" class="popup">
+    <span class="popup-close">&times;</span>
+    <div class="popup-content" id="popupContent"></div>
+  </div>
+
+  <script>
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxKiRZFf3NvMVXAwWXl2q1vU7nSfoe3AIB-yUdGjKgzZDDRkgAkstn-2W2amzSgMLyN9A/exec";
+
+    let allItems = [];
+    let filteredItems = [];
+    let currentPage = 1;
+    const itemsPerPage = 18;
+
+    const popup = document.getElementById("popup");
+    const popupContent = document.getElementById("popupContent");
+    const popupClose = document.querySelector(".popup-close");
+
+    function renderGallery() {
+      const container = document.getElementById("gallery");
+      container.innerHTML = "";
+
+      if (!filteredItems || filteredItems.length === 0) {
+        container.innerHTML = "<p>No matching items found.</p>";
+        document.getElementById("pageInfo").textContent = "";
+        return;
+      }
+
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pageItems = filteredItems.slice(start, end);
+
+      pageItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.onclick = () => {
+          popup.style.display = "flex";
+          popupContent.innerHTML = `
+            <img src="${item.thumb}" alt="${item.name}">
+            <h3>${item.name}</h3>
+            <p><strong>Category:</strong> ${item.category}</p>
+            <p><strong>Stock:</strong> ${item.stock}</p>
+          `;
+        };
+
+        const imageEl = document.createElement("img");
+        imageEl.src = item.thumb;
+        imageEl.alt = item.name;
+
+        const nameEl = document.createElement("div");
+        nameEl.className = "name";
+        nameEl.textContent = item.name;
+
+        const categoryEl = document.createElement("div");
+        categoryEl.className = "category";
+        categoryEl.textContent = "Category: " + item.category;
+
+        const stockEl = document.createElement("div");
+        stockEl.className = "stock";
+        stockEl.textContent = "Stock: " + item.stock;
+        if (parseInt(item.stock, 10) <= 5) {
+          stockEl.classList.add("low");
+        }
+
+        card.appendChild(imageEl);
+        card.appendChild(nameEl);
+        card.appendChild(categoryEl);
+        card.appendChild(stockEl);
+        container.appendChild(card);
+      });
+
+      // Fill empty slots if less than 18 items
+      const slotsToFill = itemsPerPage - pageItems.length;
+      for (let i = 0; i < slotsToFill; i++) {
+        const emptyCard = document.createElement("div");
+        emptyCard.className = "card";
+        emptyCard.style.visibility = "hidden";
+        container.appendChild(emptyCard);
+      }
+
+      const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+      document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById("prevBtn").disabled = currentPage === 1;
+      document.getElementById("nextBtn").disabled = currentPage === totalPages;
+    }
+
+    function applyFilters() {
+      const category = document.getElementById("categoryFilter").value.toLowerCase();
+      const search = document.getElementById("searchBox").value.toLowerCase();
+
+      filteredItems = allItems.filter(item => {
+        const matchesCategory = (category === "all" || (item.category || "").toLowerCase() === category);
+        const matchesSearch = (item.name || "").toLowerCase().includes(search);
+        return matchesCategory && matchesSearch;
+      });
+
+      currentPage = 1;
+      renderGallery();
+    }
+
+    async function loadData() {
+      const res = await fetch(WEBAPP_URL);
+      allItems = await res.json();
+      filteredItems = allItems;
+
+      const categories = [...new Set(allItems.map(i => i.category).filter(c => c))];
+      const select = document.getElementById("categoryFilter");
+      categories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat.toLowerCase();
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+
+      document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+      document.getElementById("searchBox").addEventListener("input", applyFilters);
+      document.getElementById("prevBtn").addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderGallery();
+        }
+      });
+      document.getElementById("nextBtn").addEventListener("click", () => {
+        const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderGallery();
+        }
+      });
+
+      renderGallery();
+    }
+
+    // Close popup
+    popupClose.onclick = () => popup.style.display = "none";
+    popup.onclick = (e) => { if (e.target === popup) popup.style.display = "none"; };
+
+    loadData();
+  </script>
+</body>
+</html>
