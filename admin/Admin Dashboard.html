@@ -73,6 +73,204 @@
     .approval-field { margin-bottom:8px; }
     .approval-label { font-weight:700; display:block; margin-bottom:4px; }
     .small-muted { font-size:0.95em; color:#222; }
+
+    /* 📱 On mobile: show only the calendar, hide others */
+@media (max-width: 768px) {
+  body {
+    display: block;
+  }
+
+  .header,
+  .cards,
+  .notes-columns,
+  #approvalModal {
+    display: none !important;
+  }
+
+  .calendar-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+  }
+
+  .calendar {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    padding: 10px;
+    padding-bottom: env(safe-area-inset-bottom);
+
+  }
+}
+
+/* Adjust Note Modal layout */
+/* 🟠 FULLSCREEN NOTE MODAL — MOBILE SAFE VERSION */
+#noteModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 95%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#noteModal .modal-content {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  border-radius: 0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+}
+
+/* Header */
+#noteModal h3 {
+  margin: 0 0 10px 0;
+  text-align: center;
+  font-size: 1.2em;
+  background: #f97316;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+/* Text area fills screen space above buttons */
+#noteText {
+  flex: 1;
+  width: 100%;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  box-sizing: border-box;
+  resize: none;
+  outline: none;
+  margin-top: 10px;
+  overflow-y: auto;
+}
+
+/* Buttons container fixed to bottom, safe from mobile navbar */
+#noteModal .modal-footer {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  z-index: 2;
+}
+
+.save-btn, .close-btn {
+  flex: 1;
+  padding: 14px;
+  font-size: 1em;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+.save-btn { background: #228b22; }
+.close-btn { background: #b22222; }
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  #noteModal .modal-content {
+    padding: 15px 15px calc(15px + env(safe-area-inset-bottom));
+  }
+
+  #noteModal h3 {
+    font-size: 1.1em;
+    padding: 8px;
+  }
+
+  .save-btn, .close-btn {
+    font-size: 1.1em;
+    padding: 16px;
+  }
+}
+
+
+
+
+@media (max-width: 768px) {
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100dvh; /* ✅ dynamic full height */
+    overflow: hidden;
+    background: #fb923c;
+  }
+
+  .main {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* Hide desktop-only sections */
+  .header,
+  .cards,
+  .notes-columns,
+  #approvalModal {
+    display: none !important;
+  }
+
+  /* Main mobile view container */
+  .calendar-notes {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .calendar-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* ✅ Calendar itself fills safe area */
+  .calendar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: calc(100dvh - env(safe-area-inset-bottom));
+    border-radius: 0;
+    padding: 10px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom)); /* ✅ prevents overlap */
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  .calendar-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: auto repeat(6, 1fr);
+    gap: 5px;
+    min-height: 0;
+  }
+
+  .day-name {
+    font-size: 0.8em;
+  }
+}
+
+
   </style>
 </head>
 <body>
@@ -114,16 +312,18 @@
   </div>
 
   <!-- Notes Modal -->
-  <div class="modal" id="noteModal">
-    <div class="modal-content">
-      <h3 id="modalDate"></h3>
-      <textarea id="noteText" placeholder="Enter your note here..."></textarea>
-      <div>
-        <button class="save-btn" onclick="saveNote()">Save</button>
-        <button class="close-btn" onclick="closeModal()">Close</button>
-      </div>
+  <div id="noteModal" class="modal">
+  <div class="modal-content">
+    <h3>Notes</h3>
+    <h4 id="modalDate" style="text-align:center; color:#333; margin-top:-5px;"></h4>
+    <textarea id="noteText" placeholder="Enter your note..."></textarea>
+    <div class="modal-footer">
+      <button class="close-btn">Close</button>
+      <button class="save-btn">Save</button>
     </div>
   </div>
+</div>
+
 
   <!-- Approval Modal -->
   <div class="modal" id="approvalModal">
@@ -429,13 +629,16 @@
 
     monthYear.textContent = currentDate.toLocaleString("default", { month: "long" }) + " " + year;
 
-    const dayNames = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
-    dayNames.forEach(d => {
-      const dn = document.createElement("div");
-      dn.className = "day-name";
-      dn.textContent = d;
-      calendarGrid.appendChild(dn);
-    });
+    const isMobile = window.innerWidth <= 768;
+const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+dayNames.forEach(d => {
+  const dn = document.createElement("div");
+  dn.className = "day-name";
+  dn.textContent = isMobile ? d.slice(0, 3) : d.toUpperCase(); // "Sun" or "SUNDAY"
+  calendarGrid.appendChild(dn);
+});
+
+
 
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -529,6 +732,27 @@
     if (e.target === approvalModal) closeApprovalModal();
     if (e.target === noteModal) closeModal();
   });
+
+  // --- Preserve URL parameters (like ?id=123) across reloads ---
+(function preserveParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.toString()) {
+    // Store params temporarily in sessionStorage
+    sessionStorage.setItem("savedParams", params.toString());
+  } else {
+    // Restore if missing
+    const saved = sessionStorage.getItem("savedParams");
+    if (saved) {
+      const newUrl = window.location.pathname + "?" + saved;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }
+})();
+
+// Attach event listeners for Note Modal buttons
+document.querySelector("#noteModal .close-btn").addEventListener("click", closeModal);
+document.querySelector("#noteModal .save-btn").addEventListener("click", saveNote);
+
   </script>
 </body>
 </html>
