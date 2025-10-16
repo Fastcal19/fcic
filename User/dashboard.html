@@ -7,30 +7,7 @@
   <style>
     body { margin: 0; font-family: Arial, sans-serif; display:flex; height:100vh; }
     .main{ flex:1; background:#e6e7ea; padding:20px; overflow:hidden; display:flex; flex-direction:column;}
-    .header{ background:#f97316; padding:10px; border-radius:10px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;}
-    .header h1{ font-size:1.4em; margin:0;}
-    .cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:15px; margin-bottom:15px;}
-    .card{ background:#f97316; padding:10px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); text-align:center;}
-    .card h3{ margin:6px 0; font-size:1em;}
-    .card p{ margin:0; font-size:0.95em;}
-
-    .calendar-notes{ flex:1; display:flex; gap:20px; overflow:hidden;}
-    .notes-columns{ display:flex; flex-direction:column; width:25%; gap:20px; height:100%; }
-    .notes-section{ 
-      flex:1; 
-      background:#fb923c; 
-      border-radius:10px; 
-      padding:12px; 
-      box-shadow:0 2px 6px rgba(0,0,0,0.2); 
-      font-size:0.85em; 
-      display:flex; 
-      flex-direction:column; 
-      overflow:hidden;
-    }
-    .notes-section h2{ margin-top:0; text-align:center; font-size:1.1em;}
-    .notes-list{ flex:1; overflow-y:auto; margin-top:8px; }
-    .note-item{ background:#f5deb3; padding:6px; border-radius:6px; margin-bottom:6px; font-size:0.8em; cursor:pointer;}
-
+  
     .calendar-container{ flex:1; display:flex; flex-direction:column; overflow:hidden;}
     .calendar{ flex:1; background:#fb923c; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.2); padding:15px; display:flex; flex-direction:column; overflow:hidden;}
     .calendar-header{ display:flex; justify-content:center; align-items:center; margin-bottom:4px; gap:10px;}
@@ -48,6 +25,7 @@
       background: #FFC107;
       border-radius: 6px;
       display: flex;
+      padding: 10px;
       align-items: center;
       justify-content: center;
       font-size: 0.9em;
@@ -275,29 +253,6 @@
 </head>
 <body>
   <div class="main">
-    <div class="header"><h1>Dashboard</h1></div>
-
-    <div class="cards">
-      <div class="card"><h3>Cash Balance</h3><p>0.00</p></div>
-      <div class="card"><h3>Sales</h3><p>Php 0.00</p></div>
-      <div class="card"><h3>Receivables</h3><p>Php 0.00</p></div>
-      <div class="card"><h3>Payables</h3><p>Php 0.00</p></div>
-    </div>
-
-    <div class="calendar-notes">
-      <!-- Left side: two equal containers -->
-      <div class="notes-columns">
-        <div class="notes-section">
-          <h2>FOR APPROVAL</h2>
-          <div class="notes-list" id="approvalList"></div>
-        </div>
-        <div class="notes-section">
-          <h2>REMINDERS</h2>
-          <div class="notes-list" id="remindersList"></div>
-        </div>
-      </div>
-
-      <!-- Right side: calendar -->
       <div class="calendar-container">
         <div class="calendar">
           <div class="calendar-header">
