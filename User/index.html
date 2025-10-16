@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fast Cal Industrial Corp</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
 
     /* Sidebar */
     .sidebar {
@@ -16,7 +22,10 @@
       flex-direction: column;
       padding: 20px;
       justify-content: space-between;
+      transition: transform 0.3s ease-in-out;
+      z-index: 1000;
     }
+
     .sidebar h2 { margin: 0 0 20px; text-align: center; }
     .sidebar a {
       color: black;
@@ -29,13 +38,14 @@
       cursor: pointer;
     }
     .sidebar a:hover { background: #FFD580; }
+
     .submenu { display: none; flex-direction: column; margin-left: 15px; }
     .submenu a { font-weight: normal; font-size: 14px; padding: 8px; margin: 3px 0; }
     .expandable { cursor: pointer; }
 
     /* Logout button */
     .logout-btn {
-      margin-top: 20px;
+      margin-top: 10px;
       background: #333;
       color: #fff;
       border: none;
@@ -45,57 +55,109 @@
       cursor: pointer;
       transition: 0.2s;
     }
-    .logout-btn:hover {
-      background: #555;
-    }
+    .logout-btn:hover { background: #555; }
 
     /* Main content */
-    .main { flex: 1; background: gray; display: flex; flex-direction: column; overflow: auto; }
+    .main {
+      flex: 1;
+      background: gray;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+      position: relative;
+    }
+
     iframe {
       flex: 1;
       width: calc(100% - 40px);
       margin: 20px;
       border-radius: 10px;
-      background: #FFD580;
+      background: linear-gradient(180deg, gold, orangered);
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       border: none;
     }
 
+    /* Logo */
     .logo-box {
       width: 200px;
-      height: 144px;
+      height: 200px;
       background-color: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
-      border-radius: 10px;
+      border-radius: 50%;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     .logo-box img { width: 95%; height: 95%; object-fit: fill; border-radius: 10px; }
 
+    /* Portals Page */
+    #portalsPage { display: none; padding: 20px; }
+    #portalsPage h2 { margin-bottom: 20px; font-size: 22px; font-weight: bold; }
+    .portals-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 30px;
+      justify-items: center;
+    }
+    
+    /* ✅ Mobile adjustments */
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 5px;
+      left: 5px;
+      background: orangered;
+      color: #fff;
+      border: none;
+      font-size: 22px;
+      border-radius: 6px;
+      padding: 6px 14px;
+      cursor: pointer;
+      z-index: 1100;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        height: 100%;
+        transform: translateX(-100%);
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .menu-toggle {
+        display: block;
+      }
+      iframe {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+      }
+    }
   </style>
 </head>
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <div>
       <h2 class="logo-box"><img src="fcic logo.png" alt="Logo"></h2>
       <a onclick="showPage('dashboard')">Home</a>
       <a onclick="showPage('leave')">Leave</a>
-      <a onclick="showPage('advances')">Advances</a>
       <a onclick="showPage('overtime')">Overtime</a>
-      <a onclick="showPage('inventory')">Inventory</a>
+      <a onclick="showPage('advances')">Advances</a>
+      <a onclick="showPage('inventory')">Inventory</a>      
     </div>
 
-    <!-- ✅ Logout Button -->
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 
   <!-- Main content -->
   <div class="main">
+    <!-- ✅ Mobile Menu Toggle Button -->
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
     <iframe id="mainFrame" src="Admin Dashboard.html"></iframe>
 
-    <!-- Portals Page -->
     <div id="portalsPage">
       <h2>Portals</h2>
       <div class="portals-grid" id="portalsGrid"></div>
@@ -117,7 +179,6 @@
     function showPage(page) {
       const iframe = document.getElementById("mainFrame");
       const portals = document.getElementById("portalsPage");
-
       iframe.style.display = "none";
       portals.style.display = "none";
 
@@ -126,46 +187,33 @@
         loadPortals();
       } else {
         iframe.style.display = "block";
-        if (page === "dashboard") iframe.src = "Admin Dashboard.html";
-        if (page === "employees") iframe.src = "Admin Employee.html";
-        if (page === "attendance") iframe.src = "HR_Attendance.html";
-        if (page === "payroll") iframe.src = "HR_Payroll.html";
-        if (page === "reports") iframe.src = "Reports.html";
-        if (page === "inventoryOverview") iframe.src = "FCIC Inventory.html";
-        if (page === "inventoryList") iframe.src = "Inventory List.html";
-        if (page === "requests") iframe.src = "Requests.html";
+        const pages = {
+          dashboard: "Admin Dashboard.html",
+          employees: "Admin Employee.html",
+          attendance: "HR_Attendance.html",
+          payroll: "HR_Payroll.html",
+          reports: "Reports.html",
+          inventoryOverview: "FCIC Inventory.html",
+          inventoryList: "Inventory List.html",
+          requests: "Requests.html",
+        };
+        iframe.src = pages[page];
+      }
+
+      // Hide sidebar on mobile when navigating
+      if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.remove('active');
       }
     }
-
-    // ---------------- Portals dynamic fetch ----------------
-    const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
-
-    async function loadPortals() {
-      try {
-        const res = await fetch(PORTALS_URL);
-        const portals = await res.json();
-        const grid = document.getElementById("portalsGrid");
-        grid.innerHTML = "";
-
-        portals.forEach(p => {
-          const card = document.createElement("div");
-          card.className = "portal-card";
-          card.onclick = () => window.open(p.url, "_blank");
-          const imgSrc = p.thumb || p.logo || "default_logo.png";
-          card.innerHTML = `
-            <img src="${imgSrc}" alt="${p.name}">
-            <p>${p.name}</p>
-          `;
-          grid.appendChild(card);
-        });
-      } catch (err) {
-        console.error("Failed to load portals:", err);
-      }
-    }
-
+   
     function logout() {
       localStorage.clear();
       window.location.href = '/';
+    }
+
+    // ✅ Sidebar Toggle (Mobile)
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
     }
   </script>
 </body>
