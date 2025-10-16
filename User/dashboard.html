@@ -31,26 +31,15 @@
       font-size: 0.9em;
     }
     .day{ padding:5px; border-radius:5px; cursor:pointer; background:#f5deb3; position:relative; overflow:hidden; display:flex; flex-direction:column;}
+    .day * {pointer-events: none; /* 🔒 prevent inner elements from blocking click */}
+    .day{cursor:default;}
+    .day.has-note { cursor: hand; /* show pointer only when a note exists */}
+    .day.has-note:hover {  background: #deb887; /* soft orange highlight on hover */
+}
     .day-number{ font-size:0.85em; font-weight:bold; color:darkred; position:absolute; top:5px; right:6px;}
-    .day:hover{ background:#deb887; color:white;}
     .today{ background:linear-gradient(135deg, #FFA500, #FFD700); font-weight:bold; box-shadow:0 0 6px rgba(0,0,0,0.4);}
     .note{ font-size:0.7em; margin-top:18px; color:darkgreen; text-align:left; word-break:break-word; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;}
     .faded{ background:#eee !important; color:#999 !important; cursor:default !important; pointer-events:none;}
-
-    .modal{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;}
-    .modal-content{ background:white; padding:20px; border-radius:10px; width:380px; max-width:95%; box-sizing:border-box;}
-    .modal-content h3{ margin-top:0;}
-    .modal-content textarea, .modal-content input {
-      width:100%; padding:6px; margin-top:4px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em;
-    }
-    .modal-content button{ padding:8px 12px; margin-right:10px; border:none; border-radius:5px; cursor:pointer;}
-    .save-btn{ background:#228b22; color:white;}
-    .reject-btn{ background:#b22222; color:white;}
-    .approve-btn{ background:#006400; color:white;}
-    .close-btn{ background:#a9a9a9; color:white;}
-    .approval-field { margin-bottom:8px; }
-    .approval-label { font-weight:700; display:block; margin-bottom:4px; }
-    .small-muted { font-size:0.95em; color:#222; }
 
     /* 📱 On mobile: show only the calendar, hide others */
 @media (max-width: 768px) {
@@ -81,18 +70,17 @@
   }
 }
 
-/* Adjust Note Modal layout */
-/* 🟠 FULLSCREEN NOTE MODAL — MOBILE SAFE VERSION */
 #noteModal {
   display: none;
   position: fixed;
-  top: 0; left: 0;
-  width: 100%;
-  height: 95%;
+  inset: 0;
+  width: 450px;
+  height: auto;
   background: rgba(0,0,0,0.6);
   justify-content: center;
   align-items: center;
   z-index: 9999;
+  margin: auto;
 }
 
 #noteModal .modal-content {
@@ -118,7 +106,7 @@
   border-radius: 8px;
 }
 
-/* Text area fills screen space above buttons */
+/* Text area */
 #noteText {
   flex: 1;
   width: 100%;
@@ -133,7 +121,7 @@
   overflow-y: auto;
 }
 
-/* Buttons container fixed to bottom, safe from mobile navbar */
+/* Footer */
 #noteModal .modal-footer {
   position: sticky;
   bottom: 0;
@@ -145,7 +133,7 @@
   z-index: 2;
 }
 
-.save-btn, .close-btn {
+.close-btn {
   flex: 1;
   padding: 14px;
   font-size: 1em;
@@ -155,7 +143,37 @@
   cursor: pointer;
 }
 
-.save-btn { background: #228b22; }
+/* ✅ Responsive: Full-screen on mobile */
+@media (max-width: 600px) {
+  #noteModal {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+
+  #noteModal .modal-content {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    padding: 16px;
+  }
+
+  #noteModal h3 {
+    font-size: 1.1em;
+    border-radius: 6px;
+  }
+
+  #noteText {
+    font-size: 0.95em;
+  }
+
+  .close-btn {
+    padding: 12px;
+    font-size: 0.95em;
+  }
+}
+
+
 .close-btn { background: #b22222; }
 
 /* Mobile tweaks */
@@ -274,24 +292,9 @@
     <textarea id="noteText" placeholder="Enter your note..."></textarea>
     <div class="modal-footer">
       <button class="close-btn">Close</button>
-      <button class="save-btn">Save</button>
     </div>
   </div>
 </div>
-
-
-  <!-- Approval Modal -->
-  <div class="modal" id="approvalModal">
-    <div class="modal-content">
-      <h3>Request Details</h3>
-      <div id="approvalDetails"></div>
-      <div style="margin-top:12px;">
-        <button class="approve-btn" onclick="handleApproval('approved')">Approve</button>
-        <button class="reject-btn" onclick="handleApproval('rejected')">Reject</button>
-        <button class="close-btn" onclick="closeApprovalModal()">Close</button>
-      </div>
-    </div>
-  </div>
 
   <script>
   // <-- set your deployed Apps Script webapp URL here (must allow POST & CORS if needed) -->
@@ -393,70 +396,6 @@
       renderCalendar();
     } catch (err) {
       console.error("Error loading notes:", err);
-    }
-  }
-
-  async function loadReminders() {
-    try {
-      const res = await fetch(API_URL + "?type=reminders");
-      const json = await res.json();
-      const nowMonth = currentDate.toLocaleString("default", { month: "long" }).toLowerCase();
-      remindersList.innerHTML = "";
-      const filtered = json.filter(r => String(r[Object.keys(r)[0]]).toLowerCase() === nowMonth);
-      if (filtered.length > 0) {
-        filtered.forEach(r => {
-          const reminderText = r[Object.keys(r)[1]];
-          if (reminderText) {
-            const div = document.createElement("div");
-            div.className = "note-item";
-            div.textContent = reminderText;
-            remindersList.appendChild(div);
-          }
-        });
-      } else {
-        remindersList.innerHTML = "<div class='note-item'>No reminders</div>";
-      }
-    } catch (err) {
-      console.error("Error loading reminders:", err);
-    }
-  }
-
-  // ---------------- approvals list & modal ----------------
-  async function loadApprovals() {
-    try {
-      const res = await fetch(API_URL + "?type=requests");
-      let json = await res.json();
-
-      json = json.filter(r => String((r.Status || r.status || '')).toLowerCase() === "pending");
-
-      json.sort((a, b) => {
-        const da = extractRequestData(a).date;
-        const db = extractRequestData(b).date;
-        const ta = new Date(da || 0).getTime();
-        const tb = new Date(db || 0).getTime();
-        return ta - tb;
-      });
-
-      approvalList.innerHTML = "";
-
-      if (json.length > 0) {
-        json.forEach(r => {
-          const extracted = extractRequestData(r);
-          const displayName = extracted.name || (r[Object.keys(r)[1]] || 'Unknown');
-          const displayType = (extracted.type || (r[Object.keys(r)[2]] || 'Request')).toString();
-          const div = document.createElement("div");
-          div.className = "note-item";
-          // include formatted date for quick glance if available
-          const smallDate = extracted.date ? ` (${formatDateShort(extracted.date)})` : '';
-          div.textContent = `${displayName} - ${displayType}${smallDate}`;
-          div.onclick = () => openApprovalModal(r);
-          approvalList.appendChild(div);
-        });
-      } else {
-        approvalList.innerHTML = "<div class='note-item'>No pending requests</div>";
-      }
-    } catch (err) {
-      console.error("Error loading approvals:", err);
     }
   }
 
@@ -615,11 +554,25 @@ dayNames.forEach(d => {
       if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
         dayDiv.classList.add("today");
       }
+      if (notes[dateKey] && notes[dateKey].trim() !== "") {
+  dayDiv.classList.add("has-note");
+}
+
       dayDiv.innerHTML = `
         <div class="day-number">${day}</div>
         ${savedNote ? `<div class="note">${savedNote}</div>` : ""}
       `;
-      dayDiv.onclick = () => openModal(dateKey, savedNote);
+      // Assuming you loop through each day in your calendar
+dayDiv.onclick = () => {
+  const savedNote = notes[dateKey];
+  if (savedNote && savedNote.trim() !== "") {
+    openModal(dateKey, savedNote);
+  } else {
+    // Optional: small feedback for empty days
+    console.log("No note for this day");
+  }
+};
+
       calendarGrid.appendChild(dayDiv);
     }
 
@@ -642,23 +595,7 @@ dayNames.forEach(d => {
   }
   function closeModal() { noteModal.style.display = "none"; }
 
-  async function saveNote() {
-    if (!selectedDate) return;
-    const fd = new FormData();
-    fd.append("type", "saveNote");
-    fd.append("date", selectedDate);
-    fd.append("note", noteText.value);
-
-    try {
-      await fetch(API_URL, { method: "POST", body: fd });
-      notes[selectedDate] = noteText.value;
-      closeModal();
-      renderCalendar();
-    } catch (err) {
-      console.error("Error saving note:", err);
-    }
-  }
-
+  
   function prevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); loadReminders(); }
   function nextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); loadReminders(); }
 
@@ -679,14 +616,7 @@ dayNames.forEach(d => {
 
   // ---------------- initial load ----------------
   loadNotes();
-  loadReminders();
-  loadApprovals();
-
-  // close modal when clicking outside
-  window.addEventListener('click', (e) => {
-    if (e.target === approvalModal) closeApprovalModal();
-    if (e.target === noteModal) closeModal();
-  });
+  
 
   // --- Preserve URL parameters (like ?id=123) across reloads ---
 (function preserveParams() {
@@ -706,7 +636,6 @@ dayNames.forEach(d => {
 
 // Attach event listeners for Note Modal buttons
 document.querySelector("#noteModal .close-btn").addEventListener("click", closeModal);
-document.querySelector("#noteModal .save-btn").addEventListener("click", saveNote);
 
   </script>
 </body>
