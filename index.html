@@ -147,6 +147,52 @@
     footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
     footer a:hover { color: #fff; }
 
+    .hero {
+  text-align: center;
+  padding: 50px 20px;
+  background: linear-gradient(120deg, #f0f0f0, #d6e0f5);
+}
+
+.login-box {
+  display: inline-block;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-top: 20px;
+}
+
+.login-box input {
+  width: 80%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.manual-btn, .gmail-btn {
+  width: 85%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.manual-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.gmail-btn {
+  background: #DB4437;
+  color: white;
+}
+
+.gmail-btn i {
+  margin-right: 6px;
+}
+
     /* LOGIN MODAL */
     #loginModal {
       display: none;
@@ -211,10 +257,21 @@
 
   <!-- HERO -->
   <section class="hero">
-    <h1>Reliable Electrical Services You Can Trust ⚡</h1>
-    <p>Fast Cal Industrial Corp provides safe, efficient, and professional electrical solutions for homes and businesses — done right the first time.</p>
-    <button onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get a Free Quote</button>
-  </section>
+  <h1>⚡ WELCOME TO FCIC PORTAL ⚡</h1>
+
+  <div id="loginBox" class="login-box">
+    <h3>Login</h3>
+    <input id="username" placeholder="Username"><br>
+    <input id="password" type="password" placeholder="Password"><br>
+    <button class="manual-btn" onclick="manualLogin()">Login</button>
+    <hr>
+    <button class="gmail-btn" onclick="gmailLogin()">
+      <i class="fab fa-google"></i> Sign in with Google
+    </button>
+    <p id="loginStatus"></p>
+  </div>
+</section>
+
 
   <!-- SERVICES -->
   <section id="services" class="services">
