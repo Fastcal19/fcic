@@ -10,11 +10,17 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ✅ Flexbox layout for sticky footer */
+    html, body {
+      height: 100%;
+    }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: #222;
       background-color: gray;
-      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     header {
@@ -28,8 +34,10 @@
       top: 0;
       z-index: 1000;
     }
+
     .logo-section { display: flex; align-items: center; gap: 10px; }
     .logo-section img { height: 50px; }
+
     nav a {
       color: white;
       margin-left: 20px;
@@ -38,23 +46,27 @@
       transition: color 0.3s;
     }
     nav a:hover { color: #000; }
-    .login-icon {
-  position: absolute;
-  right: 20px;  /* distance from the right edge */
-  top: 20px;    /* adjust vertically to match your header height */
-  background: white;
-  color: #ff6f00;
-  border-radius: 50%;
-  padding: 10px 12px;
-  font-size: 1.2rem;
-  transition: background 0.3s, color 0.3s;
-  cursor: pointer;
-}
-.login-icon:hover {
-  background: #ffe0b2;
-  color: #ff6f00;
-}
 
+    .login-icon {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      background: white;
+      color: #ff6f00;
+      border-radius: 50%;
+      padding: 10px 12px;
+      font-size: 1.2rem;
+      transition: background 0.3s, color 0.3s;
+      cursor: pointer;
+    }
+    .login-icon:hover {
+      background: #ffe0b2;
+      color: #ff6f00;
+    }
+
+    main {
+      flex: 1; /* ✅ Push footer to bottom */
+    }
 
     .hero {
       position: relative;
@@ -68,21 +80,25 @@
       color: white;
       padding: 2rem;
     }
+
     .hero h3 {
       font-size: 1.2rem;
       text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
       animation: flicker 2s infinite;
     }
+
     @keyframes flicker {
       0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
       20%, 24%, 55% { opacity: 0.6; }
     }
+
     .hero p {
       font-size: 1.2rem;
       margin-top: 1rem;
       max-width: 600px;
       text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
     }
+
     .hero button {
       margin-top: 2rem;
       padding: 0.8rem 2rem;
@@ -102,55 +118,50 @@
       text-align: center;
       padding: 1rem;
       font-size: 0.9rem;
+      /* ✅ No fixed position needed — stays at bottom naturally */
     }
     footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
     footer a:hover { color: #fff; }
 
-    .hero {
-  text-align: center;
-  padding: 50px 20px;
-  background: linear-gradient(120deg, #f0f0f0, #d6e0f5);
-}
+    .login-box {
+      display: inline-block;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
 
-.login-box {
-  display: inline-block;
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  margin-top: 20px;
-}
+    .login-box input {
+      width: 80%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
 
-.login-box input {
-  width: 80%;
-  padding: 10px;
-  margin: 8px 0;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
+    .manual-btn, .gmail-btn {
+      width: 85%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
 
-.manual-btn, .gmail-btn {
-  width: 85%;
-  padding: 10px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
+    .manual-btn {
+      background: #4CAF50;
+      color: white;
+    }
 
-.manual-btn {
-  background: #4CAF50;
-  color: white;
-}
+    .gmail-btn {
+      background: #DB4437;
+      color: white;
+    }
 
-.gmail-btn {
-  background: #DB4437;
-  color: white;
-}
-
-.gmail-btn i {
-  margin-right: 6px;
-}
+    .gmail-btn i {
+      margin-right: 6px;
+    }
 
     /* LOGIN MODAL */
     #loginModal {
@@ -212,24 +223,26 @@
     <div class="logo-section">
       <img src="FC.png" alt="FCIC Logo">
       <i class="fas fa-user login-icon" title="Log In"></i>
+    </div>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
-  <h3>⚡ WELCOME TO FCIC PORTAL ⚡</h3>
-
-  <div id="loginBox" class="login-box">
-    <h3>Login</h3>
-    <input id="username" placeholder="Username"><br>
-    <input id="password" type="password" placeholder="Password"><br>
-    <button class="manual-btn" onclick="manualLogin()">Login</button>
-    <hr>
-    <button class="gmail-btn" onclick="gmailLogin()">
-      <i class="fab fa-google"></i> Sign in with Google
-    </button>
-    <p id="loginStatus"></p>
-  </div>
-</section>
+  <!-- MAIN CONTENT -->
+  <main>
+    <section class="hero">
+      <h3>⚡ WELCOME TO FCIC PORTAL ⚡</h3>
+      <div id="loginBox" class="login-box">
+        <h3>Login</h3>
+        <input id="username" placeholder="Username"><br>
+        <input id="password" type="password" placeholder="Password"><br>
+        <button class="manual-btn" onclick="manualLogin()">Login</button>
+        <hr>
+        <button class="gmail-btn" onclick="gmailLogin()">
+          <i class="fab fa-google"></i> Sign in with Google
+        </button>
+        <p id="loginStatus"></p>
+      </div>
+    </section>
+  </main>
 
   <!-- FOOTER -->
   <footer>
@@ -254,15 +267,13 @@
 
   <!-- SCRIPT -->
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbyUNWxfDW9I3lK_Q8gRzVmJpYND2wk1-TF-heVa2AxiTh8MSBNQ--GdKo1xjwD78VyOUQ/exec"; // Replace with your actual deployed Apps Script Web App URL
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbyUNWxfDW9I3lK_Q8gRzVmJpYND2wk1-TF-heVa2AxiTh8MSBNQ--GdKo1xjwD78VyOUQ/exec";
 
-    // Modal handlers
     const modal = document.getElementById('loginModal');
     document.querySelector('.login-icon').onclick = () => modal.style.display = 'flex';
     document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
     window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
 
-    // Manual login
     async function manualLogin() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
@@ -279,7 +290,6 @@
       }
     }
 
-    // Gmail login
     function gmailLogin() {
       google.accounts.id.initialize({
         client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
@@ -298,7 +308,6 @@
       handleLoginResponse(data);
     }
 
-    // Handle both manual and Gmail login response
     function handleLoginResponse(response) {
       const status = document.getElementById('loginStatus');
       if (response.success) {
@@ -323,7 +332,6 @@
     }
   </script>
 
-  <!-- Google Identity API -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 </body>
