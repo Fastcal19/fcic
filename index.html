@@ -58,7 +58,7 @@
 
     .hero {
       position: relative;
-      height: 90vh;
+      height: 70vh;
       background: url('https://images.unsplash.com/photo-1581091870627-3a7b1e3b6f3f?auto=format&fit=crop&w=1500&q=80') center/cover no-repeat;
       display: flex;
       flex-direction: column;
@@ -68,8 +68,8 @@
       color: white;
       padding: 2rem;
     }
-    .hero h1 {
-      font-size: 3rem;
+    .hero h3 {
+      font-size: 1.2rem;
       text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
       animation: flicker 2s infinite;
     }
@@ -95,47 +95,6 @@
       transition: background 0.3s, transform 0.2s;
     }
     .hero button:hover { background: #e68900; transform: scale(1.05); }
-
-    .services { padding: 4rem 2rem; background: #f9f9f9; text-align: center; }
-    .services h2 { font-size: 2rem; color: #ff6f00; margin-bottom: 2rem; }
-    .service-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      max-width: 1000px;
-      margin: auto;
-    }
-    .service {
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      transition: transform 0.3s;
-    }
-    .service:hover { transform: translateY(-5px); }
-    .service img { width: 60px; height: 60px; margin-bottom: 1rem; }
-    .service h3 { color: #333; margin-bottom: 1rem; }
-
-    .contact {
-      background: linear-gradient(90deg, #ff9800, #ff6f00);
-      color: white;
-      text-align: center;
-      padding: 3rem 2rem;
-    }
-    .contact h2 { font-size: 2rem; margin-bottom: 1rem; }
-    .contact p { font-size: 1.1rem; }
-    .contact a {
-      display: inline-block;
-      margin-top: 1.5rem;
-      padding: 0.8rem 2rem;
-      background: white;
-      color: #ff6f00;
-      font-weight: bold;
-      border-radius: 30px;
-      text-decoration: none;
-      transition: background 0.3s;
-    }
-    .contact a:hover { background: #ffe0b2; }
 
     footer {
       background: #222;
@@ -257,7 +216,7 @@
 
   <!-- HERO -->
   <section class="hero">
-  <h1>⚡ WELCOME TO FCIC PORTAL ⚡</h1>
+  <h3>⚡ WELCOME TO FCIC PORTAL ⚡</h3>
 
   <div id="loginBox" class="login-box">
     <h3>Login</h3>
@@ -271,42 +230,6 @@
     <p id="loginStatus"></p>
   </div>
 </section>
-
-
-  <!-- SERVICES -->
-  <section id="services" class="services">
-    <h2>Our Services</h2>
-    <div class="service-grid">
-      <div class="service">
-        <img src="https://cdn-icons-png.flaticon.com/512/3242/3242257.png" alt="Wiring">
-        <h3>Electrical Wiring</h3>
-        <p>Safe and efficient wiring installation and upgrades for residential, commercial, and industrial projects.</p>
-      </div>
-      <div class="service">
-        <img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png" alt="Maintenance">
-        <h3>Maintenance & Repairs</h3>
-        <p>Reliable troubleshooting and repair for electrical systems, ensuring continuous and safe operation.</p>
-      </div>
-      <div class="service">
-        <img src="https://cdn-icons-png.flaticon.com/512/2387/2387635.png" alt="Lighting">
-        <h3>Lighting Solutions</h3>
-        <p>Indoor and outdoor lighting design and installation to enhance safety, functionality, and aesthetics.</p>
-      </div>
-      <div class="service">
-        <img src="https://cdn-icons-png.flaticon.com/512/2659/2659360.png" alt="Industrial">
-        <h3>Industrial Automation</h3>
-        <p>Custom electrical automation systems designed for efficiency and productivity in industrial applications.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- CONTACT -->
-  <section id="contact" class="contact">
-    <h2>Contact Us</h2>
-    <p>✉️ fastcalindustrialcorp@gmail.com</p>
-    <p>Serving Metro Manila and nearby provinces</p>
-    <a href="mailto:fastcalindustrialcorp@gmail.com">Send an Inquiry</a>
-  </section>
 
   <!-- FOOTER -->
   <footer>
