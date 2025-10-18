@@ -70,9 +70,7 @@
       margin: 2px 0;
       background: lightgray;
     }
-    .sidebar a:hover {
-      background: #FFD580;
-    }
+    .sidebar a:hover { background: #FFD580; }
 
     .logout-btn {
       background: #333;
@@ -139,7 +137,7 @@
       </div>
 
       <a onclick="showPage('dashboard')">Dashboard</a>
-      <a onclick="showPage('Project Costing')">Project Costing</a>
+      <a id="projectCostingLink" onclick="showPage('Project Costing')">Project Costing</a>
       <a onclick="showPage('leave')">Leave</a>
       <a onclick="showPage('overtime')">Overtime</a>
       <a onclick="showPage('inventory')">Inventory</a>
@@ -156,9 +154,14 @@
   // read user info from localStorage
   const fullName = localStorage.getItem("full"); // full name
   const photo = localStorage.getItem("photo");   // photo filename
+  const role = localStorage.getItem("role");     // user role
 
   if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
-  if(photo) document.getElementById("userPhoto").src = "./" + photo; // photo in root folder
+  if(photo) document.getElementById("userPhoto").src = "./" + photo;
+
+  // Show Project Costing link only for Purchaser
+  const projLink = document.getElementById("projectCostingLink");
+  if(role !== "Purchaser") projLink.style.display = "none";
 
   const sidebar = document.getElementById('sidebar');
   const menuToggle = document.getElementById('menuToggle');
@@ -196,7 +199,6 @@
     localStorage.clear();
     window.location.href = '/';
   }
-</script>
-
+  </script>
 </body>
 </html>
