@@ -257,7 +257,7 @@
 
   <!-- SCRIPT -->
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycby9PNoMZ8UpGCgiVRG-rlF3e8zEFAWanN7rZV8NCmQP9zRFaCwF5onv5qSHcNiX5peKOQ/exec";
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbyz9PDSEcGbBe5ZxT_hC-LswCNqEDGPnuwZ6KNCbdmAWhwMFuOrurHMlDqVC1EvgRS65A/exec";
 
     const modal = document.getElementById('loginModal');
     document.querySelector('.login-icon').onclick = () => modal.style.display = 'flex';
@@ -303,6 +303,7 @@
       if (response.success) {
         localStorage.setItem("role", response.role);
         localStorage.setItem("username", response.name);
+        localStorage.setItem("full", response.eid);
         localStorage.setItem("full", response.full);
         localStorage.setItem("photo", response.photo);
         status.style.color = "green";
