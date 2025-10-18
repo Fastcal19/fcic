@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Leave Page</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background:linear-gradient(10deg, gold, orangered); }
+
+    .cards { display: flex; gap: 15px; margin-bottom: 25px; }
+    .card {
+      flex:1; background:white; padding:20px; border-radius:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1); text-align:center;
+    }
+    .card h2 { margin:0 0 10px 0; font-size:16px; color:#555; }
+    .card .value { font-size:28px; font-weight:bold; }
+
+    button {
+      padding:10px 20px; margin-bottom:10px; cursor:pointer;
+      border:none; border-radius:6px; background:#007bff; color:white;
+      font-size:14px;
+    }
+
+    table {
+      width:100%; border-collapse:collapse; background:white;
+      border-radius:10px; overflow:hidden;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    }
+    th, td { border:1px solid #ccc; padding:10px; font-size:14px; }
+    th { background:#e9ecef; text-align:left; }
+
+    /* Popup Modal */
+    .modal-bg {
+      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.5); justify-content:center; align-items:center;
+    }
+    .modal {
+      background:white; padding:20px; border-radius:10px; width:300px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.3);
+    }
+    .modal h3 { margin-top:0; }
+    .modal input, .modal select, .modal textarea {
+      width:100%; margin-bottom:10px; padding:8px; font-size:14px;
+      border:1px solid #ccc; border-radius:5px;
+    }
+    .modal .actions { text-align:right; }
+    .close-btn {
+      background:#dc3545;
+    }
+    /* Disable editing for autofilled fields */
+    input[readonly] {
+      background:#f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cards -->
+  <div class="cards">
+    <div class="card"><h2>Total Credits</h2><div class="value" id="totalCredits">10</div></div>
+    <div class="card"><h2>Leave Applied</h2><div class="value" id="leaveApplied">4</div></div>
+    <div class="card"><h2>Remaining Leave</h2><div class="value" id="remainingLeave">11</div></div>
+  </div>
+
+  <button onclick="openModal()">Apply Leave</button>
+
+  <!-- Leave Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Date Filed</th>
+        <th>Reason</th>
+        <th>From</th>
+        <th>To</th>
+        <th># of Days</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Modal -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <h3>Apply Leave</h3>
+      <input type="text" id="eid" placeholder="Employee ID" readonly>
+      <input type="text" id="name" placeholder="Name" readonly>
+      <input type="date" id="dateFiled" placeholder="Date Filed">
+      <textarea id="reason" placeholder="Reason"></textarea>
+      <input type="date" id="fromDate" placeholder="From">
+      <input type="date" id="toDate" placeholder="To">
+      <input type="number" id="days" placeholder="# of Days">
+      <select id="status">
+        <option>Pending</option>
+        <option>Cancel</option>
+      </select>
+      <div class="actions">
+        <button class="close-btn" onclick="closeModal()">Close</button>
+        <button onclick="saveLeave()">Save</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API_BASE = "YOUR_WEB_APP_URL"; // Replace with your Apps Script URL
+
+  // Save applicant info temporarily
+  let applicantName = localStorage.getItem('applicantName');
+  let applicantEID = localStorage.getItem('applicantEID');
+
+  if(!applicantName) {
+    applicantName = prompt("Enter your name:");
+    localStorage.setItem('applicantName', applicantName);
+  }
+  if(!applicantEID) {
+    applicantEID = prompt("Enter your Employee ID:");
+    localStorage.setItem('applicantEID', applicantEID);
+  }
+
+  // Autofill modal fields
+  function openModal(){
+    document.getElementById('modalBg').style.display='flex';
+    document.getElementById('eid').value = applicantEID;
+    document.getElementById('name').value = applicantName;
+  }
+
+  function closeModal(){ document.getElementById('modalBg').style.display='none'; }
+
+  // Load leave data
+  async function loadLeaves(){
+    const res = await fetch(`${API_BASE}?action=getLeaves`);
+    const data = await res.json();
+    const tbody = document.querySelector("table tbody");
+    tbody.innerHTML = "";
+
+    let totalCredits = 10; // example, can fetch dynamically
+    let leaveApplied = 0;
+
+    data.forEach(row => {
+      if(row.EID === applicantEID){
+        leaveApplied += Number(row['# of Days']);
+        tbody.innerHTML += `
+          <tr>
+            <td>${row['Date Filed']}</td>
+            <td>${row['Reason']}</td>
+            <td>${row['From']}</td>
+            <td>${row['To']}</td>
+            <td>${row['# of Days']}</td>
+            <td>${row['Status']}</td>
+          </tr>
+        `;
+      }
+    });
+
+    document.getElementById('totalCredits').textContent = totalCredits;
+    document.getElementById('leaveApplied').textContent = leaveApplied;
+    document.getElementById('remainingLeave').textContent = totalCredits - leaveApplied;
+  }
+
+  // Save leave
+  async function saveLeave(){
+    const leave = {
+      EID: applicantEID,
+      name: applicantName,
+      dateFiled: document.getElementById('dateFiled').value,
+      reason: document.getElementById('reason').value,
+      fromDate: document.getElementById('fromDate').value,
+      toDate: document.getElementById('toDate').value,
+      days: document.getElementById('days').value,
+      status: document.getElementById('status').value
+    };
+
+    await fetch(API_BASE, {
+      method: "POST",
+      body: JSON.stringify(leave),
+      headers: { "Content-Type": "application/json" }
+    });
+
+    closeModal();
+    loadLeaves(); // refresh table
+  }
+
+  loadLeaves();
+</script>
+
+</body>
+</html>
