@@ -306,7 +306,7 @@
         localStorage.setItem("full", response.full);
         localStorage.setItem("photo", response.photo);
         status.style.color = "green";
-        status.textContent = "✅ Welcome, " + response.full;
+        status.textContent = "✅ Welcome, " + response.name;
         setTimeout(() => {
           modal.style.display = 'none';
           if (response.role === "Admin") location.href = "/admin/";
