@@ -145,10 +145,7 @@
     #closeModal { position: absolute; top: 8px; right: 12px; cursor: pointer; font-size: 1.2rem; color: #888; }
     #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
 
-    /* Project Costing button hidden by default */
-    #projectCostingBtn { display: none; margin-top: 15px; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; background: #FFA500; color: white; }
-
-    @media (max-width: 768px) {
+      @media (max-width: 768px) {
       .hero h1 { font-size: 2.2rem; }
       .hero p { font-size: 1rem; }
       header { flex-direction: column; align-items: flex-start; }
@@ -284,12 +281,7 @@
       return JSON.parse(atob(token.split('.')[1]));
     }
 
-    // Optional: Persist button visibility after page reload
-    window.onload = () => {
-      const role = localStorage.getItem("role");
-      const projBtn = document.getElementById("projectCostingBtn");
-      if (role === "Purchaser") projBtn.style.display = "inline-block";
-    }
+   
   </script>
 </body>
 </html>
