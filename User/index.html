@@ -157,7 +157,7 @@
     const name = localStorage.getItem("username");
     const photo = localStorage.getItem("photo");
 
-    if(name) document.getElementById("usernameDisplay").textContent = name;
+    if(name) document.getElementById("usernameDisplay").textContent = full;
     if(photo) document.getElementById("userPhoto").src = photo;
 
     const sidebar = document.getElementById('sidebar');
