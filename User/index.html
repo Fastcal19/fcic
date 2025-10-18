@@ -153,47 +153,50 @@
   </div>
 
   <script>
-    // read user info
-const full = localStorage.getItem("full"); // get full name
-const photo = localStorage.getItem("photo"); // get photo filename
+  // read user info from localStorage
+  const fullName = localStorage.getItem("full"); // full name
+  const photo = localStorage.getItem("photo");   // photo filename
 
-if(full) document.getElementById("usernameDisplay").textContent = full;
-if(photo) document.getElementById("userPhoto").src = "./" + photo; // root folder
+  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+  if(photo) document.getElementById("userPhoto").src = "./" + photo; // photo in root folder
 
-    const sidebar = document.getElementById('sidebar');
-    const menuToggle = document.getElementById('menuToggle');
-    let autoHideTimer;
+  const sidebar = document.getElementById('sidebar');
+  const menuToggle = document.getElementById('menuToggle');
+  let autoHideTimer;
 
-    menuToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('active');
-      if (sidebar.classList.contains('active')) startAutoHide();
-      else clearTimeout(autoHideTimer);
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+    if (sidebar.classList.contains('active')) startAutoHide();
+    else clearTimeout(autoHideTimer);
+  });
+
+  function startAutoHide() {
+    clearTimeout(autoHideTimer);
+    if (window.innerWidth <= 768) {
+      autoHideTimer = setTimeout(() => {
+        sidebar.classList.remove('active');
+      }, 2000);
+    }
+  }
+
+  sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
+  sidebar.addEventListener('mouseleave', startAutoHide);
+
+  sidebar.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 768) sidebar.classList.remove('active');
     });
+  });
 
-    function startAutoHide() {
-      clearTimeout(autoHideTimer);
-      if (window.innerWidth <= 768) {
-        autoHideTimer = setTimeout(() => {
-          sidebar.classList.remove('active');
-        }, 2000);
-      }
-    }
-    sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
-    sidebar.addEventListener('mouseleave', startAutoHide);
+  function showPage(page) {
+    document.getElementById("mainFrame").src = page + ".html";
+  }
 
-    sidebar.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) sidebar.classList.remove('active');
-      });
-    });
+  function logout() {
+    localStorage.clear();
+    window.location.href = '/';
+  }
+</script>
 
-    function showPage(page) {
-      document.getElementById("mainFrame").src = page + ".html";
-    }
-    function logout() {
-      localStorage.clear();
-      window.location.href = '/';
-    }
-  </script>
 </body>
 </html>
