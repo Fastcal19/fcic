@@ -154,11 +154,11 @@
 
   <script>
     // read user info
-    const name = localStorage.getItem("full");
-    const photo = localStorage.getItem("photo");
+const full = localStorage.getItem("full"); // get full name
+const photo = localStorage.getItem("photo"); // get photo filename
 
-    if(name) document.getElementById("usernameDisplay").textContent = full;
-    if(photo) document.getElementById("userPhoto").src = photo;
+if(full) document.getElementById("usernameDisplay").textContent = full;
+if(photo) document.getElementById("userPhoto").src = "./" + photo; // root folder
 
     const sidebar = document.getElementById('sidebar');
     const menuToggle = document.getElementById('menuToggle');
