@@ -38,38 +38,27 @@
     .sidebar::-webkit-scrollbar-track { background: #FFD580; }
     .sidebar::-webkit-scrollbar-thumb { background-color: #333; border-radius: 3px; }
 
-    /* Mobile hidden state */
-    .sidebar.hidden {
-      transform: translateX(-100%);
-    }
+    .sidebar.hidden { transform: translateX(-100%); }
 
-    .logo-box {
-      width: 180px;
-      height: 180px;
-      background: #fff;
-      margin: 0 auto 50px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    .userbox{
+      text-align:center;
+      padding:20px 0 10px;
     }
-    .logo-box img {
-      width: 95%;
-      height: 95%;
-      border-radius: 50%;
-      object-fit: cover;
+    .userbox img{
+      width:160px;
+      height:160px;
+      border-radius:50%;
+      object-fit:cover;
+      box-shadow:0 2px 6px rgba(0,0,0,0.3);
+      background:#fff;
     }
-
-.username{
-  text-align:center;
-  font-weight:bold;
-  font-size:16px;
-  margin-top:-30px;
-  margin-bottom:30px;
-  color:#000;
-}
-
+    .username{
+      font-weight:bold;
+      font-size:16px;
+      color:#000;
+      margin-top:10px;
+      margin-bottom:30px;
+    }
 
     .sidebar a {
       color: #000;
@@ -96,7 +85,6 @@
       margin-top: 10px;
     }
 
-    /* Main content */
     .main {
       flex: 1;
       background: #ccc;
@@ -113,7 +101,6 @@
       background: linear-gradient(180deg, gold, orangered);
     }
 
-    /* Toggle button for mobile */
     .menu-toggle {
       display: none;
       position: fixed;
@@ -135,15 +122,9 @@
         transform: translateX(-100%);
         width: 75%;
       }
-      .sidebar.active {
-        transform: translateX(0);
-      }
-      .main {
-        margin-left: 0;
-      }
-      .menu-toggle {
-        display: block;
-      }
+      .sidebar.active { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-toggle { display: block; }
     }
   </style>
 </head>
@@ -152,12 +133,10 @@
 
   <aside class="sidebar" id="sidebar">
     <div>
-      <div class="logo-box">
-  <img src="fcic logo.png" alt="Logo">
-</div>
-
-<div class="username" id="usernameDisplay"></div>
-</div>
+      <div class="userbox">
+        <img id="userPhoto" src="fcic logo.png" alt="User Photo">
+        <div class="username" id="usernameDisplay">User</div>
+      </div>
 
       <a onclick="showPage('dashboard')">Dashboard</a>
       <a onclick="showPage('Project Costing')">Project Costing</a>
@@ -174,18 +153,23 @@
   </div>
 
   <script>
+    // read user info
+    const name = localStorage.getItem("username");
+    const photo = localStorage.getItem("photo");
+
+    if(name) document.getElementById("usernameDisplay").textContent = name;
+    if(photo) document.getElementById("userPhoto").src = photo;
+
     const sidebar = document.getElementById('sidebar');
     const menuToggle = document.getElementById('menuToggle');
     let autoHideTimer;
 
-    // Toggle sidebar (for mobile)
     menuToggle.addEventListener('click', () => {
       sidebar.classList.toggle('active');
       if (sidebar.classList.contains('active')) startAutoHide();
       else clearTimeout(autoHideTimer);
     });
 
-    // Auto-hide sidebar after 3 seconds (mobile only)
     function startAutoHide() {
       clearTimeout(autoHideTimer);
       if (window.innerWidth <= 768) {
@@ -194,24 +178,18 @@
         }, 2000);
       }
     }
-
-    // Reset timer when sidebar is interacted with
     sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
     sidebar.addEventListener('mouseleave', startAutoHide);
 
-    // Also reset timer on link clicks (mobile)
     sidebar.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
         if (window.innerWidth <= 768) sidebar.classList.remove('active');
       });
     });
 
-    // Page loading
     function showPage(page) {
-      const iframe = document.getElementById("mainFrame");
-      iframe.src = page + ".html";
+      document.getElementById("mainFrame").src = page + ".html";
     }
-
     function logout() {
       localStorage.clear();
       window.location.href = '/';
