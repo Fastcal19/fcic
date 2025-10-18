@@ -105,8 +105,8 @@
   const API_BASE = "YOUR_WEB_APP_URL"; // Replace with your Apps Script URL
 
   // Save applicant info temporarily
-  let applicantName = localStorage.getItem('applicantName');
-  let applicantEID = localStorage.getItem('applicantEID');
+  let applicantName = localStorage.getItem('full');
+  let applicantEID = localStorage.getItem('eid');
 
   if(!applicantName) {
     applicantName = prompt("Enter your name:");
