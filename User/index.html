@@ -165,36 +165,38 @@
   window.addEventListener('resize', handleResize);
 
   // Mobile swipe detection
-  document.addEventListener('touchstart', e => {
-    if(window.innerWidth > MOBILE_BREAKPOINT) return;
-    touchStartX = e.touches[0].clientX;
-  });
+document.addEventListener('touchstart', e => {
+  if(window.innerWidth > MOBILE_BREAKPOINT) return;
+  touchStartX = e.touches[0].clientX;
+});
 
-  document.addEventListener('touchmove', e => {
-    if(window.innerWidth > MOBILE_BREAKPOINT) return;
-    touchEndX = e.touches[0].clientX;
-  });
+document.addEventListener('touchmove', e => {
+  if(window.innerWidth > MOBILE_BREAKPOINT) return;
+  touchEndX = e.touches[0].clientX;
+});
 
-  document.addEventListener('touchend', () => {
-    if(window.innerWidth > MOBILE_BREAKPOINT) return;
-    const swipeDist = touchEndX - touchStartX;
+document.addEventListener('touchend', () => {
+  if(window.innerWidth > MOBILE_BREAKPOINT) return;
+  const swipeDist = touchEndX - touchStartX;
 
-    if(swipeDist > 50 && !sidebar.classList.contains('active')) openSidebar();
-    if(swipeDist < -50 && sidebar.classList.contains('active')) closeSidebar();
-  });
+  if(swipeDist > 50 && !sidebar.classList.contains('active')) openSidebar();
+  if(swipeDist < -50 && sidebar.classList.contains('active')) closeSidebar();
+});
 
-  function openSidebar() {
-    sidebar.classList.add('active');
-    main.style.marginLeft = sidebar.offsetWidth + 'px';
-    startAutoClose();
-  }
+function openSidebar() {
+  sidebar.classList.remove('hidden');   // ✅ remove hidden
+  sidebar.classList.add('active');
+  main.style.marginLeft = sidebar.offsetWidth + 'px';
+  startAutoClose();
+}
 
-  function closeSidebar() {
-    sidebar.classList.remove('active');
-    sidebar.classList.add('hidden');
-    main.style.marginLeft = '0px';
-    startAutoClose(true);
-  }
+function closeSidebar() {
+  sidebar.classList.add('hidden');      // ✅ add hidden back
+  sidebar.classList.remove('active');
+  main.style.marginLeft = '0px';
+  startAutoClose(true);
+}
+
 
   function startAutoClose(clearOnly=false) {
     clearTimeout(autoCloseTimer);
