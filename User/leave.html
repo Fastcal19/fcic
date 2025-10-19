@@ -163,7 +163,7 @@ input[readonly] { background:#f0f0f0; }
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbwM5x9SPIJojQCPjMvIOus8j5apSXV3UWtMisSvS3gem5OfpkS5_tK18rMe1j9b3F4r/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbxoxV6KABguvPj9nuVr28CfG57gyDnUUtcdQRYnS5dXvu7vwfeDxL_6-5Nhwt1pvShs/exec";
 
 let applicantName = localStorage.getItem('full');
 let applicantEID  = localStorage.getItem('eid');
@@ -216,31 +216,27 @@ async function loadLeaves(){
     const res = await fetch(`${API_BASE}?action=getLeaves`);
     const text = await res.text();
     let data;
-    try{ data = JSON.parse(text);}catch{ showToast("Server returned invalid data.", "error"); return; }
+    try { data = JSON.parse(text); } 
+    catch { showToast("Server returned invalid data.", "error"); return; }
 
     const tbody = document.querySelector("table tbody");
     tbody.innerHTML="";
 
-    let totalCredits=10, leaveApplied=0;
+    let totalCredits = 10, leaveApplied = 0;
 
     if(Array.isArray(data)){
-      data.forEach(row=>{
-        if(String(row.EID)===String(applicantEID)){
-          const daysVal=Number(row['# of Days']||row.days||0);
-          if(!isNaN(daysVal)) leaveApplied+=daysVal;
-          const dateFiledVal = row['Date Filed']??row.dateFiled??'';
-          const reasonVal = row['Reason']??row.reason??'';
-          const fromVal = row['From']??row.fromDate??'';
-          const toVal = row['To']??row.toDate??'';
-          const numDaysVal = row['# of Days']??row.days??'';
-          const statusVal = row['Status']??row.status??'';
-          tbody.innerHTML+=`<tr>
-            <td>${escapeHtml(dateFiledVal)}</td>
-            <td>${escapeHtml(reasonVal)}</td>
-            <td>${escapeHtml(fromVal)}</td>
-            <td>${escapeHtml(toVal)}</td>
-            <td>${escapeHtml(numDaysVal)}</td>
-            <td>${escapeHtml(statusVal)}</td>
+      data.forEach(row => {
+        if(String(row.EID) === String(applicantEID) && String(row.Status).toLowerCase() === "approved"){
+          const daysVal = Number(row['# of Days'] || row.days || 0);
+          if(!isNaN(daysVal)) leaveApplied += daysVal;
+
+          tbody.innerHTML += `<tr>
+            <td>${escapeHtml(row['Date Filed'] || row.dateFiled || '')}</td>
+            <td>${escapeHtml(row['Reason'] || row.reason || '')}</td>
+            <td>${escapeHtml(row['From'] || row.fromDate || '')}</td>
+            <td>${escapeHtml(row['To'] || row.toDate || '')}</td>
+            <td>${escapeHtml(row['# of Days'] || row.days || '')}</td>
+            <td>${escapeHtml(row['Status'] || row.status || '')}</td>
           </tr>`;
         }
       });
@@ -248,8 +244,11 @@ async function loadLeaves(){
 
     document.getElementById('totalCredits').textContent = totalCredits;
     document.getElementById('leaveApplied').textContent = leaveApplied;
-    document.getElementById('remainingLeave').textContent = totalCredits-leaveApplied;
-  }catch{ showToast("Could not load leaves (network).","error"); }
+    document.getElementById('remainingLeave').textContent = totalCredits - leaveApplied;
+
+  }catch{
+    showToast("Could not load leaves (network).","error");
+  }
 }
 
 async function saveLeave(){
