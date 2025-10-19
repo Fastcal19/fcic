@@ -92,10 +92,6 @@
       overflow: hidden;
     }
 
-    #iframeWrapper {
-      flex: 1;
-    }
-
     iframe {
       width: 100%;
       height: 100%;
@@ -131,9 +127,7 @@
   </aside>
 
   <div class="main" id="main">
-    <div id="iframeWrapper">
-      <iframe id="mainFrame" src="dashboard.html"></iframe>
-    </div>
+    <iframe id="mainFrame" src="dashboard.html"></iframe>
   </div>
 
   <script>
@@ -149,7 +143,6 @@
 
     const sidebar = document.getElementById('sidebar');
     const main = document.getElementById('main');
-    const iframeWrapper = document.getElementById('iframeWrapper');
     let autoCloseTimer = null;
     const MOBILE_BREAKPOINT = 768;
     const AUTO_CLOSE_MS = 3000;
@@ -169,22 +162,21 @@
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    // Mobile swipe detection over wrapper (prevents iframe blocking)
-    iframeWrapper.addEventListener('touchstart', e => {
+    // Mobile swipe anywhere
+    document.addEventListener('touchstart', e => {
       if(window.innerWidth > MOBILE_BREAKPOINT) return;
       touchStartX = e.touches[0].clientX;
       touchEndX = touchStartX;
     });
 
-    iframeWrapper.addEventListener('touchmove', e => {
+    document.addEventListener('touchmove', e => {
       if(window.innerWidth > MOBILE_BREAKPOINT) return;
       touchEndX = e.touches[0].clientX;
     });
 
-    iframeWrapper.addEventListener('touchend', () => {
+    document.addEventListener('touchend', () => {
       if(window.innerWidth > MOBILE_BREAKPOINT) return;
       const swipeDist = touchEndX - touchStartX;
-
       if(swipeDist > 50 && !sidebar.classList.contains('active')) openSidebar();   // swipe right
       if(swipeDist < -50 && sidebar.classList.contains('active')) closeSidebar();  // swipe left
     });
