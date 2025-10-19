@@ -185,13 +185,13 @@
 
   function openSidebar() {
     sidebar.classList.add('active');
-    sidebar.classList.remove('hidden');
     main.style.marginLeft = sidebar.offsetWidth + 'px';
     startAutoClose();
   }
 
   function closeSidebar() {
     sidebar.classList.remove('active');
+    sidebar.classList.add('hidden');
     main.style.marginLeft = '0px';
     startAutoClose(true);
   }
