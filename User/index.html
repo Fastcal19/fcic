@@ -99,36 +99,16 @@
       background: linear-gradient(180deg, gold, orangered);
     }
 
-    .menu-toggle {
-      display: none;
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background: orangered;
-      color: white;
-      border: none;
-      font-size: 22px;
-      height: 7vh;
-      border-radius: 6px;
-      padding: 6px 12px;
-      z-index: 1101;
-      cursor: pointer;
-    }
+    .menu-toggle { display: none; } /* hidden toggle */
 
     @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-        width: 50%;
-      }
+      .sidebar { transform: translateX(-100%); width: 50%; }
       .sidebar.active { transform: translateX(0); }
       .main { margin-left: 0; }
-      .menu-toggle { display: block; }
     }
   </style>
 </head>
 <body>
-  <button class="menu-toggle" id="menuToggle">☰</button>
-
   <aside class="sidebar" id="sidebar">
     <div>
       <div class="userbox">
@@ -152,10 +132,9 @@
 
   <script>
   // read user info from localStorage
-  const employeeid = localStorage.getItem("eid"); // employee id  
-  const fullName = localStorage.getItem("full"); // full name
-  const photo = localStorage.getItem("photo");   // photo filename
-  const role = localStorage.getItem("role");     // user role
+  const fullName = localStorage.getItem("full");
+  const photo = localStorage.getItem("photo");
+  const role = localStorage.getItem("role");
 
   if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
   if(photo) document.getElementById("userPhoto").src = "./" + photo;
@@ -165,30 +144,68 @@
   if(role !== "Purchaser") projLink.style.display = "none";
 
   const sidebar = document.getElementById('sidebar');
-  const menuToggle = document.getElementById('menuToggle');
-  let autoHideTimer;
+  const main = document.querySelector('.main');
+  let autoCloseTimer = null;
+  const MOBILE_BREAKPOINT = 768;
+  const AUTO_CLOSE_MS = 3000;
+  let touchStartX = 0, touchEndX = 0;
 
-  menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('active');
-    if (sidebar.classList.contains('active')) startAutoHide();
-    else clearTimeout(autoHideTimer);
+  // Desktop always visible
+  function handleResize() {
+    if(window.innerWidth > MOBILE_BREAKPOINT) {
+      sidebar.classList.remove('active');
+      main.style.marginLeft = '220px';
+      clearTimeout(autoCloseTimer);
+    } else {
+      sidebar.classList.add('hidden');
+      main.style.marginLeft = '0px';
+    }
+  }
+  handleResize();
+  window.addEventListener('resize', handleResize);
+
+  // Mobile swipe detection
+  document.addEventListener('touchstart', e => {
+    if(window.innerWidth > MOBILE_BREAKPOINT) return;
+    touchStartX = e.touches[0].clientX;
   });
 
-  function startAutoHide() {
-    clearTimeout(autoHideTimer);
-    if (window.innerWidth <= 768) {
-      autoHideTimer = setTimeout(() => {
-        sidebar.classList.remove('active');
-      }, 2000);
+  document.addEventListener('touchmove', e => {
+    if(window.innerWidth > MOBILE_BREAKPOINT) return;
+    touchEndX = e.touches[0].clientX;
+  });
+
+  document.addEventListener('touchend', () => {
+    if(window.innerWidth > MOBILE_BREAKPOINT) return;
+    const swipeDist = touchEndX - touchStartX;
+
+    if(swipeDist > 50 && !sidebar.classList.contains('active')) openSidebar();
+    if(swipeDist < -50 && sidebar.classList.contains('active')) closeSidebar();
+  });
+
+  function openSidebar() {
+    sidebar.classList.add('active');
+    sidebar.classList.remove('hidden');
+    main.style.marginLeft = sidebar.offsetWidth + 'px';
+    startAutoClose();
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('active');
+    main.style.marginLeft = '0px';
+    startAutoClose(true);
+  }
+
+  function startAutoClose(clearOnly=false) {
+    clearTimeout(autoCloseTimer);
+    if(!clearOnly && window.innerWidth <= MOBILE_BREAKPOINT) {
+      autoCloseTimer = setTimeout(closeSidebar, AUTO_CLOSE_MS);
     }
   }
 
-  sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
-  sidebar.addEventListener('mouseleave', startAutoHide);
-
   sidebar.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
-      if (window.innerWidth <= 768) sidebar.classList.remove('active');
+      if(window.innerWidth <= MOBILE_BREAKPOINT) closeSidebar();
     });
   });
 
