@@ -74,21 +74,25 @@
     /* small responsive */
   @media (max-width: 480px) {
   .cards {
-    flex-direction: row;      /* stay in 1 row */
-    gap: 6px;
+    display: flex;
+    flex-wrap: nowrap;        /* force one row */
+    overflow-x: auto;         /* allow scroll sideways */
+    gap: 8px;
   }
   .card {
-    flex: 1;
-    padding:10px;
+    flex: 0 0 auto;           /* prevent shrinking too small */
+    width: 110px;             /* fixed width so 3 can line */
+    padding: 10px;
   }
   .card h2 {
-    font-size:12px;
-    margin-bottom:4px;
+    font-size: 12px;
+    margin-bottom: 4px;
   }
   .card .value {
-    font-size:18px;
+    font-size: 18px;
   }
 }
+
 
 
   </style>
