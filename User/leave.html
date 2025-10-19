@@ -8,28 +8,29 @@
 
 body {
   font-family: Arial, sans-serif;
-  margin: 5;                         /* remove white edges */
-  min-height: 100vh;                 /* full height gradient */
+  margin: 5;                        
+  min-height: 100vh;                
   background: linear-gradient(10deg, gold, orangered);
 }
 
 .container {
-  padding: 10px;                     /* move spacing here */
+  padding: 10px;                     
 }
 
 /* Cards */
 .cards {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   margin-bottom: 25px;
-  flex-wrap: nowrap;       /* keep in one row */
+  flex-wrap: nowrap;       
+  overflow-x: auto; /* allow horizontal scroll on extremely tiny screens */
 }
 
 .card {
-  flex: 1 1 0;            /* grow and shrink equally to fit screen */
-  min-width: 0;           /* allow shrinking below content width */
+  flex: 1 1 0;            
+  min-width: 100px;       /* cards won't shrink below this */
   background: white;
-  padding: 20px;
+  padding: 15px;
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   text-align: center;
@@ -73,7 +74,6 @@ th { background:#e9ecef; text-align:left; }
   background:#dc3545;
   color: #fff;
 }
-/* Disable editing for autofilled fields */
 input[readonly] {
   background:#f0f0f0;
 }
@@ -91,14 +91,15 @@ input[readonly] {
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   font-weight: 600;
 }
-#toast.success { background: #2e8b57; } /* green */
-#toast.error { background: #c0392b; }   /* red */
+#toast.success { background: #2e8b57; }
+#toast.error { background: #c0392b; }
 
-/* small responsive */
 @media (max-width: 480px) {
   .modal { width: 90%; }
-  .card { margin-bottom: 0; } /* remove vertical stacking */
+  .cards { gap: 8px; } 
+  .card { padding: 12px; }
 }
+
   </style>
 </head>
 <body>
@@ -112,7 +113,6 @@ input[readonly] {
 
   <button onclick="openModal()">Apply Leave</button>
 
-  <!-- Leave Table -->
   <table>
     <thead>
       <tr>
@@ -127,7 +127,6 @@ input[readonly] {
     <tbody></tbody>
   </table>
 
-  <!-- Modal -->
   <div class="modal-bg" id="modalBg">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <h3 id="modalTitle">Apply Leave</h3>
@@ -149,181 +148,125 @@ input[readonly] {
     </div>
   </div>
 
-  <!-- Toast -->
   <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbxHagbO7YBnS2qAAwCTyfc_2Rz3jNEMy0JJul8OQ_zO-HjvWkF9fN1_7a2DMpQDskCb/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbxHagbO7YBnS2qAAwCTyfc_2Rz3jNEMy0JJul8OQ_zO-HjvWkF9fN1_7a2DMpQDskCb/exec";
 
-  let applicantName = localStorage.getItem('full');
-  let applicantEID  = localStorage.getItem('eid');
+let applicantName = localStorage.getItem('full');
+let applicantEID  = localStorage.getItem('eid');
+if(!applicantName){ applicantName = prompt("Enter your name:"); if(applicantName) localStorage.setItem('full', applicantName);}
+if(!applicantEID){ applicantEID = prompt("Enter your Employee ID:"); if(applicantEID) localStorage.setItem('eid', applicantEID);}
 
-  if (!applicantName) {
-    applicantName = prompt("Enter your name:");
-    if (applicantName) localStorage.setItem('full', applicantName);
-  }
-  if (!applicantEID) {
-    applicantEID = prompt("Enter your Employee ID:");
-    if (applicantEID) localStorage.setItem('eid', applicantEID);
-  }
+const modalBg = document.getElementById('modalBg');
+const eidInput = document.getElementById('eid');
+const nameInput = document.getElementById('name');
+const dateFiled = document.getElementById('dateFiled');
+const reason = document.getElementById('reason');
+const fromDate = document.getElementById('fromDate');
+const toDate = document.getElementById('toDate');
+const days = document.getElementById('days');
+const status = document.getElementById('status');
+const saveBtn = document.getElementById('saveBtn');
+const toastEl = document.getElementById('toast');
 
-  const modalBg = document.getElementById('modalBg');
-  const eidInput = document.getElementById('eid');
-  const nameInput = document.getElementById('name');
-  const dateFiled = document.getElementById('dateFiled');
-  const reason = document.getElementById('reason');
-  const fromDate = document.getElementById('fromDate');
-  const toDate = document.getElementById('toDate');
-  const days = document.getElementById('days');
-  const status = document.getElementById('status');
-  const saveBtn = document.getElementById('saveBtn');
-  const toastEl = document.getElementById('toast');
+const requiredIds = ['dateFiled','reason','fromDate','toDate','days'];
 
-  const requiredIds = ['dateFiled','reason','fromDate','toDate','days'];
+function showToast(message, type='success'){
+  toastEl.textContent = message;
+  toastEl.className='';
+  toastEl.classList.add(type==='success'?'success':'error');
+  toastEl.style.display='block';
+  setTimeout(()=>{toastEl.style.display='none';},3000);
+}
 
-  function showToast(message, type = 'success') {
-    toastEl.textContent = message;
-    toastEl.className = '';
-    toastEl.classList.add(type === 'success' ? 'success' : 'error');
-    toastEl.style.display = 'block';
-    setTimeout(() => { toastEl.style.display = 'none'; }, 3000);
-  }
+function validateForm(){ return requiredIds.every(id=>{ const el=document.getElementById(id); return el && String(el.value).trim()!=="";});}
+function refreshSaveState(){ saveBtn.disabled = !validateForm();}
+requiredIds.forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('input', refreshSaveState); el.addEventListener('change', refreshSaveState); }});
 
-  function validateForm() {
-    return requiredIds.every(id => {
-      const el = document.getElementById(id);
-      return el && String(el.value).trim() !== "";
-    });
-  }
+function openModal(){
+  eidInput.value = applicantEID || "";
+  nameInput.value = applicantName || "";
+  dateFiled.value = "";
+  reason.value = "";
+  fromDate.value = "";
+  toDate.value = "";
+  days.value = "";
+  status.value = "Pending";
+  refreshSaveState();
+  modalBg.style.display='flex';
+  dateFiled.focus();
+}
 
-  function refreshSaveState() {
-    saveBtn.disabled = !validateForm();
-  }
+function closeModal(){ modalBg.style.display='none'; }
 
-  requiredIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', refreshSaveState);
-      el.addEventListener('change', refreshSaveState);
-    }
-  });
+async function loadLeaves(){
+  try{
+    const res = await fetch(`${API_BASE}?action=getLeaves`);
+    const text = await res.text();
+    let data;
+    try{ data = JSON.parse(text);}catch{ showToast("Server returned invalid data.", "error"); return; }
 
-  function openModal(){
-    eidInput.value = applicantEID || "";
-    nameInput.value = applicantName || "";
-    dateFiled.value = "";
-    reason.value = "";
-    fromDate.value = "";
-    toDate.value = "";
-    days.value = "";
-    status.value = "Pending";
-    refreshSaveState();
-    modalBg.style.display = 'flex';
-    dateFiled.focus();
-  }
+    const tbody = document.querySelector("table tbody");
+    tbody.innerHTML="";
 
-  function closeModal(){ modalBg.style.display = 'none'; }
+    let totalCredits=10, leaveApplied=0;
 
-  async function loadLeaves(){
-    try {
-      const res = await fetch(`${API_BASE}?action=getLeaves`);
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch { showToast("Server returned invalid data.", "error"); return; }
-
-      const tbody = document.querySelector("table tbody");
-      tbody.innerHTML = "";
-
-      let totalCredits = 10;
-      let leaveApplied = 0;
-
-      if (Array.isArray(data)) {
-        data.forEach(row => {
-          if (String(row.EID) === String(applicantEID)) {
-            const daysVal = Number(row['# of Days'] || row.days || 0);
-            if (!isNaN(daysVal)) leaveApplied += daysVal;
-
-            const dateFiledVal = row['Date Filed'] ?? row.dateFiled ?? '';
-            const reasonVal = row['Reason'] ?? row.reason ?? '';
-            const fromVal = row['From'] ?? row.fromDate ?? '';
-            const toVal = row['To'] ?? row.toDate ?? '';
-            const numDaysVal = row['# of Days'] ?? row.days ?? '';
-            const statusVal = row['Status'] ?? row.status ?? '';
-
-            tbody.innerHTML += `
-              <tr>
-                <td>${escapeHtml(dateFiledVal)}</td>
-                <td>${escapeHtml(reasonVal)}</td>
-                <td>${escapeHtml(fromVal)}</td>
-                <td>${escapeHtml(toVal)}</td>
-                <td>${escapeHtml(numDaysVal)}</td>
-                <td>${escapeHtml(statusVal)}</td>
-              </tr>`;
-          }
-        });
-      }
-
-      document.getElementById('totalCredits').textContent = totalCredits;
-      document.getElementById('leaveApplied').textContent = leaveApplied;
-      document.getElementById('remainingLeave').textContent = (totalCredits - leaveApplied);
-
-    } catch { showToast("Could not load leaves (network).", "error"); }
-  }
-
-  async function saveLeave(){
-    if (!validateForm()) { showToast("Please complete all required fields.", "error"); return; }
-
-    saveBtn.disabled = true;
-    saveBtn.textContent = "Saving...";
-
-    const payload = {
-      method: "saveLeave",
-      EID: applicantEID,
-      name: applicantName,
-      dateFiled: dateFiled.value,
-      reason: reason.value,
-      fromDate: fromDate.value,
-      toDate: toDate.value,
-      days: days.value,
-      status: status.value
-    };
-
-    try {
-      const res = await fetch(API_BASE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+    if(Array.isArray(data)){
+      data.forEach(row=>{
+        if(String(row.EID)===String(applicantEID)){
+          const daysVal=Number(row['# of Days']||row.days||0);
+          if(!isNaN(daysVal)) leaveApplied+=daysVal;
+          const dateFiledVal = row['Date Filed']??row.dateFiled??'';
+          const reasonVal = row['Reason']??row.reason??'';
+          const fromVal = row['From']??row.fromDate??'';
+          const toVal = row['To']??row.toDate??'';
+          const numDaysVal = row['# of Days']??row.days??'';
+          const statusVal = row['Status']??row.status??'';
+          tbody.innerHTML+=`<tr>
+            <td>${escapeHtml(dateFiledVal)}</td>
+            <td>${escapeHtml(reasonVal)}</td>
+            <td>${escapeHtml(fromVal)}</td>
+            <td>${escapeHtml(toVal)}</td>
+            <td>${escapeHtml(numDaysVal)}</td>
+            <td>${escapeHtml(statusVal)}</td>
+          </tr>`;
+        }
       });
+    }
 
-      const txt = await res.text();
-      let data;
-      try { data = JSON.parse(txt); } catch { data = { error: 'Invalid server response' }; }
+    document.getElementById('totalCredits').textContent = totalCredits;
+    document.getElementById('leaveApplied').textContent = leaveApplied;
+    document.getElementById('remainingLeave').textContent = totalCredits-leaveApplied;
+  }catch{ showToast("Could not load leaves (network).","error"); }
+}
 
-      if (res.ok && (data.status === "success" || data.success === true)) {
-        showToast("Leave saved successfully!", "success");
-        closeModal();
-        await loadLeaves();
-      } else {
-        const errMsg = data.message || data.error || "Failed to save leave.";
-        showToast(errMsg, "error");
-      }
-    } catch { showToast("Network error while saving.", "error"); }
-    finally { saveBtn.disabled = !validateForm(); saveBtn.textContent = "Save"; }
-  }
+async function saveLeave(){
+  if(!validateForm()){ showToast("Please complete all required fields.","error"); return; }
+  saveBtn.disabled=true;
+  saveBtn.textContent="Saving...";
 
-  function escapeHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str).replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;")
-                      .replace(/"/g, "&quot;")
-                      .replace(/'/g, "&#039;");
-  }
+  const payload={ method:"saveLeave", EID:applicantEID, name:applicantName,
+    dateFiled:dateFiled.value, reason:reason.value, fromDate:fromDate.value,
+    toDate:toDate.value, days:days.value, status:status.value };
 
-  loadLeaves();
+  try{
+    const res = await fetch(API_BASE,{ method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(payload) });
+    const txt = await res.text();
+    let data;
+    try{ data=JSON.parse(txt);}catch{ data={ error:'Invalid server response'};}
+    if(res.ok && (data.status==="success"||data.success===true)){ showToast("Leave saved successfully!","success"); closeModal(); await loadLeaves(); }
+    else{ const errMsg = data.message||data.error||"Failed to save leave."; showToast(errMsg,"error"); }
+  }catch{ showToast("Network error while saving.","error"); }
+  finally{ saveBtn.disabled = !validateForm(); saveBtn.textContent="Save"; }
+}
 
-  window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-  modalBg.addEventListener('click', e => { if (e.target === modalBg) closeModal(); });
+function escapeHtml(str){ if(str===null||str===undefined) return ''; return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+
+loadLeaves();
+
+window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+modalBg.addEventListener('click',e=>{ if(e.target===modalBg) closeModal(); });
 </script>
 
 </body>
