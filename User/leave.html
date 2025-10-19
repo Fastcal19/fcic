@@ -22,12 +22,12 @@ body {
   display: flex;
   gap: 15px;
   margin-bottom: 25px;
-  overflow-x: auto;       /* allow horizontal scroll on small screens */
-  padding-bottom: 10px;   /* prevent scrollbar overlap */
+  flex-wrap: nowrap;       /* keep in one row */
 }
 
 .card {
-  flex: 0 0 200px;        /* fixed width so cards stay in one row */
+  flex: 1 1 0;            /* grow and shrink equally to fit screen */
+  min-width: 0;           /* allow shrinking below content width */
   background: white;
   padding: 20px;
   border-radius: 10px;
@@ -153,9 +153,7 @@ input[readonly] {
   <div id="toast"></div>
 
 <script>
-  // ----- CONFIG -----
   const API_BASE = "https://script.google.com/macros/s/AKfycbxHagbO7YBnS2qAAwCTyfc_2Rz3jNEMy0JJul8OQ_zO-HjvWkF9fN1_7a2DMpQDskCb/exec";
-  // ------------------
 
   let applicantName = localStorage.getItem('full');
   let applicantEID  = localStorage.getItem('eid');
@@ -185,7 +183,7 @@ input[readonly] {
 
   function showToast(message, type = 'success') {
     toastEl.textContent = message;
-    toastEl.className = ''; 
+    toastEl.className = '';
     toastEl.classList.add(type === 'success' ? 'success' : 'error');
     toastEl.style.display = 'block';
     setTimeout(() => { toastEl.style.display = 'none'; }, 3000);
@@ -310,26 +308,22 @@ input[readonly] {
         showToast(errMsg, "error");
       }
     } catch { showToast("Network error while saving.", "error"); }
-    finally {
-      saveBtn.disabled = !validateForm();
-      saveBtn.textContent = "Save";
-    }
+    finally { saveBtn.disabled = !validateForm(); saveBtn.textContent = "Save"; }
   }
 
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+    return String(str).replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
   }
 
   loadLeaves();
 
-  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-  modalBg.addEventListener('click', (e) => { if (e.target === modalBg) closeModal(); });
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  modalBg.addEventListener('click', e => { if (e.target === modalBg) closeModal(); });
 </script>
 
 </body>
