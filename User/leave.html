@@ -1,20 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Employee Leave Page</title>
-  <style>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Employee Leave Page</title>
+<style>
 body {
   font-family: Arial, sans-serif;
-  margin: 5;                        
-  min-height: 100vh;                
+  margin: 5px;                        
+  min-height: 100vh;                 
   background: linear-gradient(10deg, gold, orangered);
-}
-
-.container {
-  padding: 10px;                     
 }
 
 /* Cards */
@@ -22,13 +17,12 @@ body {
   display: flex;
   gap: 10px;
   margin-bottom: 25px;
-  flex-wrap: nowrap;       
-  overflow-x: auto; /* allow horizontal scroll on extremely tiny screens */
+  flex-wrap: nowrap; /* keep in one row */
 }
 
 .card {
-  flex: 1 1 0;            
-  min-width: 100px;       /* cards won't shrink below this */
+  flex: 1 1 0;          /* allow proportional shrinking */
+  min-width: 0;         /* ensures shrinking works */
   background: white;
   padding: 15px;
   border-radius: 10px;
@@ -74,9 +68,7 @@ th { background:#e9ecef; text-align:left; }
   background:#dc3545;
   color: #fff;
 }
-input[readonly] {
-  background:#f0f0f0;
-}
+input[readonly] { background:#f0f0f0; }
 
 /* Toast */
 #toast {
@@ -94,61 +86,81 @@ input[readonly] {
 #toast.success { background: #2e8b57; }
 #toast.error { background: #c0392b; }
 
+/* ===== RESPONSIVE ===== */
+
+/* Cards shrink proportionally on small screens */
 @media (max-width: 480px) {
-  .modal { width: 90%; }
-  .cards { gap: 8px; } 
+  .cards { gap: 8px; }
   .card { padding: 12px; }
 }
 
-  </style>
+/* Table column visibility */
+/* Portrait: only show 1st, 2nd, 6th */
+@media (max-width: 480px) and (orientation: portrait) {
+  table th:nth-child(3),
+  table th:nth-child(4),
+  table th:nth-child(5),
+  table td:nth-child(3),
+  table td:nth-child(4),
+  table td:nth-child(5) {
+    display: none;
+  }
+}
+
+/* Landscape: show all columns */
+@media (max-width: 480px) and (orientation: landscape) {
+  table th, table td { display: table-cell; }
+}
+
+</style>
 </head>
 <body>
 
-  <!-- Cards -->
-  <div class="cards">
-    <div class="card"><h2>Total Credits</h2><div class="value" id="totalCredits">10</div></div>
-    <div class="card"><h2>Leave Used</h2><div class="value" id="leaveApplied">0</div></div>
-    <div class="card"><h2>Remaining Leave</h2><div class="value" id="remainingLeave">10</div></div>
-  </div>
+<!-- Cards -->
+<div class="cards">
+  <div class="card"><h2>Total Credits</h2><div class="value" id="totalCredits">10</div></div>
+  <div class="card"><h2>Leave Used</h2><div class="value" id="leaveApplied">0</div></div>
+  <div class="card"><h2>Remaining Leave</h2><div class="value" id="remainingLeave">10</div></div>
+</div>
 
-  <button onclick="openModal()">Apply Leave</button>
+<button onclick="openModal()">Apply Leave</button>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Date Filed</th>
-        <th>Reason</th>
-        <th>From</th>
-        <th>To</th>
-        <th># of Days</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<table>
+  <thead>
+    <tr>
+      <th>Date Filed</th>
+      <th>Reason</th>
+      <th>From</th>
+      <th>To</th>
+      <th># of Days</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-  <div class="modal-bg" id="modalBg">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <h3 id="modalTitle">Apply Leave</h3>
-      <input type="text" id="eid" placeholder="Employee ID" readonly>
-      <input type="text" id="name" placeholder="Name" readonly>
-      <input type="date" id="dateFiled" placeholder="Date Filed">
-      <textarea id="reason" placeholder="Reason"></textarea>
-      <input type="date" id="fromDate" placeholder="From">
-      <input type="date" id="toDate" placeholder="To">
-      <input type="number" id="days" placeholder="# of Days" min="1">
-      <select id="status">
-        <option>Pending</option>
-        <option>Cancel</option>
-      </select>
-      <div class="actions">
-        <button class="close-btn" onclick="closeModal()" type="button">Close</button>
-        <button id="saveBtn" onclick="saveLeave()" disabled type="button">Save</button>
-      </div>
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Apply Leave</h3>
+    <input type="text" id="eid" placeholder="Employee ID" readonly>
+    <input type="text" id="name" placeholder="Name" readonly>
+    <input type="date" id="dateFiled" placeholder="Date Filed">
+    <textarea id="reason" placeholder="Reason"></textarea>
+    <input type="date" id="fromDate" placeholder="From">
+    <input type="date" id="toDate" placeholder="To">
+    <input type="number" id="days" placeholder="# of Days" min="1">
+    <select id="status">
+      <option>Pending</option>
+      <option>Cancel</option>
+    </select>
+    <div class="actions">
+      <button class="close-btn" onclick="closeModal()" type="button">Close</button>
+      <button id="saveBtn" onclick="saveLeave()" disabled type="button">Save</button>
     </div>
   </div>
+</div>
 
-  <div id="toast"></div>
+<div id="toast"></div>
 
 <script>
 const API_BASE = "https://script.google.com/macros/s/AKfycbxHagbO7YBnS2qAAwCTyfc_2Rz3jNEMy0JJul8OQ_zO-HjvWkF9fN1_7a2DMpQDskCb/exec";
@@ -169,7 +181,6 @@ const days = document.getElementById('days');
 const status = document.getElementById('status');
 const saveBtn = document.getElementById('saveBtn');
 const toastEl = document.getElementById('toast');
-
 const requiredIds = ['dateFiled','reason','fromDate','toDate','days'];
 
 function showToast(message, type='success'){
@@ -264,7 +275,6 @@ async function saveLeave(){
 function escapeHtml(str){ if(str===null||str===undefined) return ''; return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
 
 loadLeaves();
-
 window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 modalBg.addEventListener('click',e=>{ if(e.target===modalBg) closeModal(); });
 </script>
