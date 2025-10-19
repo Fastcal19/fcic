@@ -5,7 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Employee Leave Page</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background:linear-gradient(10deg, gold, orangered); }
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 5;                         /* remove white edges */
+  min-height: 100vh;                 /* full height gradient */
+  background: linear-gradient(10deg, gold, orangered);
+}
+
+.container {
+  padding: 10px;                     /* move spacing here */
+}
+
 
     .cards { display: flex; gap: 15px; margin-bottom: 25px; }
     .card {
@@ -72,29 +83,11 @@
     #toast.error { background: #c0392b; }   /* red */
 
     /* small responsive */
-  @media (max-width: 480px) {
-  .cards {
-    display: flex;
-    flex-wrap: nowrap;        /* force one row */
-    overflow-x: auto;         /* allow scroll sideways */
-    gap: 8px;
-  }
-  .card {
-    flex: 0 0 auto;           /* prevent shrinking too small */
-    width: 110px;             /* fixed width so 3 can line */
-    padding: 10px;
-  }
-  .card h2 {
-    font-size: 12px;
-    margin-bottom: 4px;
-  }
-  .card .value {
-    font-size: 18px;
-  }
-}
-
-
-
+    @media (max-width: 480px) {
+      .modal { width: 90%; }
+      .cards { flex-direction: column; }
+      .card { margin-bottom: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -150,7 +143,7 @@
 
 <script>
   // ----- CONFIG -----
-  const API_BASE = "https://script.google.com/macros/s/AKfycbzeI4gYvnyq5aGYohuJ5gY7FN0SVNADu75qFJFeFbLNil11E84DLrE1o0luA8k8bF2x/execc";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbxHagbO7YBnS2qAAwCTyfc_2Rz3jNEMy0JJul8OQ_zO-HjvWkF9fN1_7a2DMpQDskCb/exec";
   // ------------------
 
   // Use consistent storage keys: 'full' and 'eid' if present. If absent, prompt and store under the same keys.
