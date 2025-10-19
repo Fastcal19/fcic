@@ -14,7 +14,6 @@
       background: orangered;
     }
 
-    /* Sidebar */
     .sidebar {
       width: 180px;
       background: linear-gradient(10deg, gold, orangered);
@@ -32,13 +31,12 @@
       scrollbar-color: #333 #FFB347;
       transition: transform 0.3s ease-in-out;
       z-index: 1000;
+      transform: translateX(0); /* default visible on desktop */
     }
 
     .sidebar::-webkit-scrollbar { width: 6px; }
     .sidebar::-webkit-scrollbar-track { background: #FFD580; }
     .sidebar::-webkit-scrollbar-thumb { background-color: #333; border-radius: 3px; }
-
-    .sidebar.hidden { transform: translateX(-100%); }
 
     .userbox{
       text-align:center;
@@ -102,9 +100,14 @@
     .menu-toggle { display: none; } /* hidden toggle */
 
     @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); width: 50%; }
-      .sidebar.active { transform: translateX(0); }
-      .main { margin-left: 0; }
+      .sidebar {
+        transform: translateX(-100%);
+        width: 50%;
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .main { margin-left: 0; transition: margin-left 0.3s ease; }
     }
   </style>
 </head>
@@ -126,99 +129,91 @@
     <button class="logout-btn" onclick="logout()">Logout</button>
   </aside>
 
-  <div class="main">
+  <div class="main" id="main">
     <iframe id="mainFrame" src="dashboard.html"></iframe>
   </div>
 
   <script>
-  // read user info from localStorage
-  const fullName = localStorage.getItem("full");
-  const photo = localStorage.getItem("photo");
-  const role = localStorage.getItem("role");
+    const fullName = localStorage.getItem("full");
+    const photo = localStorage.getItem("photo");
+    const role = localStorage.getItem("role");
 
-  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
-  if(photo) document.getElementById("userPhoto").src = "./" + photo;
+    if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+    if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
-  // Show Project Costing link only for Purchaser
-  const projLink = document.getElementById("projectCostingLink");
-  if(role !== "Purchaser") projLink.style.display = "none";
+    const projLink = document.getElementById("projectCostingLink");
+    if(role !== "Purchaser") projLink.style.display = "none";
 
-  const sidebar = document.getElementById('sidebar');
-  const main = document.querySelector('.main');
-  let autoCloseTimer = null;
-  const MOBILE_BREAKPOINT = 768;
-  const AUTO_CLOSE_MS = 3000;
-  let touchStartX = 0, touchEndX = 0;
+    const sidebar = document.getElementById('sidebar');
+    const main = document.getElementById('main');
+    let autoCloseTimer = null;
+    const MOBILE_BREAKPOINT = 768;
+    const AUTO_CLOSE_MS = 3000;
+    let touchStartX = 0, touchEndX = 0;
 
-  // Desktop always visible
-  function handleResize() {
-    if(window.innerWidth > MOBILE_BREAKPOINT) {
-      sidebar.classList.remove('active');
-      main.style.marginLeft = '220px';
-      clearTimeout(autoCloseTimer);
-    } else {
-      sidebar.classList.add('hidden');
-      main.style.marginLeft = '0px';
+    // Desktop always visible
+    function handleResize() {
+      if(window.innerWidth > MOBILE_BREAKPOINT) {
+        sidebar.classList.remove('active');
+        main.style.marginLeft = '220px';
+        clearTimeout(autoCloseTimer);
+      }
     }
-  }
-  handleResize();
-  window.addEventListener('resize', handleResize);
+    handleResize();
+    window.addEventListener('resize', handleResize);
 
-  // Mobile swipe detection
-document.addEventListener('touchstart', e => {
-  if(window.innerWidth > MOBILE_BREAKPOINT) return;
-  touchStartX = e.touches[0].clientX;
-});
-
-document.addEventListener('touchmove', e => {
-  if(window.innerWidth > MOBILE_BREAKPOINT) return;
-  touchEndX = e.touches[0].clientX;
-});
-
-document.addEventListener('touchend', () => {
-  if(window.innerWidth > MOBILE_BREAKPOINT) return;
-  const swipeDist = touchEndX - touchStartX;
-
-  if(swipeDist > 50 && !sidebar.classList.contains('active')) openSidebar();
-  if(swipeDist < -50 && sidebar.classList.contains('active')) closeSidebar();
-});
-
-function openSidebar() {
-  sidebar.classList.remove('hidden');   // ✅ remove hidden
-  sidebar.classList.add('active');
-  main.style.marginLeft = sidebar.offsetWidth + 'px';
-  startAutoClose();
-}
-
-function closeSidebar() {
-  sidebar.classList.add('hidden');      // ✅ add hidden back
-  sidebar.classList.remove('active');
-  main.style.marginLeft = '0px';
-  startAutoClose(true);
-}
-
-
-  function startAutoClose(clearOnly=false) {
-    clearTimeout(autoCloseTimer);
-    if(!clearOnly && window.innerWidth <= MOBILE_BREAKPOINT) {
-      autoCloseTimer = setTimeout(closeSidebar, AUTO_CLOSE_MS);
-    }
-  }
-
-  sidebar.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      if(window.innerWidth <= MOBILE_BREAKPOINT) closeSidebar();
+    // Mobile swipe detection
+    document.addEventListener('touchstart', e => {
+      if(window.innerWidth > MOBILE_BREAKPOINT) return;
+      touchStartX = e.touches[0].clientX;
     });
-  });
 
-  function showPage(page) {
-    document.getElementById("mainFrame").src = page + ".html";
-  }
+    document.addEventListener('touchmove', e => {
+      if(window.innerWidth > MOBILE_BREAKPOINT) return;
+      touchEndX = e.touches[0].clientX;
+    });
 
-  function logout() {
-    localStorage.clear();
-    window.location.href = '/';
-  }
+    document.addEventListener('touchend', () => {
+      if(window.innerWidth > MOBILE_BREAKPOINT) return;
+      const swipeDist = touchEndX - touchStartX;
+
+      if(swipeDist > 50 && !sidebar.classList.contains('active')) openSidebar();
+      if(swipeDist < -50 && sidebar.classList.contains('active')) closeSidebar();
+    });
+
+    function openSidebar() {
+      sidebar.classList.add('active');
+      main.style.marginLeft = sidebar.offsetWidth + 'px';
+      startAutoClose();
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('active');
+      main.style.marginLeft = '0px';
+      startAutoClose(true);
+    }
+
+    function startAutoClose(clearOnly=false) {
+      clearTimeout(autoCloseTimer);
+      if(!clearOnly && window.innerWidth <= MOBILE_BREAKPOINT) {
+        autoCloseTimer = setTimeout(closeSidebar, AUTO_CLOSE_MS);
+      }
+    }
+
+    sidebar.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        if(window.innerWidth <= MOBILE_BREAKPOINT) closeSidebar();
+      });
+    });
+
+    function showPage(page) {
+      document.getElementById("mainFrame").src = page + ".html";
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/';
+    }
   </script>
 </body>
 </html>
