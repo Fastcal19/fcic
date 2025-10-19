@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Employee Leave Page</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background:linear-gradient(10deg, gold, orangered); }
@@ -33,23 +33,49 @@
     .modal-bg {
       display:none; position:fixed; top:0; left:0; width:100%; height:100%;
       background:rgba(0,0,0,0.5); justify-content:center; align-items:center;
+      z-index: 999;
     }
     .modal {
-      background:white; padding:20px; border-radius:10px; width:300px;
+      background:white; padding:20px; border-radius:10px; width:320px;
       box-shadow:0 2px 6px rgba(0,0,0,0.3);
     }
     .modal h3 { margin-top:0; }
     .modal input, .modal select, .modal textarea {
       width:100%; margin-bottom:10px; padding:8px; font-size:14px;
       border:1px solid #ccc; border-radius:5px;
+      box-sizing: border-box;
     }
-    .modal .actions { text-align:right; }
+    .modal .actions { text-align:right; display:flex; gap:8px; justify-content:flex-end; }
     .close-btn {
       background:#dc3545;
+      color: #fff;
     }
     /* Disable editing for autofilled fields */
     input[readonly] {
       background:#f0f0f0;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      padding: 12px 16px;
+      border-radius: 6px;
+      color: white;
+      display: none;
+      z-index: 2000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-weight: 600;
+    }
+    #toast.success { background: #2e8b57; } /* green */
+    #toast.error { background: #c0392b; }   /* red */
+
+    /* small responsive */
+    @media (max-width: 480px) {
+      .modal { width: 90%; }
+      .cards { flex-direction: column; }
+      .card { margin-bottom: 10px; }
     }
   </style>
 </head>
@@ -58,8 +84,8 @@
   <!-- Cards -->
   <div class="cards">
     <div class="card"><h2>Total Credits</h2><div class="value" id="totalCredits">10</div></div>
-    <div class="card"><h2>Leave Applied</h2><div class="value" id="leaveApplied">4</div></div>
-    <div class="card"><h2>Remaining Leave</h2><div class="value" id="remainingLeave">11</div></div>
+    <div class="card"><h2>Leave Applied</h2><div class="value" id="leaveApplied">0</div></div>
+    <div class="card"><h2>Remaining Leave</h2><div class="value" id="remainingLeave">10</div></div>
   </div>
 
   <button onclick="openModal()">Apply Leave</button>
@@ -81,106 +107,257 @@
 
   <!-- Modal -->
   <div class="modal-bg" id="modalBg">
-    <div class="modal">
-      <h3>Apply Leave</h3>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">Apply Leave</h3>
       <input type="text" id="eid" placeholder="Employee ID" readonly>
       <input type="text" id="name" placeholder="Name" readonly>
       <input type="date" id="dateFiled" placeholder="Date Filed">
       <textarea id="reason" placeholder="Reason"></textarea>
       <input type="date" id="fromDate" placeholder="From">
       <input type="date" id="toDate" placeholder="To">
-      <input type="number" id="days" placeholder="# of Days">
+      <input type="number" id="days" placeholder="# of Days" min="1">
       <select id="status">
         <option>Pending</option>
         <option>Cancel</option>
       </select>
       <div class="actions">
-        <button class="close-btn" onclick="closeModal()">Close</button>
-        <button onclick="saveLeave()">Save</button>
+        <button class="close-btn" onclick="closeModal()" type="button">Close</button>
+        <button id="saveBtn" onclick="saveLeave()" disabled type="button">Save</button>
       </div>
     </div>
   </div>
 
+  <!-- Toast -->
+  <div id="toast"></div>
+
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbxOsjlAroo10_qUNCHyU_xcaKoMHWSxw81XcVE6v8z7HXC-X6en3fB5jBrScC2Z1mFU/exec"; // Replace with your Apps Script URL
+  // ----- CONFIG -----
+  const API_BASE = "https://script.google.com/macros/s/AKfycbzXpiMW3qLPvRwefUUq4VFrX9pkJxvfAwa-3csXpwUI6UcgYq8O_j6xr7BLILCe7nGi7g/exec";
+  // ------------------
 
-  // Save applicant info temporarily
+  // Use consistent storage keys: 'full' and 'eid' if present. If absent, prompt and store under the same keys.
   let applicantName = localStorage.getItem('full');
-  let applicantEID = localStorage.getItem('eid');
+  let applicantEID  = localStorage.getItem('eid');
 
-  if(!applicantName) {
+  if (!applicantName) {
     applicantName = prompt("Enter your name:");
-    localStorage.setItem('applicantName', applicantName);
+    if (applicantName) localStorage.setItem('full', applicantName);
   }
-  if(!applicantEID) {
+  if (!applicantEID) {
     applicantEID = prompt("Enter your Employee ID:");
-    localStorage.setItem('applicantEID', applicantEID);
+    if (applicantEID) localStorage.setItem('eid', applicantEID);
   }
 
-  // Autofill modal fields
-  function openModal(){
-    document.getElementById('modalBg').style.display='flex';
-    document.getElementById('eid').value = applicantEID;
-    document.getElementById('name').value = applicantName;
+  // UI elements cached
+  const modalBg = document.getElementById('modalBg');
+  const eidInput = document.getElementById('eid');
+  const nameInput = document.getElementById('name');
+  const dateFiled = document.getElementById('dateFiled');
+  const reason = document.getElementById('reason');
+  const fromDate = document.getElementById('fromDate');
+  const toDate = document.getElementById('toDate');
+  const days = document.getElementById('days');
+  const status = document.getElementById('status');
+  const saveBtn = document.getElementById('saveBtn');
+  const toastEl = document.getElementById('toast');
+
+  // Required fields to enable Save (option A)
+  const requiredIds = ['dateFiled','reason','fromDate','toDate','days'];
+
+  // Show toast with color (option 2)
+  function showToast(message, type = 'success') {
+    toastEl.textContent = message;
+    toastEl.className = ''; // reset
+    if (type === 'success') toastEl.classList.add('success');
+    else toastEl.classList.add('error');
+    toastEl.style.display = 'block';
+    // auto-hide after 3s
+    setTimeout(() => {
+      toastEl.style.display = 'none';
+    }, 3000);
   }
 
-  function closeModal(){ document.getElementById('modalBg').style.display='none'; }
-
-  // Load leave data
-  async function loadLeaves(){
-    const res = await fetch(`${API_BASE}?action=getLeaves`);
-    const data = await res.json();
-    const tbody = document.querySelector("table tbody");
-    tbody.innerHTML = "";
-
-    let totalCredits = 10; // example, can fetch dynamically
-    let leaveApplied = 0;
-
-    data.forEach(row => {
-      if(row.EID === applicantEID){
-        leaveApplied += Number(row['# of Days']);
-        tbody.innerHTML += `
-          <tr>
-            <td>${row['Date Filed']}</td>
-            <td>${row['Reason']}</td>
-            <td>${row['From']}</td>
-            <td>${row['To']}</td>
-            <td>${row['# of Days']}</td>
-            <td>${row['Status']}</td>
-          </tr>
-        `;
-      }
+  // Validate required fields (non-empty). (No math validation on days per option 3)
+  function validateForm() {
+    return requiredIds.every(id => {
+      const el = document.getElementById(id);
+      return el && String(el.value).trim() !== "";
     });
-
-    document.getElementById('totalCredits').textContent = totalCredits;
-    document.getElementById('leaveApplied').textContent = leaveApplied;
-    document.getElementById('remainingLeave').textContent = totalCredits - leaveApplied;
   }
 
-  // Save leave
+  // Enable/disable save button
+  function refreshSaveState() {
+    saveBtn.disabled = !validateForm();
+  }
+
+  // Attach listeners to required inputs to toggle Save state
+  requiredIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', refreshSaveState);
+      el.addEventListener('change', refreshSaveState);
+    }
+  });
+
+  // Open modal: autofill readonly fields and reset inputs
+  function openModal(){
+    eidInput.value = applicantEID || "";
+    nameInput.value = applicantName || "";
+    dateFiled.value = "";
+    reason.value = "";
+    fromDate.value = "";
+    toDate.value = "";
+    days.value = "";
+    status.value = "Pending";
+    refreshSaveState();
+    modalBg.style.display = 'flex';
+    dateFiled.focus();
+  }
+
+  function closeModal(){
+    modalBg.style.display = 'none';
+  }
+
+  // Load leave data from backend via GET ?action=getLeaves
+  async function loadLeaves(){
+    try {
+      const res = await fetch(`${API_BASE}?action=getLeaves`);
+      // handle non-json safely
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.error('Failed to parse getLeaves response', text);
+        showToast("Server returned invalid data.", "error");
+        return;
+      }
+
+      const tbody = document.querySelector("table tbody");
+      tbody.innerHTML = "";
+
+      let totalCredits = 10; // static example; change if you have dynamic data
+      let leaveApplied = 0;
+
+      // Expecting array of objects where headers are keys like 'EID', 'Date Filed', '# of Days', etc.
+      if (Array.isArray(data)) {
+        data.forEach(row => {
+          // compare EID; be tolerant of number vs string
+          if (String(row.EID) === String(applicantEID)) {
+            // accumulate applied days if present
+            const daysVal = Number(row['# of Days'] || row.days || 0);
+            if (!isNaN(daysVal)) leaveApplied += daysVal;
+
+            // Safely access columns with fallbacks
+            const dateFiledVal = row['Date Filed'] ?? row.dateFiled ?? '';
+            const reasonVal = row['Reason'] ?? row.reason ?? '';
+            const fromVal = row['From'] ?? row.fromDate ?? '';
+            const toVal = row['To'] ?? row.toDate ?? '';
+            const numDaysVal = row['# of Days'] ?? row.days ?? '';
+            const statusVal = row['Status'] ?? row.status ?? '';
+
+            tbody.innerHTML += `
+              <tr>
+                <td>${escapeHtml(dateFiledVal)}</td>
+                <td>${escapeHtml(reasonVal)}</td>
+                <td>${escapeHtml(fromVal)}</td>
+                <td>${escapeHtml(toVal)}</td>
+                <td>${escapeHtml(numDaysVal)}</td>
+                <td>${escapeHtml(statusVal)}</td>
+              </tr>
+            `;
+          }
+        });
+      } else {
+        console.warn('getLeaves returned non-array', data);
+      }
+
+      document.getElementById('totalCredits').textContent = totalCredits;
+      document.getElementById('leaveApplied').textContent = leaveApplied;
+      document.getElementById('remainingLeave').textContent = (totalCredits - leaveApplied);
+
+    } catch (err) {
+      console.error('Error loading leaves', err);
+      showToast("Could not load leaves (network).", "error");
+    }
+  }
+
+  // Save leave (POST) — sends method:"saveLeave" so backend can route
   async function saveLeave(){
-    const leave = {
+    // final validation before sending
+    if (!validateForm()) {
+      showToast("Please complete all required fields.", "error");
+      return;
+    }
+
+    // disable save while sending
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+
+    const payload = {
+      method: "saveLeave",
       EID: applicantEID,
       name: applicantName,
-      dateFiled: document.getElementById('dateFiled').value,
-      reason: document.getElementById('reason').value,
-      fromDate: document.getElementById('fromDate').value,
-      toDate: document.getElementById('toDate').value,
-      days: document.getElementById('days').value,
-      status: document.getElementById('status').value
+      dateFiled: dateFiled.value,
+      reason: reason.value,
+      fromDate: fromDate.value,
+      toDate: toDate.value,
+      days: days.value,
+      status: status.value
     };
 
-    await fetch(API_BASE, {
-      method: "POST",
-      body: JSON.stringify(leave),
-      headers: { "Content-Type": "application/json" }
-    });
+    try {
+      const res = await fetch(API_BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    closeModal();
-    loadLeaves(); // refresh table
+      // handle JSON or text
+      const txt = await res.text();
+      let data;
+      try { data = JSON.parse(txt); } catch(e) { data = { error: 'Invalid server response' }; }
+
+      if (res.ok && (data.status === "success" || data.success === true)) {
+        showToast("Leave saved successfully!", "success");
+        closeModal();
+        await loadLeaves();
+      } else {
+        const errMsg = data.message || data.error || "Failed to save leave.";
+        showToast(errMsg, "error");
+      }
+    } catch (err) {
+      console.error('saveLeave error', err);
+      showToast("Network error while saving.", "error");
+    } finally {
+      saveBtn.disabled = !validateForm();
+      saveBtn.textContent = "Save";
+    }
   }
 
+  // Small helper: escape HTML to prevent injection in table
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // Initial load
   loadLeaves();
+
+  // Close modal on ESC
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // Click outside modal to close
+  modalBg.addEventListener('click', (e) => {
+    if (e.target === modalBg) closeModal();
+  });
 </script>
 
 </body>
