@@ -155,7 +155,7 @@ input[readonly] { background:#f0f0f0; }
     </select>
     <div class="actions">
       <button class="close-btn" onclick="closeModal()" type="button">Close</button>
-      <button id="saveBtn" onclick="saveLeave()" disabled type="button">Save</button>
+      <button id="submitBtn" onclick="submitLeave()" disabled type="button">Submit</button>
     </div>
   </div>
 </div>
@@ -163,7 +163,7 @@ input[readonly] { background:#f0f0f0; }
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbxoxV6KABguvPj9nuVr28CfG57gyDnUUtcdQRYnS5dXvu7vwfeDxL_6-5Nhwt1pvShs/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbwt6G4AF9ZvA2I9kQYFlYxDSvT6a1XmBnpOqIRFpzgVBL3IXcFwDqnMyogRzgvm69c/exec";
 
 let applicantName = localStorage.getItem('full');
 let applicantEID  = localStorage.getItem('eid');
@@ -179,7 +179,7 @@ const fromDate = document.getElementById('fromDate');
 const toDate = document.getElementById('toDate');
 const days = document.getElementById('days');
 const status = document.getElementById('status');
-const saveBtn = document.getElementById('saveBtn');
+const submitBtn = document.getElementById('submitBtn');
 const toastEl = document.getElementById('toast');
 const requiredIds = ['dateFiled','reason','fromDate','toDate','days'];
 
@@ -192,7 +192,7 @@ function showToast(message, type='success'){
 }
 
 function validateForm(){ return requiredIds.every(id=>{ const el=document.getElementById(id); return el && String(el.value).trim()!=="";});}
-function refreshSaveState(){ saveBtn.disabled = !validateForm();}
+function refreshSaveState(){ submitBtn.disabled = !validateForm();}
 requiredIds.forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('input', refreshSaveState); el.addEventListener('change', refreshSaveState); }});
 
 function openModal(){
@@ -241,8 +241,8 @@ async function loadLeaves() {
           // Display all leaves in table
           const dateFiledVal = row['Date Filed'] || row.dateFiled || '';
           const reasonVal = row['Reason'] || row.reason || '';
-          const fromVal = row['From'] || row.fromDate || '';
-          const toVal = row['To'] || row.toDate || '';
+	  const fromVal = formatDate(row['From'] || row.fromDate || '');
+	  const toVal = formatDate(row['To'] || row.toDate || '');
           const numDaysVal = row['# of Days'] || row.days || '';
           const statusVal = row['Status'] || row.status || '';
 
@@ -270,12 +270,12 @@ async function loadLeaves() {
 }
 
 
-async function saveLeave(){
+async function submitLeave(){
   if(!validateForm()){ showToast("Please complete all required fields.","error"); return; }
-  saveBtn.disabled=true;
-  saveBtn.textContent="Saving...";
+  submitBtn.disabled=true;
+  submitBtn.textContent="Submitting...";
 
-  const payload={ method:"saveLeave", EID:applicantEID, name:applicantName,
+  const payload={ method:"submitLeave", eid:applicantEID, name:applicantName,
     dateFiled:dateFiled.value, reason:reason.value, fromDate:fromDate.value,
     toDate:toDate.value, days:days.value, status:status.value };
 
@@ -284,13 +284,21 @@ async function saveLeave(){
     const txt = await res.text();
     let data;
     try{ data=JSON.parse(txt);}catch{ data={ error:'Invalid server response'};}
-    if(res.ok && (data.status==="success"||data.success===true)){ showToast("Leave saved successfully!","success"); closeModal(); await loadLeaves(); }
-    else{ const errMsg = data.message||data.error||"Failed to save leave."; showToast(errMsg,"error"); }
+    if(res.ok && (data.status==="success"||data.success===true)){ showToast("Leave submitted successfully!","success"); closeModal(); await loadLeaves(); }
+    else{ const errMsg = data.message||data.error||"Failed to submit leave."; showToast(errMsg,"error"); }
   }catch{ showToast("Network error while saving.","error"); }
-  finally{ saveBtn.disabled = !validateForm(); saveBtn.textContent="Save"; }
+  finally{ submitBtn.disabled = !validateForm(); submitBtn.textContent="Submit"; }
 }
 
 function escapeHtml(str){ if(str===null||str===undefined) return ''; return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr; // fallback if invalid
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return d.toLocaleDateString('en-US', options);
+}
 
 loadLeaves();
 window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
