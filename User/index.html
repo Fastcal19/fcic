@@ -14,6 +14,7 @@
       background: orangered;
     }
 
+    /* Sidebar */
     .sidebar {
       width: 180px;
       background: linear-gradient(10deg, gold, orangered);
@@ -107,7 +108,7 @@
       .sidebar.active {
         transform: translateX(0);
       }
-      .main { margin-left: 0; transition: margin-left 0.3s ease; }
+      .main { margin-left: 0; }
     }
   </style>
 </head>
@@ -166,6 +167,7 @@
     document.addEventListener('touchstart', e => {
       if(window.innerWidth > MOBILE_BREAKPOINT) return;
       touchStartX = e.touches[0].clientX;
+      touchEndX = touchStartX; // reset
     });
 
     document.addEventListener('touchmove', e => {
@@ -177,8 +179,8 @@
       if(window.innerWidth > MOBILE_BREAKPOINT) return;
       const swipeDist = touchEndX - touchStartX;
 
-      if(swipeDist > 50 && !sidebar.classList.contains('active')) openSidebar();
-      if(swipeDist < -50 && sidebar.classList.contains('active')) closeSidebar();
+      if(swipeDist > 50 && !sidebar.classList.contains('active')) openSidebar();   // swipe right
+      if(swipeDist < -50 && sidebar.classList.contains('active')) closeSidebar();  // swipe left
     });
 
     function openSidebar() {
