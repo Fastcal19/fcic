@@ -109,11 +109,39 @@ iframe {
   cursor: pointer;
 }
 
+/* Mobile cards */
+.cards {
+  display: none; /* hidden on desktop */
+}
+.cards .card {
+  flex: 0 0 150px;
+  height: 120px;
+  background: gold;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); width: 50%; }
   .sidebar.active { transform: translateX(0); }
   .main { margin-left: 0; }
   .menu-toggle { display: block; }
+
+  /* Show cards on mobile */
+  .cards {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 15px;
+    padding: 15px;
+    overflow-x: auto;
+    margin-top: 10px; /* below toggle button */
+  }
 }
 </style>
 </head>
@@ -137,6 +165,13 @@ iframe {
   </div>
   <button class="logout-btn" onclick="logout()">Logout</button>
 </aside>
+
+<!-- Mobile cards -->
+<div class="cards" id="mobileCards">
+  <div class="card">Card 1</div>
+  <div class="card">Card 2</div>
+  <div class="card">Card 3</div>
+</div>
 
 <div class="main" id="mainWrapper">
   <iframe id="mainFrame" src="dashboard.html"></iframe>
