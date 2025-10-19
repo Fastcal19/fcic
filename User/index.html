@@ -5,117 +5,115 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fast Cal Industrial Corp</title>
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    height: 100vh;
-    display: flex;
-    overflow: hidden;
-    background: orangered;
-  }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+  background: orangered;
+}
 
-  /* Sidebar */
-  .sidebar {
-    width: 180px;
-    background: linear-gradient(10deg, gold, orangered);
-    color: #000;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    overflow: auto;
-    z-index: 1000;
-    transition: transform 0.3s ease-in-out;
-  }
+/* Sidebar */
+.sidebar {
+  width: 180px;
+  background: linear-gradient(10deg, gold, orangered);
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  overflow: auto;
+  z-index: 1000;
+  transition: transform 0.3s ease-in-out;
+}
 
-  .userbox {
-    text-align: center;
-    padding: 20px 0 10px;
-  }
+.userbox {
+  text-align:center;
+  padding:20px 0 10px;
+}
+.userbox img {
+  width:160px;
+  height:160px;
+  border-radius:50%;
+  object-fit:cover;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  background:#fff;
+}
+.username {
+  font-weight:bold;
+  font-size:16px;
+  color:#000;
+  margin-top:10px;
+  margin-bottom:30px;
+}
 
-  .userbox img {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    background: #fff;
-  }
+.sidebar a {
+  color: #000;
+  text-decoration: none;
+  padding: 10px;
+  display: block;
+  border-radius: 6px;
+  font-weight: bold;
+  margin: 2px 0;
+  background: lightgray;
+}
+.sidebar a:hover { background: #FFD580; }
 
-  .username {
-    font-weight: bold;
-    font-size: 16px;
-    color: #000;
-    margin: 10px 0 30px;
-  }
+.logout-btn {
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px; /* space below links */
+}
 
-  .sidebar a {
-    color: #000;
-    text-decoration: none;
-    padding: 10px;
-    display: block;
-    border-radius: 6px;
-    font-weight: bold;
-    margin: 2px 0;
-    background: lightgray;
-  }
+.main {
+  flex: 1;
+  background: #ccc;
+  margin-left: 220px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: margin-left 0.3s ease;
+}
 
-  .sidebar a:hover { background: #FFD580; }
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: linear-gradient(180deg, gold, orangered);
+}
 
-  .logout-btn {
-    background: #333;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-  }
+/* Toggle button */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: orangered;
+  color: white;
+  border: none;
+  font-size: 22px;
+  height: 7vh;
+  border-radius: 6px;
+  padding: 6px 12px;
+  z-index: 1101;
+  cursor: pointer;
+}
 
-  .main {
-    flex: 1;
-    background: #ccc;
-    margin-left: 220px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: margin-left 0.3s ease;
-  }
-
-  iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: linear-gradient(180deg, gold, orangered);
-  }
-
-  .menu-toggle {
-    display: none;
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    background: orangered;
-    color: white;
-    border: none;
-    font-size: 22px;
-    height: 7vh;
-    border-radius: 6px;
-    padding: 6px 12px;
-    z-index: 1101;
-    cursor: pointer;
-  }
-
-  @media (max-width: 768px) {
-    .sidebar { transform: translateX(-100%); width: 50%; }
-    .sidebar.active { transform: translateX(0); }
-    .main { margin-left: 0; }
-    .menu-toggle { display: block; }
-  }
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); width: 50%; }
+  .sidebar.active { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .menu-toggle { display: block; }
+}
 </style>
 </head>
 <body>
@@ -135,8 +133,9 @@
     <a onclick="showPage('overtime')">Overtime</a>
     <a onclick="showPage('inventory')">Inventory</a>
     <a onclick="showPage('payslip')">Payslip</a>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
-  <button class="logout-btn" onclick="logout()">Logout</button>
 </aside>
 
 <div class="main" id="mainWrapper">
@@ -144,94 +143,98 @@
 </div>
 
 <script>
-  const fullName = localStorage.getItem("full");
-  const photo = localStorage.getItem("photo");
-  const role = localStorage.getItem("role");
+const fullName = localStorage.getItem("full");
+const photo = localStorage.getItem("photo");
+const role = localStorage.getItem("role");
 
-  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
-  if(photo) document.getElementById("userPhoto").src = "./" + photo;
+if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
-  const projLink = document.getElementById("projectCostingLink");
-  if(role !== "Purchaser") projLink.style.display = "none";
+const projLink = document.getElementById("projectCostingLink");
+if(role !== "Purchaser") projLink.style.display = "none";
 
-  const sidebar = document.getElementById('sidebar');
-  const main = document.getElementById('mainWrapper');
-  const menuToggle = document.getElementById('menuToggle');
-  const MOBILE_BREAKPOINT = 768;
-  const AUTO_CLOSE_MS = 3000;
-  let autoCloseTimer = null;
-  let touchStartX = 0, touchEndX = 0;
+const sidebar = document.getElementById('sidebar');
+const main = document.getElementById('mainWrapper');
+const menuToggle = document.getElementById('menuToggle');
+const MOBILE_BREAKPOINT = 768;
+const AUTO_CLOSE_MS = 3000;
+let autoCloseTimer = null;
+let touchStartX = 0;
+let touchEndX = 0;
 
-  // Desktop always visible
-  function handleResize() {
-    if(window.innerWidth > MOBILE_BREAKPOINT){
-      sidebar.classList.remove('active');
-      main.style.marginLeft = '220px';
-      clearTimeout(autoCloseTimer);
-    } else {
-      sidebar.classList.remove('active');
-      main.style.marginLeft = '0';
-    }
-  }
-  handleResize();
-  window.addEventListener('resize', handleResize);
-
-  // Toggle button
-  menuToggle.addEventListener('click', ()=>{
-    sidebar.classList.contains('active') ? closeSidebar() : openSidebar();
-  });
-
-  // Swipe anywhere
-  document.addEventListener('touchstart', e => {
-    if(window.innerWidth > MOBILE_BREAKPOINT) return;
-    touchStartX = e.touches[0].clientX;
-    touchEndX = touchStartX;
-  });
-  document.addEventListener('touchmove', e => {
-    if(window.innerWidth > MOBILE_BREAKPOINT) return;
-    touchEndX = e.touches[0].clientX;
-  });
-  document.addEventListener('touchend', () => {
-    if(window.innerWidth > MOBILE_BREAKPOINT) return;
-    const distance = touchEndX - touchStartX;
-    if(distance > 50 && !sidebar.classList.contains('active')) openSidebar();
-    if(distance < -50 && sidebar.classList.contains('active')) closeSidebar();
-  });
-
-  function openSidebar(){
-    sidebar.classList.add('active');
-    main.style.marginLeft = sidebar.offsetWidth + 'px';
-    startAutoClose();
-  }
-
-  function closeSidebar(){
+// Desktop always visible
+function handleResize() {
+  if(window.innerWidth > MOBILE_BREAKPOINT){
+    sidebar.classList.remove('active');
+    main.style.marginLeft = '220px';
+    clearTimeout(autoCloseTimer);
+  } else {
     sidebar.classList.remove('active');
     main.style.marginLeft = '0';
-    startAutoClose(true);
   }
+}
+handleResize();
+window.addEventListener('resize', handleResize);
 
-  function startAutoClose(clearOnly=false){
-    clearTimeout(autoCloseTimer);
-    if(!clearOnly && window.innerWidth <= MOBILE_BREAKPOINT){
-      autoCloseTimer = setTimeout(closeSidebar, AUTO_CLOSE_MS);
-    }
+// Toggle button for mobile
+menuToggle.addEventListener('click', ()=>{
+  if(sidebar.classList.contains('active')) closeSidebar();
+  else openSidebar();
+});
+
+// Swipe detection anywhere on screen
+document.addEventListener('touchstart', e => {
+  if(window.innerWidth > MOBILE_BREAKPOINT) return;
+  touchStartX = e.touches[0].clientX;
+  touchEndX = touchStartX;
+});
+
+document.addEventListener('touchmove', e => {
+  if(window.innerWidth > MOBILE_BREAKPOINT) return;
+  touchEndX = e.touches[0].clientX;
+});
+
+document.addEventListener('touchend', () => {
+  if(window.innerWidth > MOBILE_BREAKPOINT) return;
+  const swipeDistance = touchEndX - touchStartX;
+  if(swipeDistance > 50 && !sidebar.classList.contains('active')) openSidebar();
+  if(swipeDistance < -50 && sidebar.classList.contains('active')) closeSidebar();
+});
+
+function openSidebar() {
+  sidebar.classList.add('active');
+  main.style.marginLeft = sidebar.offsetWidth + 'px';
+  startAutoClose();
+}
+
+function closeSidebar() {
+  sidebar.classList.remove('active');
+  main.style.marginLeft = '0';
+  startAutoClose(true);
+}
+
+function startAutoClose(clearOnly=false){
+  clearTimeout(autoCloseTimer);
+  if(!clearOnly && window.innerWidth <= MOBILE_BREAKPOINT){
+    autoCloseTimer = setTimeout(closeSidebar, AUTO_CLOSE_MS);
   }
+}
 
-  // Close sidebar when clicking links on mobile
-  sidebar.querySelectorAll('a').forEach(link=>{
-    link.addEventListener('click', ()=>{
-      if(window.innerWidth <= MOBILE_BREAKPOINT) closeSidebar();
-    });
+// Close sidebar when clicking links on mobile
+sidebar.querySelectorAll('a').forEach(link=>{
+  link.addEventListener('click', ()=>{
+    if(window.innerWidth <= MOBILE_BREAKPOINT) closeSidebar();
   });
+});
 
-  function showPage(page){
-    document.getElementById("mainFrame").src = page + ".html";
-  }
+function showPage(page){
+  document.getElementById("mainFrame").src = page + ".html";
+}
 
-  function logout(){
-    localStorage.clear();
-    window.location.href = '/';
-  }
+function logout(){
+  localStorage.clear();
+  window.location.href = '/';
+}
 </script>
 
 </body>
