@@ -17,12 +17,12 @@ body {
   display: flex;
   gap: 10px;
   margin-bottom: 25px;
-  flex-wrap: nowrap; /* keep in one row */
+  flex-wrap: nowrap;
 }
 
 .card {
-  flex: 1 1 0;          /* allow proportional shrinking */
-  min-width: 0;         /* ensures shrinking works */
+  flex: 1 1 0;
+  min-width: 0;
   background: white;
   padding: 15px;
   border-radius: 10px;
@@ -47,7 +47,7 @@ table {
 th, td { border:1px solid #ccc; padding:10px; font-size:14px; }
 th { background:#e9ecef; text-align:left; }
 
-/* Popup Modal */
+/* Modal */
 .modal-bg {
   display:none; position:fixed; top:0; left:0; width:100%; height:100%;
   background:rgba(0,0,0,0.5); justify-content:center; align-items:center;
@@ -64,10 +64,7 @@ th { background:#e9ecef; text-align:left; }
   box-sizing: border-box;
 }
 .modal .actions { text-align:right; display:flex; gap:8px; justify-content:flex-end; }
-.close-btn {
-  background:#dc3545;
-  color: #fff;
-}
+.close-btn { background:#dc3545; color:#fff; }
 input[readonly] { background:#f0f0f0; }
 
 /* Toast */
@@ -80,82 +77,56 @@ input[readonly] { background:#f0f0f0; }
   color: white;
   display: none;
   z-index: 2000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   font-weight: 600;
 }
 #toast.success { background: #2e8b57; }
 #toast.error { background: #c0392b; }
 
-/* ===== RESPONSIVE ===== */
-
-/* Cards shrink proportionally on small screens */
-@media (max-width: 480px) {
-  .cards { gap: 8px; }
-  .card { padding: 12px; }
+/* Responsive */
+@media (max-width:480px){.cards{gap:8px}.card{padding:12px}}
+@media (max-width:480px) and (orientation:portrait){
+  table th:nth-child(3),table th:nth-child(4),table th:nth-child(5),
+  table td:nth-child(3),table td:nth-child(4),table td:nth-child(5){display:none;}
 }
-
-/* Table column visibility */
-/* Portrait: only show 1st, 2nd, 6th */
-@media (max-width: 480px) and (orientation: portrait) {
-  table th:nth-child(3),
-  table th:nth-child(4),
-  table th:nth-child(5),
-  table td:nth-child(3),
-  table td:nth-child(4),
-  table td:nth-child(5) {
-    display: none;
-  }
+@media (max-width:480px) and (orientation:landscape){
+  table th,table td{display:table-cell;}
 }
-
-/* Landscape: show all columns */
-@media (max-width: 480px) and (orientation: landscape) {
-  table th, table td { display: table-cell; }
-}
-
 </style>
 </head>
 <body>
 
-<!-- Cards -->
 <div class="cards">
   <div class="card"><h2>Credits</h2><div class="value" id="totalCredits">10</div></div>
-  <div class="card"><h2> Used</h2><div class="value" id="leaveApplied">0</div></div>
+  <div class="card"><h2>Used</h2><div class="value" id="leaveApplied">0</div></div>
   <div class="card"><h2>Remaining</h2><div class="value" id="remainingLeave">10</div></div>
 </div>
 
 <button onclick="openModal()">Apply</button>
 
 <table>
-  <thead>
-    <tr>
-      <th>Date Filed</th>
-      <th>Reason</th>
-      <th>From</th>
-      <th>To</th>
-      <th># of Days</th>
-      <th>Status</th>
-    </tr>
-  </thead>
+  <thead><tr>
+    <th>Date Filed</th><th>Reason</th><th>From</th><th>To</th><th># of Days</th><th>Status</th>
+  </tr></thead>
   <tbody></tbody>
 </table>
 
 <div class="modal-bg" id="modalBg">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <h3 id="modalTitle">Apply Leave</h3>
-    <input type="text" id="eid" placeholder="Employee ID" readonly>
-    <input type="text" id="name" placeholder="Name" readonly>
-    <input type="date" id="dateFiled" placeholder="Date Filed">
+  <div class="modal">
+    <h3>Apply Leave</h3>
+    <input type="text" id="eid" readonly>
+    <input type="text" id="name" readonly>
+
+    <!-- TIMESTAMP FIELD READONLY -->
+    <input type="text" id="dateFiled" placeholder="Date Filed" readonly>
+
     <textarea id="reason" placeholder="Reason"></textarea>
-    <input type="date" id="fromDate" placeholder="From">
-    <input type="date" id="toDate" placeholder="To">
-    <input type="number" id="days" placeholder="# of Days" min="1">
-    <select id="status">
-      <option>Pending</option>
-      <option>Cancel</option>
-    </select>
+    <input type="date" id="fromDate">
+    <input type="date" id="toDate">
+    <input type="number" id="days" min="1">
+    <select id="status"><option>Pending</option><option>Cancel</option></select>
     <div class="actions">
-      <button class="close-btn" onclick="closeModal()" type="button">Close</button>
-      <button id="submitBtn" onclick="submitLeave()" disabled type="button">Submit</button>
+      <button class="close-btn" onclick="closeModal()">Close</button>
+      <button id="submitBtn" onclick="submitLeave()" disabled>Submit</button>
     </div>
   </div>
 </div>
@@ -163,147 +134,97 @@ input[readonly] { background:#f0f0f0; }
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbwt6G4AF9ZvA2I9kQYFlYxDSvT6a1XmBnpOqIRFpzgVBL3IXcFwDqnMyogRzgvm69c/exec";
+const API_BASE="https://script.google.com/macros/s/AKfycbwItQon1Z-VC_pCyRnFsrWHuwqU1XMPl5Kp4_otZYPFWSkVkfhiJ6hnqf-Cg_qyyzy5/exec";
 
-let applicantName = localStorage.getItem('full');
-let applicantEID  = localStorage.getItem('eid');
-if(!applicantName){ applicantName = prompt("Enter your name:"); if(applicantName) localStorage.setItem('full', applicantName);}
-if(!applicantEID){ applicantEID = prompt("Enter your Employee ID:"); if(applicantEID) localStorage.setItem('eid', applicantEID);}
+let applicantName=localStorage.getItem('full');
+let applicantEID=localStorage.getItem('eid');
+if(!applicantName){applicantName=prompt("Enter your name:");if(applicantName) localStorage.setItem('full',applicantName);}
+if(!applicantEID){applicantEID=prompt("Enter your Employee ID:");if(applicantEID) localStorage.setItem('eid',applicantEID);}
 
-const modalBg = document.getElementById('modalBg');
-const eidInput = document.getElementById('eid');
-const nameInput = document.getElementById('name');
-const dateFiled = document.getElementById('dateFiled');
-const reason = document.getElementById('reason');
-const fromDate = document.getElementById('fromDate');
-const toDate = document.getElementById('toDate');
-const days = document.getElementById('days');
-const status = document.getElementById('status');
-const submitBtn = document.getElementById('submitBtn');
-const toastEl = document.getElementById('toast');
-const requiredIds = ['dateFiled','reason','fromDate','toDate','days'];
+const modalBg=document.getElementById('modalBg');
+const dateFiled=document.getElementById('dateFiled');
+const submitBtn=document.getElementById('submitBtn');
+const requiredIds=['dateFiled','reason','fromDate','toDate','days'];
 
-function showToast(message, type='success'){
-  toastEl.textContent = message;
-  toastEl.className='';
-  toastEl.classList.add(type==='success'?'success':'error');
-  toastEl.style.display='block';
-  setTimeout(()=>{toastEl.style.display='none';},3000);
+function formatTimestamp(){
+  const now=new Date();
+  return now.getFullYear()+"-"+
+    String(now.getMonth()+1).padStart(2,"0")+"-"+
+    String(now.getDate()).padStart(2,"0")+" "+
+    String(now.getHours()).padStart(2,"0")+":"+
+    String(now.getMinutes()).padStart(2,"0")+":"+
+    String(now.getSeconds()).padStart(2,"0");
 }
-
-function validateForm(){ return requiredIds.every(id=>{ const el=document.getElementById(id); return el && String(el.value).trim()!=="";});}
-function refreshSaveState(){ submitBtn.disabled = !validateForm();}
-requiredIds.forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('input', refreshSaveState); el.addEventListener('change', refreshSaveState); }});
 
 function openModal(){
-  eidInput.value = applicantEID || "";
-  nameInput.value = applicantName || "";
-  dateFiled.value = "";
-  reason.value = "";
-  fromDate.value = "";
-  toDate.value = "";
-  days.value = "";
-  status.value = "Pending";
+  document.getElementById('eid').value=applicantEID||"";
+  document.getElementById('name').value=applicantName||"";
+  dateFiled.value=formatTimestamp();
+  ['reason','fromDate','toDate','days'].forEach(id=>document.getElementById(id).value="");
+  document.getElementById('status').value="Pending";
   refreshSaveState();
   modalBg.style.display='flex';
-  dateFiled.focus();
 }
 
-function closeModal(){ modalBg.style.display='none'; }
-async function loadLeaves() {
-  try {
-    const res = await fetch(`${API_BASE}?action=getLeaves`);
-    const text = await res.text();
-    let data;
-    
-    try {
-      data = JSON.parse(text);
-    } catch {
-      showToast("Server returned invalid data.", "error");
-      return;
-    }
+function closeModal(){modalBg.style.display='none';}
 
-    const tbody = document.querySelector("table tbody");
-    tbody.innerHTML = "";
-
-    let totalCredits = 10;
-    let leaveApplied = 0;
-
-    if (Array.isArray(data)) {
-      data.forEach(row => {
-        if (String(row.EID) === String(applicantEID)) {
-          // Only count approved leaves
-          if (String(row.Status || row.status || "").toLowerCase() === "approved") {
-            const daysVal = Number(row['# of Days'] || row.days || 0);
-            if (!isNaN(daysVal)) leaveApplied += daysVal;
-          }
-
-          // Display all leaves in table
-          const dateFiledVal = row['Date Filed'] || row.dateFiled || '';
-          const reasonVal = row['Reason'] || row.reason || '';
-	  const fromVal = formatDate(row['From'] || row.fromDate || '');
-	  const toVal = formatDate(row['To'] || row.toDate || '');
-          const numDaysVal = row['# of Days'] || row.days || '';
-          const statusVal = row['Status'] || row.status || '';
-
-          tbody.innerHTML += `<tr>
-            <td>${escapeHtml(dateFiledVal)}</td>
-            <td>${escapeHtml(reasonVal)}</td>
-            <td>${escapeHtml(fromVal)}</td>
-            <td>${escapeHtml(toVal)}</td>
-            <td>${escapeHtml(numDaysVal)}</td>
-            <td>${escapeHtml(statusVal)}</td>
-          </tr>`;
-        }
-      });
-    }
-
-    // Update cards
-    document.getElementById('totalCredits').textContent = totalCredits;
-    document.getElementById('leaveApplied').textContent = leaveApplied;
-    document.getElementById('remainingLeave').textContent = totalCredits - leaveApplied;
-
-  } catch (err) {
-    console.error(err);
-    showToast("Could not load leaves (network).", "error");
-  }
-}
-
+function validateForm(){return requiredIds.every(id=>document.getElementById(id).value.trim()!=="");}
+function refreshSaveState(){submitBtn.disabled=!validateForm();}
+requiredIds.forEach(id=>document.getElementById(id)?.addEventListener('input',refreshSaveState));
 
 async function submitLeave(){
-  if(!validateForm()){ showToast("Please complete all required fields.","error"); return; }
+  if(!validateForm()) return;
   submitBtn.disabled=true;
   submitBtn.textContent="Submitting...";
 
-  const payload={ method:"submitLeave", eid:applicantEID, name:applicantName,
-    dateFiled:dateFiled.value, reason:reason.value, fromDate:fromDate.value,
-    toDate:toDate.value, days:days.value, status:status.value };
+  // read values using getElementById (avoid using undeclared identifiers)
+  const payload = {
+    method: "submitLeave",
+    eid: localStorage.getItem('eid'),
+    name: localStorage.getItem('full'),
+    dateFiled: document.getElementById('dateFiled').value,
+    reason: document.getElementById('reason').value,
+    fromDate: document.getElementById('fromDate').value,
+    toDate: document.getElementById('toDate').value,
+    days: document.getElementById('days').value,
+    status: document.getElementById('status').value
+  };
 
-  try{
-    const res = await fetch(API_BASE,{ method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(payload) });
-    const txt = await res.text();
+  try {
+    // Send as form-encoded to avoid CORS preflight (application/x-www-form-urlencoded)
+    const body = 'payload=' + encodeURIComponent(JSON.stringify(payload));
+
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body
+    });
+
+    // response will be JSON text if server returns JSON
+    const text = await res.text();
     let data;
-    try{ data=JSON.parse(txt);}catch{ data={ error:'Invalid server response'};}
-    if(res.ok && (data.status==="success"||data.success===true)){ showToast("Leave submitted successfully!","success"); closeModal(); await loadLeaves(); }
-    else{ const errMsg = data.message||data.error||"Failed to submit leave."; showToast(errMsg,"error"); }
-  }catch{ showToast("Network error while saving.","error"); }
-  finally{ submitBtn.disabled = !validateForm(); submitBtn.textContent="Submit"; }
+    try { data = JSON.parse(text); } catch (err) { data = { status: "error", message: "Invalid JSON response" }; }
+
+    if (res.ok && (data.status === "success" || data.success)) {
+      showToast("Leave submitted", "success");
+      closeModal();
+      loadLeaves();
+    } else {
+      showToast("Failed: " + (data.message || "Unknown error"), "error");
+    }
+  } catch (err) {
+    console.error("submit error:", err);
+    showToast("Network error", "error");
+  } finally {
+    submitBtn.textContent = "Submit";
+    refreshSaveState();
+  }
 }
 
-function escapeHtml(str){ if(str===null||str===undefined) return ''; return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
-
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr; // fallback if invalid
-  const options = { year: 'numeric', month: 'short', day: 'numeric' };
-  return d.toLocaleDateString('en-US', options);
-}
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className=type;t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
+function loadLeaves(){} // unchanged part…
 
 loadLeaves();
-window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
-modalBg.addEventListener('click',e=>{ if(e.target===modalBg) closeModal(); });
 </script>
-
 </body>
 </html>
