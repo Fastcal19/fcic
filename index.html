@@ -1,203 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fast Cal Industrial Corp</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      height: 100vh;
-      display: flex;
-      overflow: hidden;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fast Cal Industrial Corp</title>
 
-    /* Sidebar */
-    .sidebar {
-      width: 180px;
-      background: #FF8C00;
-      color: #000;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px;
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 96vh;
-      overflow: auto;
-      scrollbar-width: thin;
-      scrollbar-color: #333 #FFB347;
-      transition: transform 0.3s ease-in-out;
-      z-index: 1000;
-    }
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    .sidebar::-webkit-scrollbar { width: 6px; }
-    .sidebar::-webkit-scrollbar-track { background: #FFD580; }
-    .sidebar::-webkit-scrollbar-thumb { background-color: #333; border-radius: 3px; }
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* Mobile hidden state */
-    .sidebar.hidden {
-      transform: translateX(-100%);
-    }
+/* ✅ Flexbox layout for sticky footer */
+html, body {
+height: 100%;
+}
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+color: #222;
+background-color: gray;
+display: flex;
+flex-direction: column;
+}
 
-    .logo-box {
-      width: 180px;
-      height: 180px;
-      background: #fff;
-      margin: 0 auto 50px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-    .logo-box img {
-      width: 95%;
-      height: 95%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
+header {
+background: linear-gradient(90deg, orange, white,orange);
+color: white;
+justify-content: center;
+align-items: center;
+padding: 1rem 2rem;
+position: sticky;
+top: 0;
+z-index: 1000;
+}
 
-    .sidebar a {
-      color: #000;
-      text-decoration: none;
-      padding: 10px;
-      display: block;
-      border-radius: 6px;
-      font-weight: bold;
-      margin: 5px 0;
-    }
-    .sidebar a:hover {
-      background: #FFD580;
-    }
+.logo-section {
+display: flex;
+align-items: center;
+justify-content: center;
+position: relative;
+}
 
-    .logout-btn {
-      background: #333;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 10px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
+.logo-section img {
+height: 55px;
+display: block;
+}
 
-    /* Main content */
-    .main {
-      flex: 1;
-      background: #ccc;
-      margin-left: 220px;
-      display: flex;
-      flex-direction: column;
-      transition: margin-left 0.3s ease;
-      overflow: hidden;
-    }
+nav a {
+color: white;
+margin-left: 20px;
+text-decoration: none;
+font-weight: bold;
+transition: color 0.3s;
+}
+nav a:hover { color: #000; }
 
-    iframe {
-      flex: 1;
-      border: none;
-      background: linear-gradient(180deg, gold, orangered);
-    }
+main {
+flex: 1; /* ✅ Push footer to bottom */
+}
 
-    /* Toggle button for mobile */
-    .menu-toggle {
-      display: none;
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background: orangered;
-      color: white;
-      border: none;
-      font-size: 22px;
-      border-radius: 6px;
-      padding: 6px 12px;
-      z-index: 1101;
-      cursor: pointer;
-    }
+.hero {
+position: relative;
+height: 70vh;
+background: linear-gradient(1deg, gray, lightgray,gray);
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+text-align: center;
+color: white;
+padding: 2rem;
+}
 
-    @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-        width: 75%;
-      }
-      .sidebar.active {
-        transform: translateX(0);
-      }
-      .main {
-        margin-left: 0;
-      }
-      .menu-toggle {
-        display: block;
-      }
-    }
-  </style>
+.hero h3 {
+font-size: 1.2rem;
+text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+animation: flicker 2s infinite;
+}
+
+@keyframes flicker {
+0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+20%, 24%, 55% { opacity: 0.6; }
+}
+
+.hero p {
+font-size: 1.2rem;
+margin-top: 1rem;
+max-width: 600px;
+text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+
+.hero button {
+margin-top: 2rem;
+padding: 0.8rem 2rem;
+border: none;
+background: #ff9800;
+color: white;
+font-size: 1rem;
+border-radius: 30px;
+cursor: pointer;
+transition: background 0.3s, transform 0.2s;
+}
+.hero button:hover { background: #e68900; transform: scale(1.05); }
+
+footer {
+background: #222;
+color: #ccc;
+text-align: center;
+padding: 1rem;
+font-size: 0.9rem;
+/* ✅ No fixed position needed — stays at bottom naturally */
+}
+footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
+footer a:hover { color: #fff; }
+
+.login-box {
+display: inline-block;
+background: linear-gradient(10deg, orange, white,orange);
+padding: 30px;
+border-radius: 12px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+margin-top: 20px;
+}
+
+.login-box input {
+width: 80%;
+padding: 10px;
+margin: 8px 0;
+border: 1px solid #ccc;
+border-radius: 6px;
+}
+
+.manual-btn, .gmail-btn {
+width: 85%;
+padding: 10px;
+margin-top: 10px;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+}
+
+.manual-btn {
+background: #4CAF50;
+color: white;
+}
+
+.gmail-btn {
+background: #DB4437;
+color: white;
+}
+
+.gmail-btn i {
+margin-right: 6px;
+}
+
+/* LOGIN MODAL */
+#loginModal {
+display: none;
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0,0,0,0.7);
+justify-content: center;
+align-items: center;
+z-index: 2000;
+}
+#loginBox {
+background: white;
+padding: 2rem;
+border-radius: 10px;
+width: 300px;
+text-align: center;
+position: relative;
+}
+#loginBox input {
+margin-top: 10px;
+width: 100%;
+padding: 8px;
+border-radius: 5px;
+border: 1px solid #ccc;
+}
+#loginBox button {
+margin-top: 10px;
+width: 100%;
+padding: 8px;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+}
+#loginBox .manual-btn { background: orangered; color: white; }
+#loginBox .gmail-btn { background: #4285F4; color: white; }
+#closeModal {
+position: absolute;
+top: 8px;
+right: 12px;
+cursor: pointer;
+font-size: 1.2rem;
+color: #888;
+}
+#loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
+
+@media (max-width: 768px) {
+.hero h1 { font-size: 2.2rem; }
+.hero p { font-size: 1rem; }
+header { flex-direction: column; align-items: flex-start; }
+nav { margin-top: 1rem; }
+}
+</style>
 </head>
 <body>
-  <button class="menu-toggle" id="menuToggle">☰</button>
 
-  <aside class="sidebar" id="sidebar">
-    <div>
-      <div class="logo-box">
-        <img src="fcic logo.png" alt="Logo">
-      </div>
-      <a onclick="showPage('dashboard')">Dashboard</a>
-      <a onclick="showPage('leave')">Leave</a>
-      <a onclick="showPage('overtime')">Overtime</a>
-      <a onclick="showPage('inventory')">Inventory</a>
-      <a onclick="showPage('payslip')">Payslip</a>
-    </div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-  </aside>
+<!-- HEADER -->
+<header>
+<div class="logo-section">
+<img src="fcic logo.png" alt="FCIC Logo">
+</div>
+</header>
 
-  <div class="main">
-    <iframe id="mainFrame" src="dashboard.html"></iframe>
-  </div>
+<!-- MAIN CONTENT -->
+<main>
+<section class="hero">
+<h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
+<div id="loginBox" class="login-box">
+<h3>Login</h3>
+<input id="username" placeholder="Username"><br>
+<input id="password" type="password" placeholder="Password"><br>
+<button class="manual-btn" onclick="manualLogin()">Login</button>
+<hr>
+<button class="gmail-btn" onclick="gmailLogin()">
+<i class="fab fa-google"></i> Sign in with Google
+</button>
+<p id="loginStatus"></p>
+</div>
+</section>
+</main>
 
-  <script>
-    const sidebar = document.getElementById('sidebar');
-    const menuToggle = document.getElementById('menuToggle');
-    let autoHideTimer;
+<!-- FOOTER -->
+<footer>
+&copy; 2025 Fast Cal Industrial Corp. All rights reserved.<br>
+<a href="/privacy-policy/">Privacy Policy</a> |
+<a href="/terms/">Terms & Conditions</a>
+</footer>
 
-    // Toggle sidebar (for mobile)
-    menuToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('active');
-      if (sidebar.classList.contains('active')) startAutoHide();
-      else clearTimeout(autoHideTimer);
-    });
+<!-- LOGIN MODAL -->
+<div id="loginModal">
+<div id="loginBox">
+<span id="closeModal">&times;</span>
+<h3>Login</h3>
+<input id="username" placeholder="Username"><br>
+<input id="password" type="password" placeholder="Password"><br>
+<button class="manual-btn" onclick="manualLogin()">Login</button>
+<hr>
+<button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
+<p id="loginStatus"></p>
+</div>
+</div>
 
-    // Auto-hide sidebar after 3 seconds (mobile only)
-    function startAutoHide() {
-      clearTimeout(autoHideTimer);
-      if (window.innerWidth <= 768) {
-        autoHideTimer = setTimeout(() => {
-          sidebar.classList.remove('active');
-        }, 2000);
-      }
-    }
+<!-- SCRIPT -->
+<script>
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbxUAAMW6ZfQdocJ76DmMCIzoUo0dsIbxHPKvlTk2JZ4COu-zg0nBuZw803gig49P9c_PQ/exec";
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbzXpiMW3qLPvRwefUUq4VFrX9pkJxvfAwa-3csXpwUI6UcgYq8O_j6xr7BLILCe7nGi7g/exec";
 
-    // Reset timer when sidebar is interacted with
-    sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
-    sidebar.addEventListener('mouseleave', startAutoHide);
+const modal = document.getElementById('loginModal');
+document.querySelector('.login-icon').onclick = () => modal.style.display = 'flex';
+document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
+window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
 
-    // Also reset timer on link clicks (mobile)
-    sidebar.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) sidebar.classList.remove('active');
-      });
-    });
+async function manualLogin() {
+const username = document.getElementById('username').value.trim();
+const password = document.getElementById('password').value.trim();
+document.getElementById('loginStatus').textContent = "⏳ Checking...";
+try {
+const res = await fetch(webAppUrl, {
+method: "POST",
+body: JSON.stringify({ method: "manual", username, password })
+});
+const data = await res.json();
+handleLoginResponse(data);
+} catch {
+document.getElementById('loginStatus').textContent = "❌ Network error.";
+}
+}
 
-    // Page loading
-    function showPage(page) {
-      const iframe = document.getElementById("mainFrame");
-      iframe.src = page + ".html";
-    }
+function gmailLogin() {
+google.accounts.id.initialize({
+client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
+callback: handleCredentialResponse
+});
+google.accounts.id.prompt();
+}
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = '/';
-    }
-  </script>
+async function handleCredentialResponse(response) {
+const userInfo = parseJwt(response.credential);
+const res = await fetch(webAppUrl, {
+method: "POST",
+body: JSON.stringify({ method: "gmail", email: userInfo.email })
+});
+const data = await res.json();
+handleLoginResponse(data);
+}
+
+function handleLoginResponse(response) {
+const status = document.getElementById('loginStatus');
+if (response.success) {
+localStorage.setItem("role", response.role);
+localStorage.setItem("username", response.name);
+localStorage.setItem("eid", response.eid);
+localStorage.setItem("full", response.full);
+localStorage.setItem("photo", response.photo);
+status.style.color = "green";
+status.textContent = "✅ Welcome, " + response.name;
+setTimeout(() => {
+modal.style.display = 'none';
+if (response.role === "Admin") location.href = "/admin/";
+else if (response.role === "Purchaser") location.href = "/User/";
+else location.href = "/User/";
+}, 1000);
+} else {
+status.style.color = "red";
+status.textContent = response.message || "❌ Invalid username or password.";
+}
+}
+
+function parseJwt(token) {
+return JSON.parse(atob(token.split('.')[1]));
+}
+</script>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 </body>
 </html>
