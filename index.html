@@ -12,317 +12,323 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* ✅ Flexbox layout for sticky footer */
-html, body {
-height: 100%;
-}
+html, body { height: 100%; }
 body {
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-color: #222;
-background-color: gray;
-display: flex;
-flex-direction: column;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+  background-color: gray;
+  display: flex;
+  flex-direction: column;
 }
 
 header {
-background: linear-gradient(90deg, orange, white,orange);
-color: white;
-justify-content: center;
-align-items: center;
-padding: 1rem 2rem;
-position: sticky;
-top: 0;
-z-index: 1000;
+  background: linear-gradient(90deg, orange, white, orange);
+  color: white;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .logo-section {
-display: flex;
-align-items: center;
-justify-content: center;
-position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
 .logo-section img {
-height: 55px;
-display: block;
+  height: 55px;
+  display: block;
 }
 
-nav a {
-color: white;
-margin-left: 20px;
-text-decoration: none;
-font-weight: bold;
-transition: color 0.3s;
+.login-icon {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+  transition: color 0.3s;
 }
-nav a:hover { color: #000; }
+.login-icon:hover { color: #000; }
 
-main {
-flex: 1; /* ✅ Push footer to bottom */
-}
+main { flex: 1; }
 
 .hero {
-position: relative;
-height: 70vh;
-background: linear-gradient(1deg, gray, lightgray,gray);
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-text-align: center;
-color: white;
-padding: 2rem;
+  position: relative;
+  height: 70vh;
+  background: linear-gradient(1deg, gray, lightgray, gray);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  padding: 2rem;
 }
 
 .hero h3 {
-font-size: 1.2rem;
-text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
-animation: flicker 2s infinite;
+  font-size: 1.2rem;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+  animation: flicker 2s infinite;
 }
 
 @keyframes flicker {
-0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
-20%, 24%, 55% { opacity: 0.6; }
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.6; }
 }
 
 .hero p {
-font-size: 1.2rem;
-margin-top: 1rem;
-max-width: 600px;
-text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+  font-size: 1.2rem;
+  margin-top: 1rem;
+  max-width: 600px;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
 }
 
 .hero button {
-margin-top: 2rem;
-padding: 0.8rem 2rem;
-border: none;
-background: #ff9800;
-color: white;
-font-size: 1rem;
-border-radius: 30px;
-cursor: pointer;
-transition: background 0.3s, transform 0.2s;
+  margin-top: 2rem;
+  padding: 0.8rem 2rem;
+  border: none;
+  background: #ff9800;
+  color: white;
+  font-size: 1rem;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
 }
 .hero button:hover { background: #e68900; transform: scale(1.05); }
 
 footer {
-background: #222;
-color: #ccc;
-text-align: center;
-padding: 1rem;
-font-size: 0.9rem;
-/* ✅ No fixed position needed — stays at bottom naturally */
+  background: #222;
+  color: #ccc;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
 }
-footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
+footer a {
+  color: #ffb74d;
+  text-decoration: none;
+  margin: 0 5px;
+  cursor: pointer;
+}
 footer a:hover { color: #fff; }
 
 .login-box {
-display: inline-block;
-background: linear-gradient(10deg, orange, white,orange);
-padding: 30px;
-border-radius: 12px;
-box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-margin-top: 20px;
+  display: inline-block;
+  background: linear-gradient(10deg, orange, white, orange);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-top: 20px;
 }
 
 .login-box input {
-width: 80%;
-padding: 10px;
-margin: 8px 0;
-border: 1px solid #ccc;
-border-radius: 6px;
+  width: 80%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
 .manual-btn, .gmail-btn {
-width: 85%;
-padding: 10px;
-margin-top: 10px;
-border: none;
-border-radius: 6px;
-cursor: pointer;
+  width: 85%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .manual-btn {
-background: #4CAF50;
-color: white;
+  background: #4CAF50;
+  color: white;
 }
 
 .gmail-btn {
-background: #DB4437;
-color: white;
+  background: #DB4437;
+  color: white;
 }
 
-.gmail-btn i {
-margin-right: 6px;
-}
+.gmail-btn i { margin-right: 6px; }
 
 /* LOGIN MODAL */
 #loginModal {
-display: none;
-position: fixed;
-top: 0; left: 0; right: 0; bottom: 0;
-background: rgba(0,0,0,0.7);
-justify-content: center;
-align-items: center;
-z-index: 2000;
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
 }
-#loginBox {
-background: white;
-padding: 2rem;
-border-radius: 10px;
-width: 300px;
-text-align: center;
-position: relative;
+#loginModal .box {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  position: relative;
 }
-#loginBox input {
-margin-top: 10px;
-width: 100%;
-padding: 8px;
-border-radius: 5px;
-border: 1px solid #ccc;
+#loginModal input {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
-#loginBox button {
-margin-top: 10px;
-width: 100%;
-padding: 8px;
-border: none;
-border-radius: 5px;
-cursor: pointer;
+#loginModal button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
-#loginBox .manual-btn { background: orangered; color: white; }
-#loginBox .gmail-btn { background: #4285F4; color: white; }
+#loginModal .manual-btn { background: orangered; color: white; }
+#loginModal .gmail-btn { background: #4285F4; color: white; }
 #closeModal {
-position: absolute;
-top: 8px;
-right: 12px;
-cursor: pointer;
-font-size: 1.2rem;
-color: #888;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #888;
 }
 #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
 
 @media (max-width: 768px) {
-.hero h1 { font-size: 2.2rem; }
-.hero p { font-size: 1rem; }
-header { flex-direction: column; align-items: flex-start; }
-nav { margin-top: 1rem; }
+  .hero h1 { font-size: 2.2rem; }
+  .hero p { font-size: 1rem; }
+  header { flex-direction: column; align-items: flex-start; }
+  nav { margin-top: 1rem; }
 }
 </style>
 </head>
+
 <body>
 
 <!-- HEADER -->
 <header>
-<div class="logo-section">
-<img src="fcic logo.png" alt="FCIC Logo">
-</div>
+  <div class="logo-section">
+    <img src="fcic logo.png" alt="FCIC Logo">
+    <i class="fas fa-user login-icon" title="Login"></i>
+  </div>
 </header>
 
 <!-- MAIN CONTENT -->
 <main>
-<section class="hero">
-<h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
-<div id="loginBox" class="login-box">
-<h3>Login</h3>
-<input id="username" placeholder="Username"><br>
-<input id="password" type="password" placeholder="Password"><br>
-<button class="manual-btn" onclick="manualLogin()">Login</button>
-<hr>
-<button class="gmail-btn" onclick="gmailLogin()">
-<i class="fab fa-google"></i> Sign in with Google
-</button>
-<p id="loginStatus"></p>
-</div>
-</section>
+  <section class="hero">
+    <h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
+    <div id="loginBoxMain" class="login-box">
+      <h3>Login</h3>
+      <input id="username" placeholder="Username"><br>
+      <input id="password" type="password" placeholder="Password"><br>
+      <button class="manual-btn" onclick="manualLogin()">Login</button>
+      <hr>
+      <button class="gmail-btn" onclick="gmailLogin()">
+        <i class="fab fa-google"></i> Sign in with Google
+      </button>
+      <p id="loginStatus"></p>
+    </div>
+  </section>
 </main>
 
 <!-- FOOTER -->
 <footer>
-&copy; 2025 Fast Cal Industrial Corp. All rights reserved.<br>
-<a href="/privacy-policy/">Privacy Policy</a> |
-<a href="/terms/">Terms & Conditions</a>
+  &copy; 2025 Fast Cal Industrial Corp. All rights reserved.<br>
+  <a href="/privacy-policy/">Privacy Policy</a> |
+  <a href="/terms/">Terms & Conditions</a>
 </footer>
 
 <!-- LOGIN MODAL -->
 <div id="loginModal">
-<div id="loginBox">
-<span id="closeModal">&times;</span>
-<h3>Login</h3>
-<input id="username" placeholder="Username"><br>
-<input id="password" type="password" placeholder="Password"><br>
-<button class="manual-btn" onclick="manualLogin()">Login</button>
-<hr>
-<button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
-<p id="loginStatus"></p>
-</div>
+  <div class="box">
+    <span id="closeModal">&times;</span>
+    <h3>Login</h3>
+    <input id="username" placeholder="Username"><br>
+    <input id="password" type="password" placeholder="Password"><br>
+    <button class="manual-btn" onclick="manualLogin()">Login</button>
+    <hr>
+    <button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
+    <p id="loginStatus"></p>
+  </div>
 </div>
 
 <!-- SCRIPT -->
 <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbxUAAMW6ZfQdocJ76DmMCIzoUo0dsIbxHPKvlTk2JZ4COu-zg0nBuZw803gig49P9c_PQ/exec";
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbzXpiMW3qLPvRwefUUq4VFrX9pkJxvfAwa-3csXpwUI6UcgYq8O_j6xr7BLILCe7nGi7g/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbzXpiMW3qLPvRwefUUq4VFrX9pkJxvfAwa-3csXpwUI6UcgYq8O_j6xr7BLILCe7nGi7g/exec";
 
 const modal = document.getElementById('loginModal');
-document.querySelector('.login-icon').onclick = () => modal.style.display = 'flex';
-document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
-window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
+const closeModal = document.getElementById('closeModal');
+
+// Optional icon trigger for modal
+const loginIcon = document.querySelector('.login-icon');
+if (loginIcon) loginIcon.onclick = () => modal.style.display = 'flex';
+
+closeModal.onclick = () => modal.style.display = 'none';
+window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 
 async function manualLogin() {
-const username = document.getElementById('username').value.trim();
-const password = document.getElementById('password').value.trim();
-document.getElementById('loginStatus').textContent = "⏳ Checking...";
-try {
-const res = await fetch(webAppUrl, {
-method: "POST",
-body: JSON.stringify({ method: "manual", username, password })
-});
-const data = await res.json();
-handleLoginResponse(data);
-} catch {
-document.getElementById('loginStatus').textContent = "❌ Network error.";
-}
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  document.getElementById('loginStatus').textContent = "⏳ Checking...";
+  try {
+    const res = await fetch(webAppUrl, {
+      method: "POST",
+      body: JSON.stringify({ method: "manual", username, password })
+    });
+    const data = await res.json();
+    handleLoginResponse(data);
+  } catch {
+    document.getElementById('loginStatus').textContent = "❌ Network error.";
+  }
 }
 
-function gmailLogin() {
+// ✅ Initialize Google Sign-In once
 google.accounts.id.initialize({
-client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
-callback: handleCredentialResponse
+  client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
+  callback: handleCredentialResponse
 });
-google.accounts.id.prompt();
+function gmailLogin() {
+  google.accounts.id.prompt();
 }
 
 async function handleCredentialResponse(response) {
-const userInfo = parseJwt(response.credential);
-const res = await fetch(webAppUrl, {
-method: "POST",
-body: JSON.stringify({ method: "gmail", email: userInfo.email })
-});
-const data = await res.json();
-handleLoginResponse(data);
+  const userInfo = parseJwt(response.credential);
+  const res = await fetch(webAppUrl, {
+    method: "POST",
+    body: JSON.stringify({ method: "gmail", email: userInfo.email })
+  });
+  const data = await res.json();
+  handleLoginResponse(data);
 }
 
 function handleLoginResponse(response) {
-const status = document.getElementById('loginStatus');
-if (response.success) {
-localStorage.setItem("role", response.role);
-localStorage.setItem("username", response.name);
-localStorage.setItem("eid", response.eid);
-localStorage.setItem("full", response.full);
-localStorage.setItem("photo", response.photo);
-status.style.color = "green";
-status.textContent = "✅ Welcome, " + response.name;
-setTimeout(() => {
-modal.style.display = 'none';
-if (response.role === "Admin") location.href = "/admin/";
-else if (response.role === "Purchaser") location.href = "/User/";
-else location.href = "/User/";
-}, 1000);
-} else {
-status.style.color = "red";
-status.textContent = response.message || "❌ Invalid username or password.";
-}
+  const status = document.getElementById('loginStatus');
+  if (response.success) {
+    localStorage.setItem("role", response.role);
+    localStorage.setItem("username", response.name);
+    localStorage.setItem("eid", response.eid);
+    localStorage.setItem("full", response.full);
+    localStorage.setItem("photo", response.photo);
+    status.style.color = "green";
+    status.textContent = "✅ Welcome, " + response.name;
+    setTimeout(() => {
+      modal.style.display = 'none';
+      if (response.role === "Admin") location.href = "/admin/";
+      else location.href = "/User/";
+    }, 1000);
+  } else {
+    status.style.color = "red";
+    status.textContent = response.message || "❌ Invalid username or password.";
+  }
 }
 
 function parseJwt(token) {
-return JSON.parse(atob(token.split('.')[1]));
+  return JSON.parse(atob(token.split('.')[1]));
 }
 </script>
 
