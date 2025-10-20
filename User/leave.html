@@ -134,7 +134,7 @@ input[readonly] { background:#f0f0f0; }
 <div id="toast"></div>
 
 <script>
-const API_BASE="https://script.google.com/macros/s/AKfycbwItQon1Z-VC_pCyRnFsrWHuwqU1XMPl5Kp4_otZYPFWSkVkfhiJ6hnqf-Cg_qyyzy5/exec";
+const API_BASE="https://script.google.com/macros/s/AKfycbwEKRrPzOzPlNHHlFP5kSIQ3hSJrFy9kbkHPuWZbxisvfDdutQc5IttUuQ6wP2DK-30/exec";
 
 let applicantName=localStorage.getItem('full');
 let applicantEID=localStorage.getItem('eid');
@@ -171,6 +171,43 @@ function closeModal(){modalBg.style.display='none';}
 function validateForm(){return requiredIds.every(id=>document.getElementById(id).value.trim()!=="");}
 function refreshSaveState(){submitBtn.disabled=!validateForm();}
 requiredIds.forEach(id=>document.getElementById(id)?.addEventListener('input',refreshSaveState));
+
+async function loadLeaves() {
+  const tbody = document.querySelector("tbody");
+  tbody.innerHTML = `<tr><td colspan="6">Loading...</td></tr>`;
+
+  try {
+    const res = await fetch(API_BASE + "?action=getLeaves");
+    const data = await res.json();
+
+    const myEID = localStorage.getItem('eid');
+
+    // FILTER RECORDS FOR THIS USER ONLY
+    const myLeaves = data.filter(r => String(r["EID"]) === String(myEID));
+
+    if (myLeaves.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6">No leave records found</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = myLeaves.map(r => `
+      <tr>
+        <td>${r["Date Filed"] || ""}</td>
+        <td>${r["Reason"] || ""}</td>
+        <td>${r["From Date"] || ""}</td>
+        <td>${r["To Date"] || ""}</td>
+        <td>${r["Days"] || ""}</td>
+        <td>${r["Status"] || ""}</td>
+      </tr>
+    `).join("");
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="6">Error loading data</td></tr>`;
+  }
+}
+
+
 
 async function submitLeave(){
   if(!validateForm()) return;
@@ -222,7 +259,7 @@ async function submitLeave(){
 }
 
 function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className=type;t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
-function loadLeaves(){} // unchanged part…
+
 
 loadLeaves();
 </script>
