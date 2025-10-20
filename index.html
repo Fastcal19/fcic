@@ -1,331 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fast Cal Industrial Corp</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Employee Leave Page</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 5px;                        
+  min-height: 100vh;                 
+  background: linear-gradient(10deg, gold, orangered);
+}
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+/* Cards */
+.cards {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  flex-wrap: nowrap;
+}
 
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+.card {
+  flex: 1 1 0;
+  min-width: 0;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: center;
+}
 
-    /* ✅ Flexbox layout for sticky footer */
-    html, body {
-      height: 100%;
-    }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #222;
-      background-color: gray;
-      display: flex;
-      flex-direction: column;
-    }
+.card h2 { margin:0 0 10px 0; font-size:16px; color:#555; }
+.card .value { font-size:28px; font-weight:bold; }
 
-    header {
-      background: linear-gradient(90deg, orange, white,orange);
-      color: white;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem 2rem;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
+button {
+  padding:10px 20px; margin-bottom:10px; cursor:pointer;
+  border:none; border-radius:6px; background:#007bff; color:white;
+  font-size:14px;
+}
 
-    .logo-section {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
+table {
+  width:100%; border-collapse:collapse; background:white;
+  border-radius:10px; overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+th, td { border:1px solid #ccc; padding:10px; font-size:14px; }
+th { background:#e9ecef; text-align:left; }
 
-    .logo-section img {
-      height: 55px;
-      display: block;
-    }
+/* Modal */
+.modal-bg {
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.5); justify-content:center; align-items:center;
+  z-index: 999;
+}
+.modal {
+  background:white; padding:20px; border-radius:10px; width:320px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+.modal h3 { margin-top:0; }
+.modal input, .modal select, .modal textarea {
+  width:100%; margin-bottom:10px; padding:8px; font-size:14px;
+  border:1px solid #ccc; border-radius:5px;
+  box-sizing: border-box;
+}
+.modal .actions { text-align:right; display:flex; gap:8px; justify-content:flex-end; }
+.close-btn { background:#dc3545; color:#fff; }
+input[readonly] { background:#f0f0f0; }
 
-    nav a {
-      color: white;
-      margin-left: 20px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: color 0.3s;
-    }
-    nav a:hover { color: #000; }
+/* Toast */
+#toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  color: white;
+  display: none;
+  z-index: 2000;
+  font-weight: 600;
+}
+#toast.success { background: #2e8b57; }
+#toast.error { background: #c0392b; }
 
-    main {
-      flex: 1; /* ✅ Push footer to bottom */
-    }
-
-    .hero {
-      position: relative;
-      height: 70vh;
-      background: linear-gradient(1deg, gray, lightgray,gray);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: white;
-      padding: 2rem;
-    }
-
-    .hero h3 {
-      font-size: 1.2rem;
-      text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
-      animation: flicker 2s infinite;
-    }
-
-    @keyframes flicker {
-      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
-      20%, 24%, 55% { opacity: 0.6; }
-    }
-
-    .hero p {
-      font-size: 1.2rem;
-      margin-top: 1rem;
-      max-width: 600px;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-    }
-
-    .hero button {
-      margin-top: 2rem;
-      padding: 0.8rem 2rem;
-      border: none;
-      background: #ff9800;
-      color: white;
-      font-size: 1rem;
-      border-radius: 30px;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-    }
-    .hero button:hover { background: #e68900; transform: scale(1.05); }
-
-    footer {
-      background: #222;
-      color: #ccc;
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.9rem;
-      /* ✅ No fixed position needed — stays at bottom naturally */
-    }
-    footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
-    footer a:hover { color: #fff; }
-
-    .login-box {
-      display: inline-block;
-      background: linear-gradient(10deg, orange, white,orange);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      margin-top: 20px;
-    }
-
-    .login-box input {
-      width: 80%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    .manual-btn, .gmail-btn {
-      width: 85%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .manual-btn {
-      background: #4CAF50;
-      color: white;
-    }
-
-    .gmail-btn {
-      background: #DB4437;
-      color: white;
-    }
-
-    .gmail-btn i {
-      margin-right: 6px;
-    }
-
-    /* LOGIN MODAL */
-    #loginModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-    #loginBox {
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      width: 300px;
-      text-align: center;
-      position: relative;
-    }
-    #loginBox input {
-      margin-top: 10px;
-      width: 100%;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    #loginBox button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #loginBox .manual-btn { background: orangered; color: white; }
-    #loginBox .gmail-btn { background: #4285F4; color: white; }
-    #closeModal {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      cursor: pointer;
-      font-size: 1.2rem;
-      color: #888;
-    }
-    #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
-
-    @media (max-width: 768px) {
-      .hero h1 { font-size: 2.2rem; }
-      .hero p { font-size: 1rem; }
-      header { flex-direction: column; align-items: flex-start; }
-      nav { margin-top: 1rem; }
-    }
-  </style>
+/* Responsive */
+@media (max-width:480px){.cards{gap:8px}.card{padding:12px}}
+@media (max-width:480px) and (orientation:portrait){
+  table th:nth-child(3),table th:nth-child(4),table th:nth-child(5),
+  table td:nth-child(3),table td:nth-child(4),table td:nth-child(5){display:none;}
+}
+@media (max-width:480px) and (orientation:landscape){
+  table th,table td{display:table-cell;}
+}
+</style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <div class="logo-section">
-      <img src="fcic logo.png" alt="FCIC Logo">
-    </div>
-  </header>
+<div class="cards">
+  <div class="card"><h2>Credits</h2><div class="value" id="totalCredits">10</div></div>
+  <div class="card"><h2>Used</h2><div class="value" id="leaveApplied">0</div></div>
+  <div class="card"><h2>Remaining</h2><div class="value" id="remainingLeave">10</div></div>
+</div>
 
-  <!-- MAIN CONTENT -->
-  <main>
-    <section class="hero">
-      <h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
-      <div id="loginBox" class="login-box">
-        <h3>Login</h3>
-        <input id="username" placeholder="Username"><br>
-        <input id="password" type="password" placeholder="Password"><br>
-        <button class="manual-btn" onclick="manualLogin()">Login</button>
-        <hr>
-        <button class="gmail-btn" onclick="gmailLogin()">
-          <i class="fab fa-google"></i> Sign in with Google
-        </button>
-        <p id="loginStatus"></p>
-      </div>
-    </section>
-  </main>
+<button onclick="openModal()">Apply</button>
 
-  <!-- FOOTER -->
-  <footer>
-    &copy; 2025 Fast Cal Industrial Corp. All rights reserved.<br>
-    <a href="/privacy-policy/">Privacy Policy</a> |
-    <a href="/terms/">Terms & Conditions</a>
-  </footer>
+<table>
+  <thead><tr>
+    <th>Date Filed</th><th>Reason</th><th>From</th><th>To</th><th># of Days</th><th>Status</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
 
-  <!-- LOGIN MODAL -->
-  <div id="loginModal">
-    <div id="loginBox">
-      <span id="closeModal">&times;</span>
-      <h3>Login</h3>
-      <input id="username" placeholder="Username"><br>
-      <input id="password" type="password" placeholder="Password"><br>
-      <button class="manual-btn" onclick="manualLogin()">Login</button>
-      <hr>
-      <button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
-      <p id="loginStatus"></p>
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Apply Leave</h3>
+    <input type="text" id="eid" readonly>
+    <input type="text" id="name" readonly>
+
+    <!-- TIMESTAMP FIELD READONLY -->
+    <input type="text" id="dateFiled" placeholder="Date Filed" readonly>
+
+    <textarea id="reason" placeholder="Reason"></textarea>
+    <input type="date" id="fromDate">
+    <input type="date" id="toDate">
+    <input type="number" id="days" min="1">
+    <select id="status"><option>Pending</option><option>Cancel</option></select>
+    <div class="actions">
+      <button class="close-btn" onclick="closeModal()">Close</button>
+      <button id="submitBtn" onclick="submitLeave()" disabled>Submit</button>
     </div>
   </div>
+</div>
 
-  <!-- SCRIPT -->
-  <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbzXpiMW3qLPvRwefUUq4VFrX9pkJxvfAwa-3csXpwUI6UcgYq8O_j6xr7BLILCe7nGi7g/exec";
+<div id="toast"></div>
 
-    const modal = document.getElementById('loginModal');
-    document.querySelector('.login-icon').onclick = () => modal.style.display = 'flex';
-    document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
-    window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
+<script>
+const API_BASE="https://script.google.com/macros/s/AKfycbwEKRrPzOzPlNHHlFP5kSIQ3hSJrFy9kbkHPuWZbxisvfDdutQc5IttUuQ6wP2DK-30/exec";
 
-    async function manualLogin() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      document.getElementById('loginStatus').textContent = "⏳ Checking...";
-      try {
-        const res = await fetch(webAppUrl, {
-          method: "POST",
-          body: JSON.stringify({ method: "manual", username, password })
-        });
-        const data = await res.json();
-        handleLoginResponse(data);
-      } catch {
-        document.getElementById('loginStatus').textContent = "❌ Network error.";
-      }
+let applicantName=localStorage.getItem('full');
+let applicantEID=localStorage.getItem('eid');
+if(!applicantName){applicantName=prompt("Enter your name:");if(applicantName) localStorage.setItem('full',applicantName);}
+if(!applicantEID){applicantEID=prompt("Enter your Employee ID:");if(applicantEID) localStorage.setItem('eid',applicantEID);}
+
+const modalBg=document.getElementById('modalBg');
+const dateFiled=document.getElementById('dateFiled');
+const submitBtn=document.getElementById('submitBtn');
+const requiredIds=['dateFiled','reason','fromDate','toDate','days'];
+
+function formatTimestamp(){
+  const now=new Date();
+  return now.getFullYear()+"-"+
+    String(now.getMonth()+1).padStart(2,"0")+"-"+
+    String(now.getDate()).padStart(2,"0")+" "+
+    String(now.getHours()).padStart(2,"0")+":"+
+    String(now.getMinutes()).padStart(2,"0")+":"+
+    String(now.getSeconds()).padStart(2,"0");
+}
+
+function openModal(){
+  document.getElementById('eid').value=applicantEID||"";
+  document.getElementById('name').value=applicantName||"";
+  dateFiled.value=formatTimestamp();
+  ['reason','fromDate','toDate','days'].forEach(id=>document.getElementById(id).value="");
+  document.getElementById('status').value="Pending";
+  refreshSaveState();
+  modalBg.style.display='flex';
+}
+
+function closeModal(){modalBg.style.display='none';}
+
+function validateForm(){return requiredIds.every(id=>document.getElementById(id).value.trim()!=="");}
+function refreshSaveState(){submitBtn.disabled=!validateForm();}
+requiredIds.forEach(id=>document.getElementById(id)?.addEventListener('input',refreshSaveState));
+
+async function loadLeaves() {
+  const tbody = document.querySelector("tbody");
+  tbody.innerHTML = `<tr><td colspan="6">Loading...</td></tr>`;
+
+  try {
+    const res = await fetch(API_BASE + "?action=getLeaves");
+    const data = await res.json();
+data.forEach((r,i)=>{
+  console.log(i, "EID in row:", JSON.stringify(r["EID"]));
+});
+console.log("Local EID:", JSON.stringify(localStorage.getItem('eid')));
+console.log("Available keys in first row:", Object.keys(data[0]));
+
+console.log("RAW DATA:", data);
+console.log("My EID:", localStorage.getItem('eid'));
+
+    // FILTER RECORDS FOR THIS USER ONLY
+// normalize local EID
+const myEID = (localStorage.getItem("eid") || "")
+  .trim()
+  .replace(/^0+/, "");
+
+// filter correct dataset
+const myLeaves = data.filter(r => {
+  const rowEID = String(r["EID"] || "")
+    .trim()
+    .replace(/^0+/, "");
+  return rowEID && rowEID === myEID;
+});
+
+console.log("FILTERED LEAVES:", myLeaves);
+console.log("COUNT:", myLeaves.length);
+
+if (myLeaves.length === 0) {
+  tbody.innerHTML = `<tr><td colspan="6">No leave records found</td></tr>`;
+  return;
+}
+
+tbody.innerHTML = myLeaves.map(r => `
+  <tr>
+    <td>${r["Date Filed"] || ""}</td>
+    <td>${r["Reason"] || ""}</td>
+    <td>${r["From"] || ""}</td>
+    <td>${r["To"] || ""}</td>
+    <td>${r["# of Days"] || ""}</td>
+    <td>${r["Status"] || ""}</td>
+  </tr>
+`).join("");
+
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="6">Error loading data</td></tr>`;
+  }
+}
+
+
+
+async function submitLeave(){
+  if(!validateForm()) return;
+  submitBtn.disabled=true;
+  submitBtn.textContent="Submitting...";
+
+  // read values using getElementById (avoid using undeclared identifiers)
+  const payload = {
+    method: "submitLeave",
+    eid: localStorage.getItem('eid'),
+    name: localStorage.getItem('full'),
+    dateFiled: document.getElementById('dateFiled').value,
+    reason: document.getElementById('reason').value,
+    fromDate: document.getElementById('fromDate').value,
+    toDate: document.getElementById('toDate').value,
+    days: document.getElementById('days').value,
+    status: document.getElementById('status').value
+  };
+
+  try {
+    // Send as form-encoded to avoid CORS preflight (application/x-www-form-urlencoded)
+    const body = 'payload=' + encodeURIComponent(JSON.stringify(payload));
+
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body
+    });
+
+    // response will be JSON text if server returns JSON
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch (err) { data = { status: "error", message: "Invalid JSON response" }; }
+
+    if (res.ok && (data.status === "success" || data.success)) {
+      showToast("Leave submitted", "success");
+      closeModal();
+      loadLeaves();
+    } else {
+      showToast("Failed: " + (data.message || "Unknown error"), "error");
     }
+  } catch (err) {
+    console.error("submit error:", err);
+    showToast("Network error", "error");
+  } finally {
+    submitBtn.textContent = "Submit";
+    refreshSaveState();
+  }
+}
 
-    function gmailLogin() {
-      google.accounts.id.initialize({
-        client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
-        callback: handleCredentialResponse
-      });
-      google.accounts.id.prompt();
-    }
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className=type;t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
 
-    async function handleCredentialResponse(response) {
-      const userInfo = parseJwt(response.credential);
-      const res = await fetch(webAppUrl, {
-        method: "POST",
-        body: JSON.stringify({ method: "gmail", email: userInfo.email })
-      });
-      const data = await res.json();
-      handleLoginResponse(data);
-    }
 
-    function handleLoginResponse(response) {
-      const status = document.getElementById('loginStatus');
-      if (response.success) {
-        localStorage.setItem("role", response.role);
-        localStorage.setItem("username", response.name);
-        localStorage.setItem("eid", response.eid);
-        localStorage.setItem("full", response.full);
-        localStorage.setItem("photo", response.photo);
-        status.style.color = "green";
-        status.textContent = "✅ Welcome, " + response.name;
-        setTimeout(() => {
-          modal.style.display = 'none';
-          if (response.role === "Admin") location.href = "/admin/";
-          else if (response.role === "Purchaser") location.href = "/User/";
-          else location.href = "/User/";
-        }, 1000);
-      } else {
-        status.style.color = "red";
-        status.textContent = response.message || "❌ Invalid username or password.";
-      }
-    }
-
-    function parseJwt(token) {
-      return JSON.parse(atob(token.split('.')[1]));
-    }
-  </script>
-
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
+loadLeaves();
+</script>
 </body>
 </html>
