@@ -11,8 +11,9 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* ✅ Flexbox layout for sticky footer */
-html, body { height: 100%; }
+html, body {
+  height: 100%;
+}
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #222;
@@ -21,6 +22,7 @@ body {
   flex-direction: column;
 }
 
+/* HEADER */
 header {
   background: linear-gradient(90deg, orange, white, orange);
   color: white;
@@ -43,17 +45,6 @@ header {
   height: 55px;
   display: block;
 }
-
-.login-icon {
-  position: absolute;
-  right: 20px;
-  top: 10px;
-  font-size: 1.5rem;
-  color: white;
-  cursor: pointer;
-  transition: color 0.3s;
-}
-.login-icon:hover { color: #000; }
 
 main { flex: 1; }
 
@@ -108,17 +99,12 @@ footer {
   padding: 1rem;
   font-size: 0.9rem;
 }
-footer a {
-  color: #ffb74d;
-  text-decoration: none;
-  margin: 0 5px;
-  cursor: pointer;
-}
+footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
 footer a:hover { color: #fff; }
 
 .login-box {
   display: inline-block;
-  background: linear-gradient(10deg, orange, white, orange);
+  background: linear-gradient(90deg, orange, white, orange);
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -164,7 +150,7 @@ footer a:hover { color: #fff; }
   align-items: center;
   z-index: 2000;
 }
-#loginModal .box {
+#loginBox {
   background: white;
   padding: 2rem;
   border-radius: 10px;
@@ -172,14 +158,14 @@ footer a:hover { color: #fff; }
   text-align: center;
   position: relative;
 }
-#loginModal input {
+#loginBox input {
   margin-top: 10px;
   width: 100%;
   padding: 8px;
   border-radius: 5px;
   border: 1px solid #ccc;
 }
-#loginModal button {
+#loginBox button {
   margin-top: 10px;
   width: 100%;
   padding: 8px;
@@ -187,8 +173,8 @@ footer a:hover { color: #fff; }
   border-radius: 5px;
   cursor: pointer;
 }
-#loginModal .manual-btn { background: orangered; color: white; }
-#loginModal .gmail-btn { background: #4285F4; color: white; }
+#loginBox .manual-btn { background: orangered; color: white; }
+#loginBox .gmail-btn { background: #4285F4; color: white; }
 #closeModal {
   position: absolute;
   top: 8px;
@@ -207,14 +193,12 @@ footer a:hover { color: #fff; }
 }
 </style>
 </head>
-
 <body>
 
 <!-- HEADER -->
 <header>
   <div class="logo-section">
     <img src="fcic logo.png" alt="FCIC Logo">
-    <i class="fas fa-user login-icon" title="Login"></i>
   </div>
 </header>
 
@@ -222,7 +206,7 @@ footer a:hover { color: #fff; }
 <main>
   <section class="hero">
     <h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
-    <div id="loginBoxMain" class="login-box">
+    <div id="loginBox" class="login-box">
       <h3>Login</h3>
       <input id="username" placeholder="Username"><br>
       <input id="password" type="password" placeholder="Password"><br>
@@ -245,11 +229,11 @@ footer a:hover { color: #fff; }
 
 <!-- LOGIN MODAL -->
 <div id="loginModal">
-  <div class="box">
+  <div id="loginBoxModal">
     <span id="closeModal">&times;</span>
     <h3>Login</h3>
-    <input id="username" placeholder="Username"><br>
-    <input id="password" type="password" placeholder="Password"><br>
+    <input id="usernameModal" placeholder="Username"><br>
+    <input id="passwordModal" type="password" placeholder="Password"><br>
     <button class="manual-btn" onclick="manualLogin()">Login</button>
     <hr>
     <button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
@@ -263,18 +247,23 @@ const webAppUrl = "https://script.google.com/macros/s/AKfycbzXpiMW3qLPvRwefUUq4V
 
 const modal = document.getElementById('loginModal');
 const closeModal = document.getElementById('closeModal');
-
-// Optional icon trigger for modal
-const loginIcon = document.querySelector('.login-icon');
-if (loginIcon) loginIcon.onclick = () => modal.style.display = 'flex';
-
-closeModal.onclick = () => modal.style.display = 'none';
-window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+if (closeModal) closeModal.onclick = () => modal.style.display = 'none';
+window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
 
 async function manualLogin() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
-  document.getElementById('loginStatus').textContent = "⏳ Checking...";
+  const status = document.getElementById('loginStatus');
+
+  if (!username || !password) {
+    status.style.color = "red";
+    status.textContent = "⚠️ Please enter both username and password.";
+    return;
+  }
+
+  status.style.color = "black";
+  status.textContent = "⏳ Checking...";
+
   try {
     const res = await fetch(webAppUrl, {
       method: "POST",
@@ -283,17 +272,36 @@ async function manualLogin() {
     const data = await res.json();
     handleLoginResponse(data);
   } catch {
-    document.getElementById('loginStatus').textContent = "❌ Network error.";
+    status.style.color = "red";
+    status.textContent = "❌ Network error.";
   }
 }
 
-// ✅ Initialize Google Sign-In once
-google.accounts.id.initialize({
-  client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
-  callback: handleCredentialResponse
-});
+
+let googleReady = false;
+window.onload = () => {
+  if (window.google && window.google.accounts) initGoogleSignIn();
+  else {
+    const wait = setInterval(() => {
+      if (window.google && window.google.accounts) {
+        initGoogleSignIn();
+        clearInterval(wait);
+      }
+    }, 300);
+  }
+};
+
+function initGoogleSignIn() {
+  googleReady = true;
+  google.accounts.id.initialize({
+    client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
+    callback: handleCredentialResponse
+  });
+}
+
 function gmailLogin() {
-  google.accounts.id.prompt();
+  if (googleReady) google.accounts.id.prompt();
+  else alert("Google Sign-In not ready yet. Please wait a moment and try again.");
 }
 
 async function handleCredentialResponse(response) {
@@ -319,6 +327,7 @@ function handleLoginResponse(response) {
     setTimeout(() => {
       modal.style.display = 'none';
       if (response.role === "Admin") location.href = "/admin/";
+      else if (response.role === "Purchaser") location.href = "/User/";
       else location.href = "/User/";
     }, 1000);
   } else {
