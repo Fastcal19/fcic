@@ -297,54 +297,63 @@
 function showPage(page) {
   const iframe = document.getElementById("mainFrame");
   const portals = document.getElementById("portalsPage");
-
-  if (!iframe) return alert("⚠️ iframe not found.");
+  const role = localStorage.getItem("role");
 
   // Hide both by default
   iframe.style.display = "none";
   if (portals) portals.style.display = "none";
 
-  // Mapping of page names to file names
+  // ✅ Role-based Dashboard
+  if (page === "dashboard") {
+    if (role === "Admin" || role === "System Admin") {
+      iframe.style.display = "block";
+      iframe.src = "Admin Dashboard.html";
+    } else {
+      iframe.style.display = "block";
+      iframe.src = "dashboard.html";
+    }
+    return;
+  }
+
+  // ✅ Page mappings
   const pages = {
-    // Common
-    dashboard: "dashboard.html",
-    payslip: "Payslip.html",
-    // HR
     employee: "Employee.html",
     attendance: "HR_Attendance.html",
     payroll: "HR_Payroll.html",
-    // Reports
     projects: "Reports_Projects.html",
     sales: "Reports_Sales.html",
     ar: "Reports_AR.html",
     ap: "Reports_AP.html",
     pc: "Reports_Costing.html",
     is: "Reports_IS.html",
-    // Inventory
     inventoryGallery: "inventory.html",
     inventoryList: "Inventory List.html",
-    // Purchaser
     projectCosting: "Project Costing.html",
     leave: "leave.html",
     advances: "Advances.html",
-    overtime: "Overtime.html"
+    overtime: "Overtime.html",
+    payslip: "Payslip.html"
   };
 
+  // ✅ Portals section
   if (page === "portals") {
     if (portals) {
       portals.style.display = "block";
       loadPortals();
     }
-  } else {
-    iframe.style.display = "block";
-    iframe.src = pages[page] || "dashboard.html"; // fallback
+    return;
   }
 
-  // Hide sidebar on mobile when navigating
+  // ✅ Default behavior
+  iframe.style.display = "block";
+  iframe.src = pages[page] || "dashboard.html";
+
+  // ✅ Hide sidebar on mobile
   if (window.innerWidth <= 768) {
     document.getElementById('sidebar').classList.remove('active');
   }
 }
+
 
     
 const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
