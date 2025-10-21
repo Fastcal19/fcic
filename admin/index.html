@@ -276,12 +276,7 @@
       menu.classList.toggle('show');
     }
 
-    function showPage(page) {
-      const iframe = document.getElementById("mainFrame");
-      if (role === "Admin" && page === "dashboard") iframe.src = "admin_dashboard.html";
-      else if (role === "Staff" && page === "dashboard") iframe.src = "staff_dashboard.html";
-      else iframe.src = page + ".html";
-    }
+    
 
     function logout() {
       localStorage.clear();
