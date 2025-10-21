@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quote / Project Table</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --accent: #0ea5a4;
+    }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: orange;
+      color: #111827;
+      padding: 24px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0 0 14px;
+      font-size: 20px;
+    }
+    .card {
+      background: #FFD54F;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      padding: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      table-layout: fixed;
+    }
+
+    /* ✅ Center-align headers */
+    thead th {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 12px 10px;
+      border-bottom: 1px solid #e6e9ef;
+    }
+
+    tbody td {
+      padding: 2px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f3f6;
+    }
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #e6e9ef;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 10px;
+    }
+    tfoot td {
+      padding: 12px 10px;
+      font-weight: 600;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #eef2f7;
+      color: #0f1724;
+    }
+    .right {
+      text-align: right;
+    }
+
+    /* ✅ COLUMN WIDTHS */
+    th:nth-child(1), td:nth-child(1) { width: 10%; }
+    th:nth-child(2), td:nth-child(2) { width: 30%; }
+    th:nth-child(3), td:nth-child(3) { width: 5%; text-align: center; }
+    th:nth-child(4), td:nth-child(4) { width: 5%; text-align: center; }
+    th:nth-child(5), td:nth-child(5) { width: 10%; text-align: right; }
+    th:nth-child(6), td:nth-child(6) { width: 10%; text-align: right; }
+    th:nth-child(7), td:nth-child(7) { width: 15%; }
+    th:nth-child(8), td:nth-child(8) { width: 15%; }
+
+    @media(max-width:880px) {
+      table { font-size: 10px; }
+      thead th:not(:first-child) { display: none; }
+      tbody td:not(:first-child) { display: none; }
+      thead th:first-child { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Project Quote Table</h1>
+    <div class="card">
+      <div class="controls">
+        <button id="addRowBtn">+ Add row</button>
+        <button id="exportCsvBtn" class="secondary">Export CSV</button>
+        <button id="clearBtn" class="secondary">Clear all</button>
+      </div>
+      <div style="overflow:auto">
+        <table id="quoteTable">
+          <thead>
+            <tr>
+              <th>PROJECT_NO</th>
+              <th>DESCRIPTION</th>
+              <th>QTY</th>
+              <th>UNIT</th>
+              <th>UNIT_PRICE</th>
+              <th>AMOUNT</th>
+              <th>QUOTED_BY</th>
+              <th>REMARKS</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5"></td>
+              <td class="right" id="grandTotal">0.00</td>
+              <td colspan="2"></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+const tableBody = document.querySelector('#quoteTable tbody');
+const addRowBtn = document.getElementById('addRowBtn');
+const grandTotalEl = document.getElementById('grandTotal');
+const exportCsvBtn = document.getElementById('exportCsvBtn');
+const clearBtn = document.getElementById('clearBtn');
+
+// ✅ Save button
+const saveBtn = document.createElement('button');
+saveBtn.textContent = 'Save';
+saveBtn.style.background = '#16a34a';
+saveBtn.style.color = 'white';
+saveBtn.style.border = 'none';
+saveBtn.style.padding = '8px 12px';
+saveBtn.style.borderRadius = '8px';
+saveBtn.style.cursor = 'pointer';
+document.querySelector('.controls').appendChild(saveBtn);
+
+// ✅ Google Apps Script Web App URL
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxSvE0UOou8STUGS7irblbfyYSmIZsk3PmA1z2igZQ8Gu3fdMFLFinrN4QUL_t6xGwP3w/exec";
+
+function formatNumber(n){return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+function createCell(tag,content){const td=document.createElement(tag);td.appendChild(content);return td;}
+function createInput(type='text',placeholder=''){const inp=document.createElement('input');inp.type=type;inp.placeholder=placeholder;if(type==='number')inp.step='any';return inp;}
+
+// ✅ Load project options
+async function loadProjectOptions(selectEl){
+  try{
+    const res = await fetch(GOOGLE_SCRIPT_URL);
+    const projects = await res.json();
+    selectEl.innerHTML='';
+    projects.forEach(p=>{
+      const opt=document.createElement('option');
+      opt.value=p;
+      opt.textContent=p;
+      selectEl.appendChild(opt);
+    });
+  }catch(err){console.error('Failed to load project list:',err);}
+}
+
+async function addRow(data={}){
+  const tr=document.createElement('tr');
+
+  // ✅ PROJECT_NO dropdown
+  const projectSelect=document.createElement('select');
+  await loadProjectOptions(projectSelect);
+  if(data.project_no) projectSelect.value=data.project_no;
+  tr.appendChild(createCell('td',projectSelect));
+
+  const descInput=createInput('text');descInput.value=data.description||'';tr.appendChild(createCell('td',descInput));
+  const qtyInput=createInput('number');qtyInput.value=data.qty||'';tr.appendChild(createCell('td',qtyInput));
+  const unitInput=createInput('text');unitInput.value=data.unit||'';tr.appendChild(createCell('td',unitInput));
+  const priceInput=createInput('number');priceInput.value=data.unit_price||'';tr.appendChild(createCell('td',priceInput));
+  const amountSpan=document.createElement('div');amountSpan.style.textAlign='right';amountSpan.textContent=formatNumber(0);tr.appendChild(createCell('td',amountSpan));
+  const quotedInput=createInput('text');quotedInput.value=data.quoted_by||'';tr.appendChild(createCell('td',quotedInput));
+  const remarksInput=createInput('text');remarksInput.value=data.remarks||'';tr.appendChild(createCell('td',remarksInput));
+
+  const rmBtn=document.createElement('button');rmBtn.textContent='✕';rmBtn.className='secondary';rmBtn.style.padding='6px 8px';
+  const rmTd=document.createElement('td');rmTd.appendChild(rmBtn);tr.appendChild(rmTd);
+
+  function recalc(){
+    const qty=parseFloat(qtyInput.value)||0;
+    const price=parseFloat(priceInput.value)||0;
+    const amt=qty*price;
+    amountSpan.textContent=formatNumber(amt);
+    recalcTotal();
+  }
+  qtyInput.addEventListener('input',recalc);
+  priceInput.addEventListener('input',recalc);
+  rmBtn.addEventListener('click',()=>{tr.remove();recalcTotal();});
+
+  tableBody.appendChild(tr);
+  recalc();
+}
+
+function recalcTotal(){
+  let sum=0;
+  tableBody.querySelectorAll('tr').forEach(tr=>{
+    const amtText=tr.cells[5].textContent.replace(/,/g,'')||'0';
+    sum+=parseFloat(amtText)||0;
+  });
+  grandTotalEl.textContent=formatNumber(sum);
+}
+
+addRowBtn.addEventListener('click',()=>addRow());
+exportCsvBtn.addEventListener('click',()=>exportCSV());
+clearBtn.addEventListener('click',()=>{if(!confirm('Remove all rows?'))return;tableBody.innerHTML='';recalcTotal();});
+
+function exportCSV(){
+  const rows=[['PROJECT_NO','DESCRIPTION','QTY','UNIT','UNIT_PRICE','AMOUNT','QUOTED_BY','REMARKS']];
+  tableBody.querySelectorAll('tr').forEach(tr=>{
+    const r=[];
+    for(let i=0;i<8;i++){
+      if(i===5) r.push(tr.cells[i].textContent.replace(/,/g,''));
+      else{
+        const input=tr.cells[i].querySelector('input,select');
+        r.push(input?input.value:'');
+      }
+    }
+    rows.push(r);
+  });
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='quote_export.csv';
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+
+// ✅ Save data to Google Sheet (row 2)
+saveBtn.addEventListener('click',async()=>{
+  const rows=[];
+  tableBody.querySelectorAll('tr').forEach(tr=>{
+    const r=[];
+    for(let i=0;i<8;i++){
+      if(i===5) r.push(tr.cells[i].textContent.replace(/,/g,''));
+      else{
+        const input=tr.cells[i].querySelector('input,select');
+        r.push(input?input.value:'');
+      }
+    }
+    rows.push(r);
+  });
+  const data={records:rows};
+  try{
+    saveBtn.textContent='Saving...';
+    await fetch(GOOGLE_SCRIPT_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    alert('Data saved successfully!');
+  }catch(err){
+    alert('Error: '+err.message);
+  }finally{
+    saveBtn.textContent='Save';
+  }
+});
+</script>
+</body>
+</html>
