@@ -276,7 +276,56 @@
       menu.classList.toggle('show');
     }
 
+function showPage(page) {
+      const iframe = document.getElementById("mainFrame");
+      const portals = document.getElementById("portalsPage");
+      iframe.style.display = "none";
+      portals.style.display = "none";
+
+      if (page === "portals") {
+        portals.style.display = "block";
+        loadPortals();
+      } else {
+        iframe.style.display = "block";
+        const pages = {
+          dashboard: "Admin Dashboard.html",
+          employees: "Admin Employee.html",
+          attendance: "HR_Attendance.html",
+          payroll: "HR_Payroll.html",
+          reports: "Reports.html",
+          leave: "leave.html",
+          inventoryGallery: "Inventory.html",
+          inventoryList: "Inventory List.html",
+          requests: "Requests.html",
+        };
+        iframe.src = pages[page];
+      }
+
+      // Hide sidebar on mobile when navigating
+      if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.remove('active');
+      }
+    }
     
+const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
+    async function loadPortals() {
+      try {
+        const res = await fetch(PORTALS_URL);
+        const portals = await res.json();
+        const grid = document.getElementById("portalsGrid");
+        grid.innerHTML = "";
+        portals.forEach(p => {
+          const card = document.createElement("div");
+          card.className = "portal-card";
+          card.onclick = () => window.open(p.url, "_blank");
+          const imgSrc = p.thumb || p.logo || "default_logo.png";
+          card.innerHTML = `<img src="${imgSrc}" alt="${p.name}"><p>${p.name}</p>`;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Failed to load portals:", err);
+      }
+    }    
 
     function logout() {
       localStorage.clear();
