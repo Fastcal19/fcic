@@ -376,15 +376,7 @@ const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcn
       }
     }    
 
-    function showPage(page) {
-      const iframe = document.getElementById("mainFrame");
-      if (role === "Admin" && page === "dashboard") iframe.src = "Admin Dashboard.html";
-      else if (role === "System Admin" && page === "dashboard") iframe.src = "Admin Dashboard.html";  
-      else if (role === "Purchaser" && page === "dashboard") iframe.src = "dashboard.html";  
-      else if (role === "Staff" && page === "dashboard") iframe.src = "dashboard.html";
-      else iframe.src = page + ".html";
-    }
-    
+   
     function logout() {
       localStorage.clear();
       window.location.href = '/';
