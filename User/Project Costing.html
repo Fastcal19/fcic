@@ -1,288 +1,329 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Quote / Project Table</title>
+  <title>Project Costing</title>
   <style>
-    :root {
-      --bg: #f4f6f8;
-      --card: #ffffff;
-      --muted: #6b7280;
-      --accent: #0ea5a4;
-    }
+    html,body { height:100%; margin:0; }
     body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background: orange;
-      color: #111827;
-      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+      overflow:auto;
     }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
+    #bgCanvas {
+      position: fixed;
+      left: 0; top: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
     }
-    h1 {
-      margin: 0 0 14px;
-      font-size: 20px;
-    }
-    .card {
-      background: #FFD54F;
-      border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-      padding: 16px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-      table-layout: fixed;
-    }
+    .page { position: relative; z-index: 2; padding: 20px; }
+    h2 { margin: 0 0 12px 0; color:#2c3e50; }
 
-    /* ✅ Center-align headers */
+    /* Filters */
+    .filters {
+      margin-bottom:12px; display:flex; gap:8px;
+      flex-wrap:wrap; align-items:center;
+    }
+    .filters select, .filters button {
+      padding:6px 10px; border-radius:6px; border:1px solid #ccc;
+      background:#fff; cursor:pointer;
+    }
+    .filters label { font-size:14px; color:#333; display:flex; gap:6px; align-items:center; }
+    #spinner-pc {
+      display:none; width:42px; height:42px;
+      border:6px solid #f3f3f3; border-top:6px solid #3498db;
+      border-radius:50%; animation:spin 1s linear infinite; margin-left:8px;
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* Table */
+    table { width:100%; background:orange;
+      margin-top:8px; box-shadow:0 6px 18px rgba(0,0,0,0.15);
+      border-radius:6px; overflow:hidden;
+    }
     thead th {
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
-      padding: 12px 10px;
-      border-bottom: 1px solid #e6e9ef;
+      background:#4a4a4a; color:#fff; padding:10px;
+      text-align:center; font-weight:600; border-bottom:2px solid #333;
+    }
+    th, td { padding:8px 10px; border-bottom:1px solid #eee; word-wrap:break-word; text-align:left; }
+    #pcTable tbody tr:nth-child(odd) { background: #f9f9f9; }
+    #pcTable tbody tr:nth-child(even){ background: #ffffff; }
+    #pcTable tbody tr:hover { background: orange; cursor: pointer; transition: background-color 0.25s; }
+
+    /* Column widths */
+    #pcTable th:nth-child(1), #pcTable td:nth-child(1) { width: 10%; }
+    #pcTable th:nth-child(2), #pcTable td:nth-child(2) { width: 25%; }
+    #pcTable th:nth-child(3), #pcTable td:nth-child(3) { width: 15%; }
+    #pcTable th:nth-child(4), #pcTable td:nth-child(4) { width: 40%; }
+    #pcTable th:nth-child(5), #pcTable td:nth-child(5) { width: 10%; }
+
+    .empty-msg { color:#777; text-align:center; padding:12px; }
+
+    /* Modal (shared) */
+    .modal {
+      display:none; position:fixed; z-index:1001;
+      left:0; top:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.45);
+      backdrop-filter: blur(2px);
+    }
+    .modal-content {
+      background:#fff; margin:6% auto; padding:0; border-radius:10px;
+      max-width:900px; width:90%; height:80%;
+      position:relative; box-shadow:0 16px 48px rgba(0,0,0,0.4);
+      overflow:hidden; display:flex; flex-direction:column;
+    }
+    .modal iframe {
+      width:100%; height:100%; border:none;
+      background:#fff; border-radius:10px;
+    }
+    .close-btn {
+      position:absolute; top:10px; right:15px;
+      font-size:22px; color:#fff; cursor:pointer; z-index:10;
     }
 
-    tbody td {
-      padding: 2px;
-      vertical-align: middle;
-      border-bottom: 1px solid #f1f3f6;
-    }
-    input[type="text"],
-    input[type="number"],
-    select {
-      width: 100%;
-      box-sizing: border-box;
-      border: 1px solid #e6e9ef;
-      border-radius: 6px;
-      padding: 6px 8px;
-      font-size: 10px;
-    }
-    tfoot td {
-      padding: 12px 10px;
-      font-weight: 600;
-    }
-    .controls {
-      display: flex;
-      gap: 8px;
-      margin: 12px 0;
-    }
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button.secondary {
-      background: #eef2f7;
-      color: #0f1724;
-    }
-    .right {
-      text-align: right;
-    }
+/* Table row striping */
+#pcTable tbody tr:nth-child(odd) { 
+  background: #fff3e0; /* light orange tint */
+}
+#pcTable tbody tr:nth-child(even) { 
+  background: #ffe0b2; /* slightly darker orange */
+}
 
-    /* ✅ COLUMN WIDTHS */
-    th:nth-child(1), td:nth-child(1) { width: 10%; }
-    th:nth-child(2), td:nth-child(2) { width: 30%; }
-    th:nth-child(3), td:nth-child(3) { width: 5%; text-align: center; }
-    th:nth-child(4), td:nth-child(4) { width: 5%; text-align: center; }
-    th:nth-child(5), td:nth-child(5) { width: 10%; text-align: right; }
-    th:nth-child(6), td:nth-child(6) { width: 10%; text-align: right; }
-    th:nth-child(7), td:nth-child(7) { width: 15%; }
-    th:nth-child(8), td:nth-child(8) { width: 15%; }
+/* Hover highlight */
+#pcTable tbody tr:hover { 
+  background: #ffb74d; 
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
 
-    @media(max-width:880px) {
-      table { font-size: 10px; }
-      thead th:not(:first-child) { display: none; }
-      tbody td:not(:first-child) { display: none; }
-      thead th:first-child { width: 100%; }
+
+    @media (max-width:640px) {
+      .filters { gap:6px; }
+      #pcTable th, #pcTable td { font-size:13px; padding:6px 8px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Project Quote Table</h1>
-    <div class="card">
-      <div class="controls">
-        <button id="addRowBtn">+ Add row</button>
-        <button id="exportCsvBtn" class="secondary">Export CSV</button>
-        <button id="clearBtn" class="secondary">Clear all</button>
-      </div>
-      <div style="overflow:auto">
-        <table id="quoteTable">
-          <thead>
-            <tr>
-              <th>PROJECT_NO</th>
-              <th>DESCRIPTION</th>
-              <th>QTY</th>
-              <th>UNIT</th>
-              <th>UNIT_PRICE</th>
-              <th>AMOUNT</th>
-              <th>QUOTED_BY</th>
-              <th>REMARKS</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-          <tfoot>
-            <tr>
-              <td colspan="5"></td>
-              <td class="right" id="grandTotal">0.00</td>
-              <td colspan="2"></td>
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
+
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+<div class="page">
+  <h2>📊 Project Costing</h2>
+
+  <div class="filters">
+    <label>Project / Description:
+      <select id="pcSearchFilter"><option value="">All Projects</option></select>
+    </label>
+    <label>Customer:
+      <select id="pcCustomerFilter"><option value="">All Customers</option></select>
+    </label>
+    <label>Year:
+      <select id="pcYearFilter"><option value="">All Years</option></select>
+    </label>
+    <label>Status:
+      <select id="pcStatusFilter">
+        <option value="">All Status</option>
+        <option value="ongoing">Ongoing</option>
+        <option value="done">Done</option>
+      </select>
+    </label>
+
+    <button id="pcApplyBtn">Apply</button>
+    <button id="pcAddBtn">+ Add New Project</button>
+    <button id="pcCostingBtn">+ Add Costing</button>
+    <div id="spinner-pc" title="Loading"></div>
   </div>
 
+  <table id="pcTable" role="table" aria-label="Project costing table">
+    <thead>
+      <tr>
+        <th>PROJECT NO</th>
+        <th>CUSTOMER</th>
+        <th>REFERENCE</th>
+        <th>DESCRIPTION</th>
+        <th>STATUS</th>
+      </tr>
+    </thead>
+    <tbody id="pcBody">
+      <tr><td colspan="5" class="empty-msg">Loading...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Add Project Modal -->
+<div id="addProjectModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" id="closeAddProjectModal" title="Close">&times;</span>
+    <iframe id="addProjectFrame" src=""></iframe>
+  </div>
+</div>
+
+<!-- Costing Details Modal -->
+<div id="costingModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" id="closeCostingModal" title="Close">&times;</span>
+    <iframe id="costingFrame" src=""></iframe>
+  </div>
+</div>
+
 <script>
-const tableBody = document.querySelector('#quoteTable tbody');
-const addRowBtn = document.getElementById('addRowBtn');
-const grandTotalEl = document.getElementById('grandTotal');
-const exportCsvBtn = document.getElementById('exportCsvBtn');
-const clearBtn = document.getElementById('clearBtn');
+const webAppProjectCosting = "https://script.google.com/macros/s/AKfycbx0gZxmtw2fUnwD95Mmf-3RoGSHOtjRZKNTTDDrCRNStaNKJ3NLyAi2m2jLUfU-P0psFg/exec";
+let pcRows = [];
 
-// ✅ Save button
-const saveBtn = document.createElement('button');
-saveBtn.textContent = 'Save';
-saveBtn.style.background = '#16a34a';
-saveBtn.style.color = 'white';
-saveBtn.style.border = 'none';
-saveBtn.style.padding = '8px 12px';
-saveBtn.style.borderRadius = '8px';
-saveBtn.style.cursor = 'pointer';
-document.querySelector('.controls').appendChild(saveBtn);
+const el = {
+  spinner: document.getElementById('spinner-pc'),
+  pcBody: document.getElementById('pcBody'),
+  customerFilter: document.getElementById('pcCustomerFilter'),
+  yearFilter: document.getElementById('pcYearFilter'),
+  statusFilter: document.getElementById('pcStatusFilter'),
+  searchFilter: document.getElementById('pcSearchFilter'),
+  applyBtn: document.getElementById('pcApplyBtn'),
+  addBtn: document.getElementById('pcAddBtn'),
+  addProjectModal: document.getElementById('addProjectModal'),
+  addProjectFrame: document.getElementById('addProjectFrame'),
+  closeAddProjectModal: document.getElementById('closeAddProjectModal'),
+  costingBtn: document.getElementById('pcCostingBtn'),
+  costingModal: document.getElementById('costingModal'),
+  costingFrame: document.getElementById('costingFrame'),
+  closeCostingModal: document.getElementById('closeCostingModal')
+};
 
-// ✅ Google Apps Script Web App URL
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxSvE0UOou8STUGS7irblbfyYSmIZsk3PmA1z2igZQ8Gu3fdMFLFinrN4QUL_t6xGwP3w/exec";
-
-function formatNumber(n){return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
-function createCell(tag,content){const td=document.createElement(tag);td.appendChild(content);return td;}
-function createInput(type='text',placeholder=''){const inp=document.createElement('input');inp.type=type;inp.placeholder=placeholder;if(type==='number')inp.step='any';return inp;}
-
-// ✅ Load project options
-async function loadProjectOptions(selectEl){
-  try{
-    const res = await fetch(GOOGLE_SCRIPT_URL);
-    const projects = await res.json();
-    selectEl.innerHTML='';
-    projects.forEach(p=>{
-      const opt=document.createElement('option');
-      opt.value=p;
-      opt.textContent=p;
-      selectEl.appendChild(opt);
-    });
-  }catch(err){console.error('Failed to load project list:',err);}
-}
-
-async function addRow(data={}){
-  const tr=document.createElement('tr');
-
-  // ✅ PROJECT_NO dropdown
-  const projectSelect=document.createElement('select');
-  await loadProjectOptions(projectSelect);
-  if(data.project_no) projectSelect.value=data.project_no;
-  tr.appendChild(createCell('td',projectSelect));
-
-  const descInput=createInput('text');descInput.value=data.description||'';tr.appendChild(createCell('td',descInput));
-  const qtyInput=createInput('number');qtyInput.value=data.qty||'';tr.appendChild(createCell('td',qtyInput));
-  const unitInput=createInput('text');unitInput.value=data.unit||'';tr.appendChild(createCell('td',unitInput));
-  const priceInput=createInput('number');priceInput.value=data.unit_price||'';tr.appendChild(createCell('td',priceInput));
-  const amountSpan=document.createElement('div');amountSpan.style.textAlign='right';amountSpan.textContent=formatNumber(0);tr.appendChild(createCell('td',amountSpan));
-  const quotedInput=createInput('text');quotedInput.value=data.quoted_by||'';tr.appendChild(createCell('td',quotedInput));
-  const remarksInput=createInput('text');remarksInput.value=data.remarks||'';tr.appendChild(createCell('td',remarksInput));
-
-  const rmBtn=document.createElement('button');rmBtn.textContent='✕';rmBtn.className='secondary';rmBtn.style.padding='6px 8px';
-  const rmTd=document.createElement('td');rmTd.appendChild(rmBtn);tr.appendChild(rmTd);
-
-  function recalc(){
-    const qty=parseFloat(qtyInput.value)||0;
-    const price=parseFloat(priceInput.value)||0;
-    const amt=qty*price;
-    amountSpan.textContent=formatNumber(amt);
-    recalcTotal();
+/* ---------- normalize Data ---------- */
+function normalizeData(raw) {
+  if (!Array.isArray(raw)) return [];
+  if (Array.isArray(raw[0])) {
+    const header = raw[0].map(h=>String(h||'').trim());
+    raw = raw.slice(1).map(r=>Object.fromEntries(header.map((h,i)=>[h,r[i]])));
   }
-  qtyInput.addEventListener('input',recalc);
-  priceInput.addEventListener('input',recalc);
-  rmBtn.addEventListener('click',()=>{tr.remove();recalcTotal();});
-
-  tableBody.appendChild(tr);
-  recalc();
+  return raw.map(r=>({
+    PROJECT_NO: r.PROJECT_NO||r.PROJECTNO||r.PROJECT||'',
+    CUSTOMER: r.CUSTOMER||r.CLIENT||r.CUSTOMER_NAME||'',
+    REFERENCE: r.REFERENCE||r.REF||r.PO||'',
+    DESCRIPTION: r.DESCRIPTION||r.DESC||'',
+    STATUS: r.STATUS||r.STATE||'',
+    DATE: r.DATE||r.TRANSACTION_DATE||'',
+  }));
 }
 
-function recalcTotal(){
-  let sum=0;
-  tableBody.querySelectorAll('tr').forEach(tr=>{
-    const amtText=tr.cells[5].textContent.replace(/,/g,'')||'0';
-    sum+=parseFloat(amtText)||0;
-  });
-  grandTotalEl.textContent=formatNumber(sum);
-}
+/* ---------- Populate Filter Options ---------- */
+function populateFilterOptions(){
+  const customers = new Set();
+  const years = new Set();
+  const projects = new Set();
 
-addRowBtn.addEventListener('click',()=>addRow());
-exportCsvBtn.addEventListener('click',()=>exportCSV());
-clearBtn.addEventListener('click',()=>{if(!confirm('Remove all rows?'))return;tableBody.innerHTML='';recalcTotal();});
-
-function exportCSV(){
-  const rows=[['PROJECT_NO','DESCRIPTION','QTY','UNIT','UNIT_PRICE','AMOUNT','QUOTED_BY','REMARKS']];
-  tableBody.querySelectorAll('tr').forEach(tr=>{
-    const r=[];
-    for(let i=0;i<8;i++){
-      if(i===5) r.push(tr.cells[i].textContent.replace(/,/g,''));
-      else{
-        const input=tr.cells[i].querySelector('input,select');
-        r.push(input?input.value:'');
-      }
+  pcRows.forEach(r=>{
+    if(r.CUSTOMER) customers.add(r.CUSTOMER);
+    if(r.DATE){ const y=new Date(r.DATE).getFullYear(); if(!isNaN(y)) years.add(String(y)); }
+    if(r.PROJECT_NO){
+      const label = r.DESCRIPTION ? `${r.PROJECT_NO} - ${r.DESCRIPTION}` : r.PROJECT_NO;
+      projects.add(label);
     }
-    rows.push(r);
   });
-  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download='quote_export.csv';
-  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+
+  el.customerFilter.innerHTML='<option value="">All Customers</option>';
+  [...customers].sort().forEach(c=>el.customerFilter.appendChild(new Option(c,c)));
+
+  el.yearFilter.innerHTML='<option value="">All Years</option>';
+  [...years].sort((a,b)=>b-a).forEach(y=>el.yearFilter.appendChild(new Option(y,y)));
+
+  el.searchFilter.innerHTML='<option value="">All Projects</option>';
+  [...projects].sort().forEach(p=>el.searchFilter.appendChild(new Option(p,p)));
 }
 
-// ✅ Save data to Google Sheet (row 2)
-saveBtn.addEventListener('click',async()=>{
-  const rows=[];
-  tableBody.querySelectorAll('tr').forEach(tr=>{
-    const r=[];
-    for(let i=0;i<8;i++){
-      if(i===5) r.push(tr.cells[i].textContent.replace(/,/g,''));
-      else{
-        const input=tr.cells[i].querySelector('input,select');
-        r.push(input?input.value:'');
-      }
+/* ---------- Render Table ---------- */
+function renderTable(){
+  const cust=el.customerFilter.value.trim().toLowerCase();
+  const year=el.yearFilter.value.trim();
+  const status=el.statusFilter.value.trim().toLowerCase();
+  const search=el.searchFilter.value.trim().toLowerCase();
+
+  const rows=pcRows.filter(r=>{
+    if(cust && r.CUSTOMER.toLowerCase()!==cust) return false;
+    if(status && r.STATUS.toLowerCase()!==status) return false;
+    if(year){
+      const d=new Date(r.DATE);
+      if(isNaN(d)||String(d.getFullYear())!==year) return false;
     }
-    rows.push(r);
+    if(search){
+      const [projNoPart] = search.split(' - ');
+      if(!r.PROJECT_NO.toLowerCase().includes(projNoPart.toLowerCase())) return false;
+    }
+    return true;
   });
-  const data={records:rows};
-  try{
-    saveBtn.textContent='Saving...';
-    await fetch(GOOGLE_SCRIPT_URL,{
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(data)
-    });
-    alert('Data saved successfully!');
-  }catch(err){
-    alert('Error: '+err.message);
-  }finally{
-    saveBtn.textContent='Save';
+
+  if(!rows.length){
+    el.pcBody.innerHTML='<tr><td colspan="5" class="empty-msg">No project costing rows found.</td></tr>';
+    return;
+  }
+
+  el.pcBody.innerHTML='';
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${r.PROJECT_NO||''}</td>
+      <td>${r.CUSTOMER||''}</td>
+      <td>${r.REFERENCE||''}</td>
+      <td>${r.DESCRIPTION||''}</td>
+      <td>${r.STATUS||''}</td>
+    `;
+    el.pcBody.appendChild(tr);
+  });
+}
+
+/* ---------- Event Listeners ---------- */
+el.applyBtn.addEventListener('click',renderTable);
+el.customerFilter.addEventListener('change',renderTable);
+el.yearFilter.addEventListener('change',renderTable);
+el.statusFilter.addEventListener('change',renderTable);
+el.searchFilter.addEventListener('change',renderTable);
+
+/* ---------- Modal: Add Project ---------- */
+el.addBtn.addEventListener('click',()=>{
+  el.addProjectFrame.src = 'Add New Project.html';
+  el.addProjectModal.style.display='block';
+});
+el.closeAddProjectModal.addEventListener('click',()=>{
+  el.addProjectModal.style.display='none';
+  el.addProjectFrame.src='';
+});
+window.addEventListener('click',e=>{
+  if(e.target===el.addProjectModal){
+    el.addProjectModal.style.display='none';
+    el.addProjectFrame.src='';
   }
 });
+
+/* ---------- Modal: Costing Details ---------- */
+el.costingBtn.addEventListener('click',()=>{
+  el.costingFrame.src = 'Costing Details.html';
+  el.costingModal.style.display = 'block';
+});
+el.closeCostingModal.addEventListener('click',()=>{
+  el.costingModal.style.display = 'none';
+  el.costingFrame.src = '';
+});
+window.addEventListener('click',e=>{
+  if(e.target===el.costingModal){
+    el.costingModal.style.display='none';
+    el.costingFrame.src='';
+  }
+});
+
+/* ---------- Load Data ---------- */
+async function loadProjectCosting(){
+  el.spinner.style.display='inline-block';
+  try {
+    const res = await fetch(webAppProjectCosting);
+    const data = await res.json();
+    pcRows = normalizeData(data);
+    populateFilterOptions();
+    renderTable();
+  } catch(e){
+    el.pcBody.innerHTML='<tr><td colspan="5" class="empty-msg">Error loading data.</td></tr>';
+    console.error(e);
+  } finally { el.spinner.style.display='none'; }
+}
+loadProjectCosting();
 </script>
 </body>
 </html>
