@@ -326,7 +326,7 @@ function handleLoginResponse(response) {
     status.textContent = "✅ Welcome, " + response.name;
     setTimeout(() => {
       modal.style.display = 'none';
-      if (response.role === "Admin") location.href = "/admin/";
+      if (response.role === "Admin") location.href = "/User/";
       else if (response.role === "Purchaser") location.href = "/User/";
       else location.href = "/User/";
     }, 1000);
