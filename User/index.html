@@ -184,11 +184,28 @@
     <button class="logout-btn" onclick="logout()">Logout</button>
   </aside>
 
-  <div class="main">
-    <iframe id="mainFrame" src="dashboard.html"></iframe>
-  </div>
+ <div class="main">
+  <iframe id="mainFrame"></iframe>
+</div>
 
   <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const iframe = document.getElementById("mainFrame");
+  const role = localStorage.getItem("role");
+
+  if (!iframe) return;
+
+  // ✅ Load dashboard based on role
+  if (role === "System Admin" || role === "Admin") {
+    iframe.src = "Admin Dashboard.html";
+  } else if (role === "Staff" || role === "Purchaser") {
+    iframe.src = "dashboard.html";
+  } else {
+    // fallback if role not found
+    iframe.src = "dashboard.html";
+  }
+});
+    
     // Read user info
     const fullName = localStorage.getItem("full");
     const photo = localStorage.getItem("photo");
