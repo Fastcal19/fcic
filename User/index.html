@@ -278,35 +278,59 @@
     }
 
 function showPage(page) {
-      const iframe = document.getElementById("mainFrame");
-      const portals = document.getElementById("portalsPage");
-      iframe.style.display = "none";
-      portals.style.display = "none";
+  const iframe = document.getElementById("mainFrame");
+  const portals = document.getElementById("portalsPage");
 
-      if (page === "portals") {
-        portals.style.display = "block";
-        loadPortals();
-      } else {
-        iframe.style.display = "block";
-        const pages = {
-          dashboard: "Admin Dashboard.html",
-          employees: "Admin Employee.html",
-          attendance: "HR_Attendance.html",
-          payroll: "HR_Payroll.html",
-          reports: "Reports.html",
-          leave: "leave.html",
-          inventoryGallery: "Inventory.html",
-          inventoryList: "Inventory List.html",
-          requests: "Requests.html",
-        };
-        iframe.src = pages[page];
-      }
+  if (!iframe) return alert("⚠️ iframe not found.");
 
-      // Hide sidebar on mobile when navigating
-      if (window.innerWidth <= 768) {
-        document.getElementById('sidebar').classList.remove('active');
-      }
+  // Hide both by default
+  iframe.style.display = "none";
+  if (portals) portals.style.display = "none";
+
+  // Mapping of page names to file names
+  const pages = {
+    // Common
+    dashboard: "dashboard.html",
+    requests: "Requests.html",
+    payslip: "Payslip.html",
+    portals: "Portals.html",
+    // HR
+    employee: "Admin Employee.html",
+    attendance: "HR_Attendance.html",
+    payroll: "HR_Payroll.html",
+    // Reports
+    projects: "Reports_Projects.html",
+    sales: "Reports_Sales.html",
+    ar: "Reports_AR.html",
+    ap: "Reports_AP.html",
+    pc: "Reports_Costing.html",
+    is: "Reports_IS.html",
+    // Inventory
+    inventoryGallery: "Inventory.html",
+    inventoryList: "Inventory List.html",
+    // Purchaser
+    projectCosting: "Project Costing.html",
+    leave: "Leave.html",
+    advances: "Advances.html",
+    overtime: "Overtime.html"
+  };
+
+  if (page === "portals") {
+    if (portals) {
+      portals.style.display = "block";
+      loadPortals();
     }
+  } else {
+    iframe.style.display = "block";
+    iframe.src = pages[page] || "dashboard.html"; // fallback
+  }
+
+  // Hide sidebar on mobile when navigating
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('active');
+  }
+}
+
     
 const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
     async function loadPortals() {
@@ -328,6 +352,12 @@ const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcn
       }
     }    
 
+    function showPage(page) {
+      const iframe = document.getElementById("mainFrame");
+      if (role === "Admin" && page === "dashboard") iframe.src = "Admin Dashboard.html";
+      else if (role === "Staff" && page === "dashboard") iframe.src = "dashboard.html";
+      else iframe.src = page + ".html";
+    }
     function logout() {
       localStorage.clear();
       window.location.href = '/';
