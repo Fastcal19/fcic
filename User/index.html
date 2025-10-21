@@ -68,7 +68,6 @@
       border-radius: 6px;
       font-weight: bold;
       margin: 2px 0;
-      background: lightgray;
     }
     .sidebar a:hover { background: #FFD580; }
 
@@ -99,6 +98,14 @@
       background: linear-gradient(180deg, gold, orangered);
     }
 
+    .submenu {
+      display: none;
+      margin-left: 15px;
+    }
+    .submenu.show {
+      display: block;
+    }
+
     .menu-toggle {
       display: none;
       position: fixed;
@@ -110,7 +117,7 @@
       height: 2vh;
       border-radius: 6px;
       z-index: 1101;
-      cursor: hand;
+      cursor: pointer;
     }
 
     @media (max-width: 768px) {
@@ -134,13 +141,45 @@
         <div class="username" id="usernameDisplay">User</div>
       </div>
 
-      <a onclick="showPage('dashboard')">Dashboard</a>
-      <a id="projectCostingLink" onclick="showPage('Project Costing')">Project Costing</a>
-      <a onclick="showPage('leave')">Leave</a>
-      <a onclick="showPage('overtime')">Overtime</a>
-      <a onclick="showPage('inventory')">Inventory</a>
-      <a onclick="showPage('payslip')">Payslip</a>
+      <!-- MENU LINKS -->
+      <a id="btnDashboard" onclick="showPage('dashboard')">Dashboard</a>
+      <a id="btnHR" class="expandable" onclick="toggleMenu('hrMenu')">Human Resources ▸</a>
+      <div class="submenu" id="hrMenu">
+        <a onclick="showPage('employee')">Employee Profile</a>
+        <a onclick="showPage('attendance')">Attendance</a>
+        <a onclick="showPage('payroll')">Payroll</a>
+      </div>
+
+      <a id="btnReports" class="expandable" onclick="toggleMenu('reportsMenu')">Reports ▸</a>
+      <div class="submenu" id="reportsMenu">
+        <a onclick="showPage('projects')">Projects</a>
+        <a onclick="showPage('sales')">Sales</a>
+        <a onclick="showPage('ar')">Receivables</a>
+        <a onclick="showPage('ap')">Payables</a>
+        <a onclick="showPage('pc')">Costing</a>
+        <a onclick="showPage('is')">Income Statement</a>
+      </div>
+
+      <a id="btnProjectCosting" onclick="showPage('Project Costing')">Project Costing</a>
+
+      <a id="btnRequests" class="expandable" onclick="toggleMenu('requestsMenu')">Requests ▸</a>
+      <div class="submenu" id="requestsMenu">
+        <a onclick="showPage('advances')">Advances</a>
+        <a onclick="showPage('leave')">Leave</a>
+        <a onclick="showPage('overtime')">Overtime</a>
+      </div>
+
+      <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
+
+      <a id="btnInventory" class="expandable" onclick="toggleMenu('invMenu')">Inventory ▸</a>
+      <div class="submenu" id="invMenu">
+        <a onclick="showPage('inventoryGallery')">Gallery</a>
+        <a onclick="showPage('inventoryList')">List</a>
+      </div>
+
+      <a id="btnPortals" onclick="showPage('portals')">Portals</a>
     </div>
+
     <button class="logout-btn" onclick="logout()">Logout</button>
   </aside>
 
@@ -149,54 +188,100 @@
   </div>
 
   <script>
-  // read user info from localStorage
-  const fullName = localStorage.getItem("full"); // full name
-  const photo = localStorage.getItem("photo");   // photo filename
-  const role = localStorage.getItem("role");     // user role
+    // Read user info
+    const fullName = localStorage.getItem("full");
+    const photo = localStorage.getItem("photo");
+    const role = localStorage.getItem("role");
 
-  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
-  if(photo) document.getElementById("userPhoto").src = "./" + photo;
+    if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+    if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
-  // Show Project Costing link only for Purchaser
-  const projLink = document.getElementById("projectCostingLink");
-  if(role !== "Purchaser") projLink.style.display = "none";
+    // Role-based visibility
+    const buttons = {
+      btnDashboard: true,
+      btnHR: false,
+      btnReports: false,
+      btnProjectCosting: false,
+      btnRequests: false,
+      btnPayslip: false,
+      btnInventory: false,
+      btnPortals: false
+    };
 
-  const sidebar = document.getElementById('sidebar');
-  const menuToggle = document.getElementById('menuToggle');
-  let autoHideTimer;
-
-  menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('active');
-    if (sidebar.classList.contains('active')) startAutoHide();
-    else clearTimeout(autoHideTimer);
-  });
-
-  function startAutoHide() {
-    clearTimeout(autoHideTimer);
-    if (window.innerWidth <= 768) {
-      autoHideTimer = setTimeout(() => {
-        sidebar.classList.remove('active');
-      }, 2000);
+    if (role === "Admin") {
+      buttons.btnDashboard = true;
+      buttons.btnHR = true;
+      buttons.btnReports = true;
+      buttons.btnRequests = true;
+      buttons.btnInventory = true;
+      buttons.btnPortals = true;
+    } 
+    else if (role === "Staff") {
+      buttons.btnDashboard = true;
+      buttons.btnRequests = true;
+      buttons.btnPayslip = true;
+      buttons.btnInventory = true;
+    } 
+    else if (role === "Purchaser") {
+      buttons.btnDashboard = true;
+      buttons.btnProjectCosting = true;
+      buttons.btnRequests = true;
+      buttons.btnPayslip = true;
+      buttons.btnInventory = true;
+    } 
+    else if (role === "System Admin") {
+      // Show everything
+      for (const key in buttons) buttons[key] = true;
     }
-  }
 
-  sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
-  sidebar.addEventListener('mouseleave', startAutoHide);
-
-  sidebar.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      if (window.innerWidth <= 768) sidebar.classList.remove('active');
+    // Apply visibility
+    Object.keys(buttons).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = buttons[id] ? "block" : "none";
     });
-  });
 
-  function showPage(page) {
-    document.getElementById("mainFrame").src = page + ".html";
-  }
+    // Sidebar functionality
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menuToggle');
+    let autoHideTimer;
 
-  function logout() {
-    localStorage.clear();
-    window.location.href = '/';
-  }
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('active');
+      if (sidebar.classList.contains('active')) startAutoHide();
+      else clearTimeout(autoHideTimer);
+    });
+
+    function startAutoHide() {
+      clearTimeout(autoHideTimer);
+      if (window.innerWidth <= 768) {
+        autoHideTimer = setTimeout(() => {
+          sidebar.classList.remove('active');
+        }, 2000);
+      }
+    }
+
+    sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
+    sidebar.addEventListener('mouseleave', startAutoHide);
+
+    sidebar.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) sidebar.classList.remove('active');
+      });
+    });
+
+    function toggleMenu(id) {
+      const allSubmenus = document.querySelectorAll('.submenu');
+      const menu = document.getElementById(id);
+      allSubmenus.forEach(sub => { if (sub !== menu) sub.classList.remove('show'); });
+      menu.classList.toggle('show');
+    }
+
+    
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/';
+    }
   </script>
 </body>
 </html>
