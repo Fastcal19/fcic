@@ -64,12 +64,15 @@ button {
   border: none;
   border-radius: 6px;
   font-size: 14px;
+  align-self: flex-start; /* ✅ prevents stretching full width */
+  width: auto;            /* ✅ ensures button only fits its content */
 }
 
 button.new {
   background: #007bff;
   color: white;
 }
+
 
 button.edit {
   background: #28a745;
