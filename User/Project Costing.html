@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Project Costing</title>
   <style>
-    html,body { height:100%; margin:0; }
+    html,body { height:100%; margin:0; display:flex; flex-direction:column; }
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+      background: gray;
       overflow:auto;
     }
     #bgCanvas {
@@ -16,7 +16,22 @@
       left: 0; top: 0; width: 100%; height: 100%;
       z-index: 0; pointer-events: none;
     }
-    .page { position: relative; z-index: 2; padding: 20px; }
+
+    /* ✅ MAIN WRAPPER */
+    .main {
+      flex: 1;
+      background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+      padding: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 2;
+      border-radius: 10px;
+      margin: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    }
+
     h2 { margin: 0 0 12px 0; color:#2c3e50; }
 
     /* Filters */
@@ -46,9 +61,13 @@
       text-align:center; font-weight:600; border-bottom:2px solid #333;
     }
     th, td { padding:8px 10px; border-bottom:1px solid #eee; word-wrap:break-word; text-align:left; }
-    #pcTable tbody tr:nth-child(odd) { background: #f9f9f9; }
-    #pcTable tbody tr:nth-child(even){ background: #ffffff; }
-    #pcTable tbody tr:hover { background: orange; cursor: pointer; transition: background-color 0.25s; }
+
+    /* Row striping */
+    #pcTable tbody tr:nth-child(odd) { background: #fff3e0; }
+    #pcTable tbody tr:nth-child(even){ background: #ffe0b2; }
+    #pcTable tbody tr:hover { background: #ffb74d; cursor: pointer; transition: background-color 0.25s; }
+
+    .empty-msg { color:#777; text-align:center; padding:12px; }
 
     /* Column widths */
     #pcTable th:nth-child(1), #pcTable td:nth-child(1) { width: 10%; }
@@ -57,9 +76,7 @@
     #pcTable th:nth-child(4), #pcTable td:nth-child(4) { width: 40%; }
     #pcTable th:nth-child(5), #pcTable td:nth-child(5) { width: 10%; }
 
-    .empty-msg { color:#777; text-align:center; padding:12px; }
-
-    /* Modal (shared) */
+    /* Modal */
     .modal {
       display:none; position:fixed; z-index:1001;
       left:0; top:0; width:100%; height:100%;
@@ -81,22 +98,6 @@
       font-size:22px; color:#fff; cursor:pointer; z-index:10;
     }
 
-/* Table row striping */
-#pcTable tbody tr:nth-child(odd) { 
-  background: #fff3e0; /* light orange tint */
-}
-#pcTable tbody tr:nth-child(even) { 
-  background: #ffe0b2; /* slightly darker orange */
-}
-
-/* Hover highlight */
-#pcTable tbody tr:hover { 
-  background: #ffb74d; 
-  cursor: pointer;
-  transition: background-color 0.25s;
-}
-
-
     @media (max-width:640px) {
       .filters { gap:6px; }
       #pcTable th, #pcTable td { font-size:13px; padding:6px 8px; }
@@ -107,7 +108,8 @@
 
 <canvas id="bgCanvas" aria-hidden="true"></canvas>
 
-<div class="page">
+<!-- ✅ MAIN CONTENT AREA -->
+<div class="main">
   <h2>📊 Project Costing</h2>
 
   <div class="filters">
