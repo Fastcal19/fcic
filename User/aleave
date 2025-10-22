@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Leave Applications</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: gray;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.main-container {
+  flex: 1;
+  background: linear-gradient(10deg, gold, orangered);
+  margin: 10px;
+  padding: 20px;
+  border-radius: 12px;
+  width: calc(100% - 20px);
+  min-height: calc(100vh - 20px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+h2 {
+  color: white;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+th { background: #e9ecef; text-align: left; }
+button {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  font-size: 13px;
+}
+button.approve { background: #28a745; }
+button.disapprove { background: #dc3545; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.modal-bg {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 340px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.modal h3 { margin-top: 0; }
+
+.modal input, .modal textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.modal .actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+.close-btn { background: #6c757d; color: #fff; }
+
+#toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  color: white;
+  display: none;
+  z-index: 2000;
+  font-weight: 600;
+}
+#toast.success { background: #2e8b57; }
+#toast.error { background: #c0392b; }
+</style>
+</head>
+<body>
+
+<div class="main-container">
+  <h2>Leave Applications</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date Filed</th>
+        <th>Employee ID</th>
+        <th>Employee Name</th>
+        <th>Reason</th>
+        <th>From</th>
+        <th>To</th>
+        <th># of Days</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API_BASE = "https://script.google.com/macros/s/AKfycbyANdoBRP3Kl_pdg7fuuPh9Bpac8_jTG5pX7Fu197GbmgYG-j13zbNYk6hHijdL45HG/exec";
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function formatDateOnly(value){ const d=new Date(value); if(isNaN(d)) return value; return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear(); }
+function formatDateTime(value){ const d=new Date(value); if(isNaN(d)) return value; let h=d.getHours(),ampm=h>=12?'PM':'AM'; h=h%12||12; return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear()+' '+pad(h)+':'+pad(d.getMinutes())+' '+ampm; }
+
+async function loadLeaves(){
+  const tbody=document.querySelector('tbody');
+  tbody.innerHTML=`<tr><td colspan="9" style="text-align:center">Loading...</td></tr>`;
+  try{
+    const res=await fetch(API_BASE+"?action=getLeaves");
+    const allLeaves=await res.json();
+
+    tbody.innerHTML=allLeaves.map((r,index)=>{
+      const st=String(r["Status"]||"").toLowerCase();
+      const color= st==="approved"?"green":st==="disapproved"?"red":st==="pending"?"blue":st==="cancelled"?"orange":"black";
+      const disabled=(st==="approved"||st==="disapproved");
+      return `<tr>
+        <td>${formatDateTime(r["Date Filed"])}</td>
+        <td>${String(r.EID||"").padStart(3,'0')}</td>
+        <td>${r.Name || r["Employee Name"] || r.EmployeeName || ""}</td>
+        <td>${r.Reason||""}</td>
+        <td>${formatDateOnly(r.From)}</td>
+        <td>${formatDateOnly(r.To)}</td>
+        <td>${r["# of Days"]||""}</td>
+        <td><span style="color:${color};font-weight:700">${r.Status||""}</span></td>
+        <td>
+          <button class="approve" onclick="updateStatus('${r.LID}','Approved')" ${disabled?'disabled':''}>Approve</button>
+          <button class="disapprove" onclick="updateStatus('${r.LID}','Disapproved')" ${disabled?'disabled':''}>Disapprove</button>
+        </td>
+      </tr>`;
+    }).join("");
+  }catch(err){
+    console.error(err);
+    tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;color:red;">Error loading data</td></tr>`;
+  }
+}
+
+async function updateStatus(LID, status){
+  if(!LID) return;
+  const payload={ method:"updateLeave", LID, status };
+  try{
+    const body='payload='+encodeURIComponent(JSON.stringify(payload));
+    const res=await fetch(API_BASE,{method:"POST",headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body});
+    const text=await res.text();
+    let data; try{data=JSON.parse(text);}catch{data={status:"error"};}
+    if(res.ok && (data.status==="success"||data.success)){
+      showToast(`Leave ${status.toLowerCase()}`,"success");
+      loadLeaves();
+    } else showToast("Failed to update","error");
+  }catch(err){ console.error(err); showToast("Network error","error"); }
+}
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; 
+  t.className=type; 
+  t.style.display='block'; 
+  setTimeout(()=>t.style.display='none',3000);
+}
+
+loadLeaves();
+</script>
+</body>
+</html>
