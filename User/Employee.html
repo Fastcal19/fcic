@@ -16,6 +16,33 @@
     .container{padding:18px}
     h2{margin:0 0 12px 0}
 
+    /* ✅ Align header + button horizontally */
+    .header-container {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .header-container h2 {
+      margin:0;
+      font-size:20px;
+      font-weight:700;
+    }
+    .header-container button {
+      background:linear-gradient(1deg,#FFA500,#FFD700);
+      border:none;
+      border-radius:6px;
+      padding:6px 12px;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow:0 2px 4px rgba(0,0,0,0.2);
+      transition:0.2s;
+    }
+    .header-container button:hover {
+      background:linear-gradient(1deg,#FFB733,#FFE066);
+      transform:scale(1.03);
+    }
+
     .table-container {
       height:calc(100vh - 120px);
       overflow:auto;
@@ -29,12 +56,6 @@
     #employeesTable tbody tr:nth-child(even){background:#fff}
     #employeesTable tbody tr:hover{background:#ffe4b5}
 
-    #employeesTable tbody tr:hover td:nth-child(1),
-    #employeesTable tbody tr:hover td:nth-child(2),
-    #employeesTable tbody tr:hover td:nth-child(3) {
-      background:#ffe4b5;
-    }
-
     table {
       border-collapse:collapse;
       table-layout:auto;
@@ -44,10 +65,8 @@
     th,td {
       border:2px solid #ddd;
       padding:8px;
-      word-wrap:break-word;
       white-space:nowrap;
     }
-
     thead th {
       position:sticky;
       top:0;
@@ -57,19 +76,13 @@
       z-index:5;
     }
 
-    /* Frozen columns */
-    th:nth-child(1){width:30px;text-align:center; position:sticky;top:0; left:0;background:linear-gradient(1deg,#FFA500,#FFD700);z-index:8; border-right: 2px solid #ccc;}
-    td:nth-child(1){width:30px;text-align:center;position:sticky;left:0;background:#fff;z-index:6; border-right: 2px solid #ccc;}
-
-    th:nth-child(2){width:40px;text-align:center; position:sticky;top:0; left:20px;background:linear-gradient(1deg,#FFA500,#FFD700);z-index:8; border-right: 2px solid #ccc;}
-    td:nth-child(2){width:40px;text-align:center; position:sticky;left:20px;background:#fff;z-index:6; border-right: 2px solid #ccc;}
-
-    th:nth-child(3){width:180px;text-align:center; position:sticky;top:0; left:55px; background:linear-gradient(1deg,#FFA500,#FFD700);z-index:8; border-right: 2px solid #ccc;}
-    td:nth-child(3){ min-width:180px;text-align:left; position:sticky;left:55px;background:#fff;z-index:6 }
-
-    thead th:nth-child(1),
-    thead th:nth-child(2),
-    thead th:nth-child(3){z-index:7}
+    /* ✅ Frozen columns */
+    th:nth-child(1){width:30px;text-align:center;position:sticky;top:0;left:0;background:linear-gradient(1deg,#FFA500,#FFD700);z-index:8;}
+    td:nth-child(1){width:30px;text-align:center;position:sticky;left:0;background:#fff;z-index:6;}
+    th:nth-child(2){width:40px;text-align:center;position:sticky;top:0;left:20px;background:linear-gradient(1deg,#FFA500,#FFD700);z-index:8;}
+    td:nth-child(2){width:40px;text-align:center;position:sticky;left:20px;background:#fff;z-index:6;}
+    th:nth-child(3){width:180px;text-align:center;position:sticky;top:0;left:55px;background:linear-gradient(1deg,#FFA500,#FFD700);z-index:8;}
+    td:nth-child(3){min-width:180px;text-align:left;position:sticky;left:55px;background:#fff;z-index:6;}
 
     th,td{text-align:center}
     td:nth-child(3){text-align:left}
@@ -82,69 +95,45 @@
     .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:1000}
     .modal.open{display:flex}
 
-    /* Modal content is horizontal: left (scrollable) + right (fixed photo) */
     .modal-content{
       background:#fff;
       padding:18px;
       border-radius:8px;
       width:880px;
       max-width:96%;
-      max-height:90vh;          
+      max-height:90vh;
       display:flex;
       gap:18px;
       position:relative;
       box-sizing:border-box;
     }
 
-    /* left area (details) scrolls independently */
     .modal-left {
       flex:1;
       overflow:auto;
-      max-height: calc(90vh - 36px); 
-      padding-right: 4px;
+      max-height:calc(90vh - 36px);
+      padding-right:4px;
       box-sizing:border-box;
     }
-
-    /* right area (photo) is fixed width */
     .modal-right {
       width:370px;
       flex-shrink:0;
       display:flex;
       align-items:flex-start;
     }
-
-    .details-section { margin-bottom: 18px; }
-    .details-section h3 {
-      margin-bottom: 10px;
-      font-size: 16px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 6px;
+    .details-section{margin-bottom:18px}
+    .details-section h3{
+      margin-bottom:10px;
+      font-size:16px;
+      border-bottom:1px solid #ddd;
+      padding-bottom:6px;
     }
 
-    /* Two-column rows */
-    .detail-row {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 8px;
-    }
-    /* label column: fixed width + right aligned so values line up */
-    .detail-label {
-      width: 120px;
-      font-weight: 700;
-      flex-shrink: 0;
-      text-align: left
-      padding-right: 12px;
-      box-sizing: border-box;
-    }
-    .detail-value {
-      flex: 1;
-      word-wrap: break-word;
-      white-space: normal; /* allow wrapping */
-      text-align: left;
-    }
+    .detail-row{display:flex;align-items:flex-start;margin-bottom:8px;}
+    .detail-label{width:120px;font-weight:700;flex-shrink:0;text-align:left;padding-right:12px;box-sizing:border-box;}
+    .detail-value{flex:1;white-space:normal;text-align:left;}
 
-
-    .photo-card {
+    .photo-card{
       background:#fafafa;
       border:1px solid #ddd;
       border-radius:10px;
@@ -155,21 +144,8 @@
       justify-content:center;
       box-shadow:0 2px 6px rgba(0,0,0,0.15);
     }
-    .photo-card img{
-      width:350px;
-      height:350px;
-      object-fit:cover;
-      border-radius:8px;
-    }
-    .photo-card span{
-      margin-top:8px;
-      font-size:12px;
-      color:#444;
-    }
-
-    .section{margin-bottom:12px}
-    .section-title{font-weight:700;margin-bottom:6px}
-    .section strong{display:inline-block;width:140px}
+    .photo-card img{width:350px;height:350px;object-fit:cover;border-radius:8px;}
+    .photo-card span{margin-top:8px;font-size:12px;color:#444;}
 
     #checklistModal .modal-content{flex-direction:column;max-width:500px}
     #columnChecklist label{display:block;margin:5px 0}
@@ -180,56 +156,31 @@
       table{min-width:600px}
     }
 
-    /* ✅ Mobile: Show only first 3 columns */
-@media (max-width: 768px) {
-  #employeesTable th,
-  #employeesTable td {
-    display: none;
-  }
-  #employeesTable th:nth-child(-n+3),
-  #employeesTable td:nth-child(-n+3) {
-    display: table-cell;
-  }
-
-  /* Optional: make table scrollable horizontally */
-  .table-container {
-    overflow-x: auto;
-  }
-}
-
+    /* ✅ Mobile: show first 3 cols */
+    @media(max-width:768px){
+      #employeesTable th,#employeesTable td{display:none;}
+      #employeesTable th:nth-child(-n+3),#employeesTable td:nth-child(-n+3){display:table-cell;}
+      .table-container{overflow-x:auto;}
+    }
   </style>
 </head>
 <body>
   <div class="container" id="employeesPage">
     <div class="header-container">
       <h2>Employees</h2>
-      <button onclick="openChecklistModal()" style="margin-bottom:10px;">⚙️ Column Settings</button>
+      <button onclick="openChecklistModal()">⚙️ Column Settings</button>
     </div>
 
     <div class="table-container">
       <table id="employeesTable">
         <thead>
           <tr>
-            <th>#</th>
-            <th>EN</th>
-            <th>EMPLOYEE NAME</th>
-            <th>MARITAL STATUS</th>
-            <th>BIRTHDATE</th>
-            <th>AGE</th>
-            <th>GENDER</th>
-            <th>ADDRESS</th>
-            <th>CONTACT NUMBER</th>
-            <th>EMAIL ADDRESS</th>
-            <th>TIN</th>
-            <th>SSS</th>
-            <th>PHILHEALTH</th>
-            <th>PAG-IBIG</th>
-            <th>DATE HIRED</th>
-            <th>DESIGNATION</th>
-            <th>SALARY</th>
-            <th>CONTACT NAME</th>
-            <th>CONTACT NUMBER</th>
-            <th>ADDRESS</th>
+            <th>#</th><th>EN</th><th>EMPLOYEE NAME</th>
+            <th>MARITAL STATUS</th><th>BIRTHDATE</th><th>AGE</th>
+            <th>GENDER</th><th>ADDRESS</th><th>CONTACT NUMBER</th>
+            <th>EMAIL ADDRESS</th><th>TIN</th><th>SSS</th><th>PHILHEALTH</th>
+            <th>PAG-IBIG</th><th>DATE HIRED</th><th>DESIGNATION</th>
+            <th>SALARY</th><th>CONTACT NAME</th><th>CONTACT NUMBER</th><th>ADDRESS</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -241,16 +192,12 @@
       <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
         <div class="modal-left">
-          <h3>Employee Details</h3>
-          <div id="basicDetails" class="section"></div>
-          <div class="section"><div class="section-title">Employment Details</div><div id="employmentDetails"></div></div>
-          <div class="section"><div class="section-title">Emergency Contact</div><div id="emergencyContact"></div></div>
+          <h3>EMPLOYEE DETAILS</h3>
+          <div id="basicDetails"></div>
+          <div class="section"><div class="section-title">EMERGENCY CONTACT</div><div id="emergencyContact"></div></div>
+          <div class="section"><div class="section-title">EMPLOYMENT DETAILS</div><div id="employmentDetails"></div></div>
         </div>
-        <div class="modal-right">
-          <div class="photo-card">
-            <img id="employeePhoto" src="employee1.jpg" alt="Employee Photo">
-          </div>
-        </div>
+        <div class="modal-right"><div class="photo-card"><img id="employeePhoto" src="employee1.jpg"></div></div>
       </div>
     </div>
 
@@ -266,212 +213,115 @@
 
   <script>
     const EMPLOYEES_URL = "https://script.google.com/macros/s/AKfycbzV3fJh832S_9b_Nd4eDnH3Xdgof-dNqTJOmmkf7UbkpBTmt1PT9cgWk27JYnVr21Sg/exec?type=employees";
+    const DEFAULT_VISIBLE_COLS = [1,2,3,9,10,16,17,11,12,13,14]; // ✅ Only these visible by default
     window.activeEmployees = [];
 
-    function safeNumber(val){
-      if(val===undefined||val===null) return NaN;
-      const n=Number(String(val).replace(/[,\s\u00A0]+/g,''));
-      return isNaN(n)?NaN:n;
-    }
-    function formatCurrencyPH(val){
-      const n=safeNumber(val);
-      if(isNaN(n)) return val||'';
-      return '₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
-    }
+    function safeNumber(val){if(val===undefined||val===null)return NaN;const n=Number(String(val).replace(/[,\s\u00A0]+/g,''));return isNaN(n)?NaN:n;}
+    function formatCurrencyPH(val){const n=safeNumber(val);if(isNaN(n))return val||'';return '₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
     async function loadEmployees(){
-      const tbody = document.querySelector('#employeesTable tbody');
-      tbody.innerHTML = '';
-      try {
-        const res = await fetch(EMPLOYEES_URL);
-        const data = await res.json();
-        if (!Array.isArray(data) || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="20">No data</td></tr>';
-          return;
-        }
+      const tbody=document.querySelector('#employeesTable tbody');tbody.innerHTML='';
+      try{
+        const res=await fetch(EMPLOYEES_URL);const data=await res.json();
+        if(!Array.isArray(data)||data.length===0){tbody.innerHTML='<tr><td colspan="20">No data</td></tr>';return;}
+        const activeData=data.filter(emp=>String((emp['STATUS']||'')).toLowerCase()==='active');
+        if(activeData.length===0){tbody.innerHTML='<tr><td colspan="20">No active employees</td></tr>';return;}
 
-        const activeData = data.filter(emp => String((emp['STATUS']||'')).toLowerCase() === 'active');
-        if (activeData.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="20">No active employees</td></tr>';
-          return;
-        }
-
-        window.activeEmployees = activeData.map(emp => {
-          let normalized = {...emp};
-          if(emp.photo||emp.thumb){
-            normalized.photo = emp.photo||'';
-            normalized.thumb = emp.thumb||'';
-          } else if(emp.PHOTO){
-            const match = String(emp.PHOTO).match(/[-\w]{25,}/);
-            if(match){
-              normalized.photo = `https://drive.google.com/uc?export=view&id=${match[0]}`;
-              normalized.thumb = `https://drive.google.com/thumbnail?id=${match[0]}`;
-            } else {
-              normalized.photo = '';
-              normalized.thumb = '';
-            }
-          } else {
-            normalized.photo = '';
-            normalized.thumb = '';
-          }
-          return normalized;
+        window.activeEmployees=activeData.map(emp=>{
+          let n={...emp};
+          if(emp.photo||emp.thumb){n.photo=emp.photo||'';n.thumb=emp.thumb||'';}
+          else if(emp.PHOTO){const m=String(emp.PHOTO).match(/[-\w]{25,}/);if(m){n.photo=`https://drive.google.com/uc?export=view&id=${m[0]}`;n.thumb=`https://drive.google.com/thumbnail?id=${m[0]}`;}else{n.photo='';n.thumb='';}}
+          else{n.photo='';n.thumb='';}
+          return n;
         });
 
         window.activeEmployees.forEach((emp,i)=>{
-          const tr = document.createElement('tr');
-          const name = (emp['LAST NAME']||'') + (emp['FIRST NAME']? ', '+emp['FIRST NAME']:'') + (emp['MIDDLE NAME']? ', '+emp['MIDDLE NAME']:'');
-          tr.innerHTML = `
-            <td>${i+1}</td>
-            <td>${emp['EN']||''}</td>
+          const tr=document.createElement('tr');
+          const name=(emp['LAST NAME']||'')+(emp['FIRST NAME']?', '+emp['FIRST NAME']:'')+(emp['MIDDLE NAME']?', '+emp['MIDDLE NAME']:'');
+          tr.innerHTML=`
+            <td>${i+1}</td><td>${emp['EN']||''}</td>
             <td><a class="emp-link" href="javascript:void(0)" onclick="openModal(${i})">${name||emp['EN']}</a></td>
-            <td>${emp['MARITAL STATUS']||''}</td>
-            <td>${emp['BIRTHDATE'] ? new Date(emp['BIRTHDATE']).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}) : ''}</td>
-            <td>${emp['AGE']||''}</td>
-            <td>${emp['GENDER']||''}</td>
-            <td>${emp['ADDRESS']||''}</td>
-            <td>${emp['CONTACT NUMBER']||''}</td>
-            <td>${emp['EMAIL ADDRESS']||''}</td>
-            <td>${emp['TIN']||''}</td>
-            <td>${emp['SSS']||''}</td>
-            <td>${emp['PHILHEALTH']||''}</td>
-            <td>${emp['PAG-IBIG']||''}</td>
-            <td>${emp['DATE HIRED'] ? new Date(emp['DATE HIRED']).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}) : ''}</td>
-            <td>${emp['DESIGNATION']||''}</td>
-            <td>${formatCurrencyPH(emp['SALARY'])}</td>
-            <td>${emp['E.CONTACT NAME']||''}</td>
-            <td>${emp['E.CONTACT NUMBER']||''}</td>
-            <td>${emp['E.ADDRESS']||''}</td>
-          `;
+            <td>${emp['MARITAL STATUS']||''}</td><td>${emp['BIRTHDATE']?new Date(emp['BIRTHDATE']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):''}</td>
+            <td>${emp['AGE']||''}</td><td>${emp['GENDER']||''}</td><td>${emp['ADDRESS']||''}</td>
+            <td>${emp['CONTACT NUMBER']||''}</td><td>${emp['EMAIL ADDRESS']||''}</td><td>${emp['TIN']||''}</td>
+            <td>${emp['SSS']||''}</td><td>${emp['PHILHEALTH']||''}</td><td>${emp['PAG-IBIG']||''}</td>
+            <td>${emp['DATE HIRED']?new Date(emp['DATE HIRED']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):''}</td>
+            <td>${emp['DESIGNATION']||''}</td><td>${formatCurrencyPH(emp['SALARY'])}</td>
+            <td>${emp['E.CONTACT NAME']||''}</td><td>${emp['E.CONTACT NUMBER']||''}</td><td>${emp['E.ADDRESS']||''}</td>`;
           tbody.appendChild(tr);
         });
 
-      } catch(err){
-        console.error('Failed to load employees', err);
-        tbody.innerHTML = "<tr><td colspan='20'>Error loading data</td></tr>";
-      }
+        applyDefaultColumnVisibility(); // ✅ hide others
+
+      }catch(e){console.error('Failed to load employees',e);tbody.innerHTML="<tr><td colspan='20'>Error loading data</td></tr>";}
     }
 
-    function openModal(index){
-      const emp = window.activeEmployees[index];
-      if (!emp) return;
-
-      document.getElementById('employeeModal').classList.add('open');
-
-      // --- Basic Details ---
-      const basicDetails = [
-        {label:'Employee No', value:emp['EN']||''},
-        {label:'Last Name', value:emp['LAST NAME']||''},
-        {label:'First Name', value:emp['FIRST NAME']||''},
-        {label:'Middle Name', value:emp['MIDDLE NAME']||''},
-        {label:'Marital Status', value:emp['MARITAL STATUS']||''},
-        {label:'Age', value:emp['AGE']||''},
-        {label:'Address', value:emp['ADDRESS']||''},
-        {label:'Gender', value:emp['GENDER']||''},
-        {label:'Contact', value:emp['CONTACT NUMBER']||''},
-        {label:'Email', value:emp['EMAIL ADDRESS']||''},
-        {label:'TIN', value:emp['TIN']||''},
-        {label:'SSS', value:emp['SSS']||''},
-        {label:'PhilHealth', value:emp['PHILHEALTH']||''},
-        {label:'Pag-IBIG', value:emp['PAG-IBIG']||''},
-      ];
-      document.getElementById('basicDetails').innerHTML = basicDetails.map(d =>
-        `<div class="detail-row">
-          <div class="detail-label">${d.label}:</div>
-          <div class="detail-value">${d.value}</div>
-        </div>`
-      ).join('');
-
-      // --- Employment Details ---
-      const employmentDetails = [
-        {label:'Date Hired', value: emp['DATE HIRED'] ? new Date(emp['DATE HIRED']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : ''},
-        {label:'Length of Service', value: getLengthOfService(emp['DATE HIRED'])},
-        {label:'Designation', value: emp['DESIGNATION']||''},
-        {label:'Salary', value: formatCurrencyPH(emp['SALARY'])},
-      ];
-      document.getElementById('employmentDetails').innerHTML = employmentDetails.map(d =>
-        `<div class="detail-row">
-          <div class="detail-label">${d.label}:</div>
-          <div class="detail-value">${d.value}</div>
-        </div>`
-      ).join('');
-
-      // --- Emergency Contact ---
-      const emergencyContact = [
-        {label:'Name', value: emp['E.CONTACT NAME']||''},
-        {label:'Contact No', value: emp['E.CONTACT NUMBER']||''},
-        {label:'Address', value: emp['E.ADDRESS']||''},
-      ];
-      document.getElementById('emergencyContact').innerHTML = emergencyContact.map(d =>
-        `<div class="detail-row">
-          <div class="detail-label">${d.label}:</div>
-          <div class="detail-value">${d.value}</div>
-        </div>`
-      ).join('');
-
-      // --- Employee Photo ---
-      const imgEl = document.getElementById('employeePhoto');
-      const photoUrl = emp.thumb || emp.photo || emp.PHOTO || 'employee1.jpg';
-      imgEl.src = photoUrl;
-      imgEl.onerror = function(){ this.onerror=null; this.src='employee1.jpg'; };
-    }
-
-    function getLengthOfService(dateHired){
-      if (!dateHired) return '';
-      const hired = new Date(dateHired);
-      if (isNaN(hired)) return '';
-      const today = new Date();
-      let years = today.getFullYear() - hired.getFullYear();
-      let months = today.getMonth() - hired.getMonth();
-      let days = today.getDate() - hired.getDate();
-      if(days<0){ months-=1; days+=new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
-      if(months<0){ years-=1; months+=12; }
-      let str='';
-      if(years>0) str+=years+(years===1?' year':' years');
-      if(months>0) str+=(str?', ':'')+months+(months===1?' month':' months');
-      if(!str) str='Less than a month';
-      return str;
-    }
-
-    function closeModal(){document.getElementById('employeeModal').classList.remove('open');}
-    window.onclick=function(e){
-      if(e.target===document.getElementById('employeeModal'))closeModal();
-      if(e.target===document.getElementById('checklistModal'))closeChecklistModal();
-    }
-    window.addEventListener('load',loadEmployees);
-
-    // Column Settings
-    function openChecklistModal(){buildChecklist();document.getElementById("checklistModal").classList.add("open");}
-    function closeChecklistModal(){document.getElementById("checklistModal").classList.remove("open");}
-
-    function buildChecklist() {
-      const table = document.querySelector("#employeesTable");
-      const checklistDiv = document.getElementById("columnChecklist");
-      checklistDiv.innerHTML = "";
-      if (!table) return;
-
-      const headerCells = table.querySelectorAll("thead th");
-
-      headerCells.forEach((th, index) => {
-        if(index < 3) return;
-        const label = document.createElement("label");
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = th.style.display !== "none";
-        checkbox.dataset.colIndex = index;
-        checkbox.addEventListener("change", (e) => {
-          const colIndex = e.target.dataset.colIndex;
-          const show = e.target.checked;
-          table.querySelectorAll("tr").forEach(row => {
-            if (row.children[colIndex]) {
-              row.children[colIndex].style.display = show ? "" : "none";
-            }
-          });
+    function applyDefaultColumnVisibility(){
+      const table=document.querySelector("#employeesTable");
+      if(!table)return;
+      table.querySelectorAll("tr").forEach(r=>{
+        Array.from(r.children).forEach((c,i)=>{
+          const col=i+1;
+          c.style.display=DEFAULT_VISIBLE_COLS.includes(col)?'':'none';
         });
-        label.appendChild(checkbox);
-        label.append(" " + th.textContent);
-        checklistDiv.appendChild(label);
       });
     }
+
+    function openModal(i){
+      const emp=window.activeEmployees[i];if(!emp)return;
+      document.getElementById('employeeModal').classList.add('open');
+      const basic=[
+        {label:'Employee No',v:emp['EN']},{label:'Last Name',v:emp['LAST NAME']},
+        {label:'First Name',v:emp['FIRST NAME']},{label:'Middle Name',v:emp['MIDDLE NAME']},
+        {label:'Marital Status',v:emp['MARITAL STATUS']},{label:'Age',v:emp['AGE']},
+        {label:'Address',v:emp['ADDRESS']},{label:'Gender',v:emp['GENDER']},
+        {label:'Contact',v:emp['CONTACT NUMBER']},{label:'Email',v:emp['EMAIL ADDRESS']},
+        {label:'TIN',v:emp['TIN']},{label:'SSS',v:emp['SSS']},{label:'PhilHealth',v:emp['PHILHEALTH']},{label:'Pag-IBIG',v:emp['PAG-IBIG']}
+      ];
+      document.getElementById('basicDetails').innerHTML=basic.map(d=>`<div class="detail-row"><div class="detail-label">${d.label}:</div><div class="detail-value">${d.v||''}</div></div>`).join('');
+      const ec=[{l:'Name',v:emp['E.CONTACT NAME']},{l:'Contact No',v:emp['E.CONTACT NUMBER']},{l:'Address',v:emp['E.ADDRESS']}];
+      document.getElementById('emergencyContact').innerHTML=ec.map(d=>`<div class="detail-row"><div class="detail-label">${d.l}:</div><div class="detail-value">${d.v||''}</div></div>`).join('');
+      const ed=[{l:'Date Hired',v:emp['DATE HIRED']?new Date(emp['DATE HIRED']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):''},
+        {l:'Length of Service',v:getLengthOfService(emp['DATE HIRED'])},
+        {l:'Designation',v:emp['DESIGNATION']||''},{l:'Salary',v:formatCurrencyPH(emp['SALARY'])}];
+      document.getElementById('employmentDetails').innerHTML=ed.map(d=>`<div class="detail-row"><div class="detail-label">${d.l}:</div><div class="detail-value">${d.v||''}</div></div>`).join('');
+      const img=document.getElementById('employeePhoto');const p=emp.thumb||emp.photo||'employee1.jpg';img.src=p;img.onerror=function(){this.src='employee1.jpg';};
+    }
+
+    function getLengthOfService(d){if(!d)return'';const h=new Date(d);if(isNaN(h))return'';const t=new Date();let y=t.getFullYear()-h.getFullYear(),m=t.getMonth()-h.getMonth(),dd=t.getDate()-h.getDate();if(dd<0){m--;dd+=new Date(t.getFullYear(),t.getMonth(),0).getDate();}if(m<0){y--;m+=12;}let s='';if(y>0)s+=y+(y===1?' year':' years');if(m>0)s+=(s?', ':'')+m+(m===1?' month':' months');return s||'Less than a month';}
+    function closeModal(){document.getElementById('employeeModal').classList.remove('open');}
+    window.onclick=e=>{if(e.target===employeeModal)closeModal();if(e.target===checklistModal)closeChecklistModal();};
+
+    // ✅ Column settings
+    function openChecklistModal(){buildChecklist();document.getElementById('checklistModal').classList.add('open');}
+    function closeChecklistModal(){document.getElementById('checklistModal').classList.remove('open');}
+
+    function buildChecklist(){
+      const table=document.querySelector("#employeesTable");
+      const list=document.getElementById("columnChecklist");
+      list.innerHTML='';
+      const headers=table.querySelectorAll("thead th");
+      headers.forEach((th,i)=>{
+        if(i<3)return;
+        const lbl=document.createElement("label");
+        const cb=document.createElement("input");
+        cb.type="checkbox";
+        cb.checked=DEFAULT_VISIBLE_COLS.includes(i+1);
+        cb.dataset.i=i;
+        cb.onchange=e=>{
+          const col=parseInt(e.target.dataset.i);
+          const show=e.target.checked;
+          table.querySelectorAll("tr").forEach(r=>{
+            if(r.children[col])r.children[col].style.display=show?'':'none';
+          });
+        };
+        lbl.appendChild(cb);
+        lbl.append(" "+th.textContent);
+        list.appendChild(lbl);
+      });
+    }
+
+    window.addEventListener('load',loadEmployees);
   </script>
 </body>
 </html>
