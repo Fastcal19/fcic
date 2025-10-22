@@ -12,6 +12,7 @@ body {
   min-height: 100vh;
   background: gray;
   display: flex;
+  overflow: hidden;
   justify-content: center;
   align-items: flex-start;
 }
@@ -20,18 +21,31 @@ body {
   flex: 1;
   background: linear-gradient(10deg, gold, orangered);
   margin: 10px;
-  padding: 20px;
+  padding: 10px;
   border-radius: 12px;
   width: calc(100% - 20px);
-  min-height: calc(100vh - 20px);
+  height: 97vh;
   box-shadow: 0 4px 10px rgba(0,0,0,0.25);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   box-sizing: border-box;
   overflow-y: auto;
+  gap: 20px;
 }
 
-h2 {
+.section:first-child { flex: 0.6; }
+.section:last-child { flex: 1.4; }
+
+.section {
+  background: rgba(255,255,255,0.15);
+  padding: 15px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.section h2 {
   color: white;
   text-align: center;
   margin-bottom: 15px;
@@ -51,9 +65,12 @@ th, td {
   padding: 10px;
   font-size: 14px;
   vertical-align: middle;
+  text-align: left;
 }
 
-th { background: #e9ecef; text-align: left; }
+th { background: #e9ecef; }
+tr:hover { background: #f7f7f7; cursor: pointer; }
+
 button {
   border: none;
   padding: 6px 10px;
@@ -64,7 +81,7 @@ button {
 }
 button.approve { background: #28a745; }
 button.disapprove { background: #dc3545; }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
+button.close-btn { background: #6c757d; }
 
 .modal-bg {
   display: none;
@@ -81,25 +98,26 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   background: white;
   padding: 20px;
   border-radius: 10px;
-  width: 340px;
+  width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  animation: pop 0.25s ease;
 }
+@keyframes pop { from{transform:scale(0.9);opacity:0;} to{transform:scale(1);opacity:1;} }
 
-.modal h3 { margin-top: 0; }
+.modal h3 { margin-top: 0; text-align: center; }
 
-.modal input, .modal textarea {
-  width: 100%;
+.modal .field {
   margin-bottom: 10px;
-  padding: 8px;
   font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-sizing: border-box;
+}
+.modal .field strong {
+  display: inline-block;
+  width: 110px;
 }
 
-.modal .actions { display: flex; gap: 8px; justify-content: flex-end; }
-
-.close-btn { background: #6c757d; color: #fff; }
+.modal .actions { display: flex; gap: 8px; justify-content: center; margin-top: 15px; }
 
 #toast {
   position: fixed;
@@ -114,84 +132,215 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 #toast.success { background: #2e8b57; }
 #toast.error { background: #c0392b; }
+
+@media (max-width: 900px) {
+  .main-container { flex-direction: column; }
+  .section:first-child, .section:last-child { flex: 1; }
+}
 </style>
 </head>
 <body>
 
 <div class="main-container">
-  <h2>Leave Applications</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Date Filed</th>
-        <th>Employee ID</th>
-        <th>Employee Name</th>
-        <th>Reason</th>
-        <th>From</th>
-        <th>To</th>
-        <th># of Days</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+
+  <!-- LEFT SIDE - EMPLOYEE LIST -->
+  <div class="section">
+    <h2>Employee Leave Credits</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Employee Name</th>
+          <th>Leave Credits</th>
+          <th>Used</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+      <tbody id="employeeTableBody">
+        <tr><td colspan="4" style="text-align:center">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- RIGHT SIDE - LEAVE APPLICATIONS -->
+  <div class="section">
+    <h2>Leave Applications</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Date Filed</th>
+          <th>Employee Name</th>
+          <th>Reason</th>
+          <th>From</th>
+          <th>To</th>
+          <th># of Days</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="leaveTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL FOR APPROVAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Leave Approval</h3>
+    <div class="field"><strong>Name:</strong> <span id="mName"></span></div>
+    <div class="field"><strong>Reason:</strong> <span id="mReason"></span></div>
+    <div class="field"><strong>From:</strong> <span id="mFrom"></span></div>
+    <div class="field"><strong>To:</strong> <span id="mTo"></span></div>
+    <div class="field"><strong># of Days:</strong> <span id="mDays"></span></div>
+    <div class="field"><strong>Status:</strong> <span id="mStatus"></span></div>
+    <div class="actions">
+      <button class="approve" id="btnApprove">Approve</button>
+      <button class="disapprove" id="btnDisapprove">Disapprove</button>
+      <button class="close-btn" id="btnClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOR EMPLOYEE APPROVED LEAVES -->
+<div class="modal-bg" id="employeeModalBg">
+  <div class="modal">
+    <h3><span id="empModalName"></span></h3>
+    <div id="approvedLeavesList"></div>
+    <div class="actions">
+      <button class="close-btn" onclick="closeEmployeeModal()">Close</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbyANdoBRP3Kl_pdg7fuuPh9Bpac8_jTG5pX7Fu197GbmgYG-j13zbNYk6hHijdL45HG/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbwN9C9qs7MPw0qbcq5cCnc-1jP8Vod6d18Tbtldi-a008KtJtW7VPvnZ5rT-zMl-GZW/exec";
+let currentLeave = null;
+let allLeaves = [];
 
 function pad(n){ return String(n).padStart(2,'0'); }
 function formatDateOnly(value){ const d=new Date(value); if(isNaN(d)) return value; return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear(); }
 function formatDateTime(value){ const d=new Date(value); if(isNaN(d)) return value; let h=d.getHours(),ampm=h>=12?'PM':'AM'; h=h%12||12; return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear()+' '+pad(h)+':'+pad(d.getMinutes())+' '+ampm; }
 
 async function loadLeaves(){
-  const tbody=document.querySelector('tbody');
-  tbody.innerHTML=`<tr><td colspan="9" style="text-align:center">Loading...</td></tr>`;
+  const tbody=document.getElementById('leaveTableBody');
+  tbody.innerHTML=`<tr><td colspan="8" style="text-align:center">Loading...</td></tr>`;
   try{
     const res=await fetch(API_BASE+"?action=getLeaves");
-    const allLeaves=await res.json();
-
-    tbody.innerHTML=allLeaves.map((r,index)=>{
-      const st=String(r["Status"]||"").toLowerCase();
-      const color= st==="approved"?"green":st==="disapproved"?"red":st==="pending"?"blue":st==="cancelled"?"orange":"black";
-      const disabled=(st==="approved"||st==="disapproved");
-      return `<tr>
+    allLeaves=await res.json();
+    tbody.innerHTML=allLeaves.map(r=>{
+      const st=(r.Status||"").toLowerCase();
+      const color= st==="approved"?"green":st==="disapproved"?"red":st==="pending"?"blue":"black";
+      return `<tr onclick='openModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
         <td>${formatDateTime(r["Date Filed"])}</td>
-        <td>${String(r.EID||"").padStart(3,'0')}</td>
-        <td>${r.Name || r["Employee Name"] || r.EmployeeName || ""}</td>
+        <td>${r.Name||r["Employee Name"]||""}</td>
         <td>${r.Reason||""}</td>
         <td>${formatDateOnly(r.From)}</td>
         <td>${formatDateOnly(r.To)}</td>
         <td>${r["# of Days"]||""}</td>
         <td><span style="color:${color};font-weight:700">${r.Status||""}</span></td>
-        <td>
-          <button class="approve" onclick="updateStatus('${r.LID}','Approved')" ${disabled?'disabled':''}>Approve</button>
-          <button class="disapprove" onclick="updateStatus('${r.LID}','Disapproved')" ${disabled?'disabled':''}>Disapprove</button>
-        </td>
       </tr>`;
     }).join("");
   }catch(err){
     console.error(err);
-    tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;color:red;">Error loading data</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:red;">Error loading data</td></tr>`;
   }
 }
 
-async function updateStatus(LID, status){
-  if(!LID) return;
-  const payload={ method:"updateLeave", LID, status };
+async function loadEmployees() {
+  const tbody = document.getElementById('employeeTableBody');
+  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center">Loading...</td></tr>`;
+
+  try {
+    const resEmp = await fetch(API_BASE + "?action=getEmployees");
+    const employees = await resEmp.json();
+
+    const usedByName = {};
+    employees.forEach(emp => {
+      const name = emp.Name || emp["Employee Name"];
+      const credits = parseFloat(emp["Leave Credits"] || 0);
+      const empLeaves = allLeaves.filter(l => (l.Status||"").toLowerCase()==="approved" && (l.Name||l["Employee Name"])===name);
+      const used = empLeaves.reduce((sum,l)=>sum+parseFloat(l["# of Days"]||0),0);
+      usedByName[name]=used;
+    });
+
+    tbody.innerHTML = employees.map(e => {
+      const name = e.Name || e["Employee Name"];
+      const credits = parseFloat(e["Leave Credits"] || 0);
+      const used = usedByName[name] || 0;
+      const balance = Math.max(credits - used, 0);
+      return `
+        <tr onclick="showApprovedLeaves('${name.replace(/'/g,"&#39;")}')">
+          <td style="color:blue;text-decoration:underline">${name}</td>
+          <td style="text-align:center">${credits}</td>
+          <td style="text-align:center">${used}</td>
+          <td style="text-align:center">${balance}</td>
+        </tr>`;
+    }).join("");
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Error loading employees</td></tr>`;
+  }
+}
+
+function showApprovedLeaves(empName){
+  const modal=document.getElementById('employeeModalBg');
+  document.getElementById('empModalName').textContent=empName;
+  const list=document.getElementById('approvedLeavesList');
+  const approved=allLeaves.filter(l=>(l.Status||"").toLowerCase()==="approved" && (l.Name||l["Employee Name"])===empName);
+  
+  if(approved.length===0){
+    list.innerHTML="<p style='text-align:center'>No approved leaves.</p>";
+  }else{
+    list.innerHTML="<table style='width:100%;border-collapse:collapse;font-size:13px'><tr><th>Reason</th><th>From</th><th>To</th><th>Days</th></tr>"+approved.map(l=>`
+      <tr>
+        <td>${l.Reason||""}</td>
+        <td>${formatDateOnly(l.From)}</td>
+        <td>${formatDateOnly(l.To)}</td>
+        <td style='text-align:center'>${l["# of Days"]||""}</td>
+      </tr>`).join("")+"</table>";
+  }
+  modal.style.display="flex";
+}
+
+function closeEmployeeModal(){ document.getElementById('employeeModalBg').style.display="none"; }
+
+function openModal(leave){
+  currentLeave=leave;
+  document.getElementById('mName').textContent=leave.Name||leave["Employee Name"]||"";
+  document.getElementById('mReason').textContent=leave.Reason||"";
+  document.getElementById('mFrom').textContent=formatDateOnly(leave.From);
+  document.getElementById('mTo').textContent=formatDateOnly(leave.To);
+  document.getElementById('mDays').textContent=leave["# of Days"]||"";
+  document.getElementById('mStatus').textContent=leave.Status||"";
+
+  const approveBtn=document.getElementById('btnApprove');
+  const disapproveBtn=document.getElementById('btnDisapprove');
+  const isPending=(leave.Status||"").toLowerCase()==="pending";
+  approveBtn.style.display=isPending?"inline-block":"none";
+  disapproveBtn.style.display=isPending?"inline-block":"none";
+  document.getElementById('modalBg').style.display="flex";
+}
+
+document.getElementById('btnClose').onclick=()=>{document.getElementById('modalBg').style.display="none";currentLeave=null;};
+document.getElementById('btnApprove').onclick=()=>handleApproval("Approved");
+document.getElementById('btnDisapprove').onclick=()=>handleApproval("Disapproved");
+
+async function handleApproval(status){
+  if(!currentLeave||!currentLeave.LID) return;
+  const payload={method:"updateLeave",LID:currentLeave.LID,status};
   try{
     const body='payload='+encodeURIComponent(JSON.stringify(payload));
     const res=await fetch(API_BASE,{method:"POST",headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body});
     const text=await res.text();
-    let data; try{data=JSON.parse(text);}catch{data={status:"error"};}
-    if(res.ok && (data.status==="success"||data.success)){
+    let data;try{data=JSON.parse(text);}catch{data={status:"error"};}
+    if(res.ok&&(data.status==="success"||data.success)){
       showToast(`Leave ${status.toLowerCase()}`,"success");
-      loadLeaves();
+      document.getElementById('modalBg').style.display="none";
+      await loadLeaves();
+      await loadEmployees();
     } else showToast("Failed to update","error");
-  }catch(err){ console.error(err); showToast("Network error","error"); }
+  }catch(err){console.error(err);showToast("Network error","error");}
 }
 
 function showToast(msg,type){
@@ -202,7 +351,10 @@ function showToast(msg,type){
   setTimeout(()=>t.style.display='none',3000);
 }
 
-loadLeaves();
+(async()=>{
+  await loadLeaves();
+  await loadEmployees();
+})();
 </script>
 </body>
 </html>
