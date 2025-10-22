@@ -10,11 +10,11 @@
       margin:0;
       font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       font-size:13px;
-      background:#FAEBD7;
+      background:gray;
       color:#111;
     }
     .container{padding:18px}
-    h2{margin:0 0 12px 0}
+    h2{margin:0 0 12px 0; color:black;}
 
     /* ✅ Align header + button horizontally */
     .header-container {
@@ -115,6 +115,12 @@
       padding-right:4px;
       box-sizing:border-box;
     }
+    .modal-left h3 {
+  color:#0b63c6;         /* text color */
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* optional glow effect */
+}
+
     .modal-right {
       width:370px;
       flex-shrink:0;
@@ -128,6 +134,15 @@
       border-bottom:1px solid #ddd;
       padding-bottom:6px;
     }
+
+    .section-title {
+  font-weight: bold;       /* Makes it bold */
+  font-size: 1.2em;        /* Slightly larger */
+  color:#0b63c6;
+  text-transform: uppercase; /* Optional: ALL CAPS */
+  margin-bottom: 5px;
+}
+
 
     .detail-row{display:flex;align-items:flex-start;margin-bottom:8px;}
     .detail-label{width:120px;font-weight:700;flex-shrink:0;text-align:left;padding-right:12px;box-sizing:border-box;}
@@ -192,10 +207,10 @@
       <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
         <div class="modal-left">
-          <h3>EMPLOYEE DETAILS</h3>
+          <h3><strong>EMPLOYEE DETAILS</strong></h3>
           <div id="basicDetails"></div>
-          <div class="section"><div class="section-title">EMERGENCY CONTACT</div><div id="emergencyContact"></div></div>
-          <div class="section"><div class="section-title">EMPLOYMENT DETAILS</div><div id="employmentDetails"></div></div>
+          <div class="section"><div class="section-title"><strong>EMERGENCY CONTACT</strong></div><div id="emergencyContact"></div></div>
+          <div class="section"><div class="section-title"><strong>EMPLOYMENT DETAILS</strong></div><div id="employmentDetails"></div></div>
         </div>
         <div class="modal-right"><div class="photo-card"><img id="employeePhoto" src="employee1.jpg"></div></div>
       </div>
