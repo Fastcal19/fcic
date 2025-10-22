@@ -197,201 +197,193 @@
 
   <script>
   document.addEventListener("DOMContentLoaded", () => {
-  const iframe = document.getElementById("mainFrame");
-  const role = localStorage.getItem("role");
-
-  if (!iframe) return;
-
-  // ✅ Load dashboard based on role
-  if (role === "System Admin" || role === "Admin") {
-    iframe.src = "Admin Dashboard.html";
-  } else if (role === "Staff" || role === "Purchaser") {
-    iframe.src = "dashboard.html";
-  } else {
-    // fallback if role not found
-    iframe.src = "dashboard.html";
-  }
-});
-    
-    // Read user info
-    const fullName = localStorage.getItem("full");
-    const photo = localStorage.getItem("photo");
+    const iframe = document.getElementById("mainFrame");
     const role = localStorage.getItem("role");
 
-    if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
-    if(photo) document.getElementById("userPhoto").src = "./" + photo;
+    if (!iframe) return;
 
-    // Role-based visibility
-    const buttons = {
-      btnDashboard: true,
-      btnHR: false,
-      btnReports: false,
-      btnProjectCosting: false,
-      btnApplications: false,
-      btnRequests: false,
-      btnPayslip: false,
-      btnInventory: false,
-      btnPortals: false
-    };
-
-    if (role === "Admin") {
-      buttons.btnDashboard = true;
-      buttons.btnHR = true;
-      buttons.btnReports = true;
-      buttons.btnApplications = true;
-      buttons.btnInventory = true;
-      buttons.btnPortals = true;
-    } 
-    else if (role === "Staff") {
-      buttons.btnDashboard = true;
-      buttons.btnRequests = true;
-      buttons.btnPayslip = true;
-      buttons.btnInventory = true;
-    } 
-    else if (role === "Purchaser") {
-      buttons.btnDashboard = true;
-      buttons.btnProjectCosting = true;
-      buttons.btnRequests = true;
-      buttons.btnPayslip = true;
-      buttons.btnInventory = true;
-    } 
-    else if (role === "System Admin") {
-      // Show everything
-      for (const key in buttons) buttons[key] = true;
-    }
-
-    // Apply visibility
-    Object.keys(buttons).forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = buttons[id] ? "block" : "none";
-    });
-
-    // Sidebar functionality
-    const sidebar = document.getElementById('sidebar');
-    const menuToggle = document.getElementById('menuToggle');
-    let autoHideTimer;
-
-    menuToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('active');
-      if (sidebar.classList.contains('active')) startAutoHide();
-      else clearTimeout(autoHideTimer);
-    });
-
-    function startAutoHide() {
-      clearTimeout(autoHideTimer);
-      if (window.innerWidth <= 768) {
-        autoHideTimer = setTimeout(() => {
-          sidebar.classList.remove('active');
-        }, 5000);
-      }
-    }
-
-    sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
-    sidebar.addEventListener('mouseleave', startAutoHide);
-
-    sidebar.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) sidebar.classList.remove('active');
-      });
-    });
-
-    function toggleMenu(id) {
-      const allSubmenus = document.querySelectorAll('.submenu');
-      const menu = document.getElementById(id);
-      allSubmenus.forEach(sub => { if (sub !== menu) sub.classList.remove('show'); });
-      menu.classList.toggle('show');
-    }
-
-function showPage(page) {
-  const iframe = document.getElementById("mainFrame");
-  const portals = document.getElementById("portalsPage");
-  const role = localStorage.getItem("role");
-
-  // Hide both by default
-  iframe.style.display = "none";
-  if (portals) portals.style.display = "none";
-
-  // ✅ Role-based Dashboard
-  if (page === "dashboard") {
-    if (role === "Admin" || role === "System Admin") {
-      iframe.style.display = "block";
+    // ✅ Load dashboard based on role
+    if (role === "System Admin" || role === "Admin") {
       iframe.src = "Admin Dashboard.html";
+    } else if (role === "Staff" || role === "Purchaser") {
+      iframe.src = "dashboard.html";
     } else {
-      iframe.style.display = "block";
       iframe.src = "dashboard.html";
     }
-    return;
-  }
+  });
+    
+  // Read user info
+  const fullName = localStorage.getItem("full");
+  const photo = localStorage.getItem("photo");
+  const role = localStorage.getItem("role");
 
-  // ✅ Page mappings
-  const pages = {
-    employee: "Employee.html",
-    attendance: "HR_Attendance.html",
-    payroll: "HR_Payroll.html",
-    projects: "Reports_Projects.html",
-    sales: "Reports_Sales.html",
-    ar: "AR.html",
-    ap: "AP.html",
-    pc: "Costing.html",
-    is: "IS.html",
-    inventoryGallery: "inventory.html",
-    inventoryList: "Inventory List.html",
-    projectCosting: "Project Costing.html",
-    aleave: "aleave.html",
-    aadvances: "aadvances.html",
-    aovertime: "aovertime.html",    
-    rleave: "rleave.html",
-    radvances: "rAdvances.html",
-    rovertime: "rovertime.html",
-    payslip: "Payslip.html"
+  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+  if(photo) document.getElementById("userPhoto").src = "./" + photo;
+
+  // Role-based visibility
+  const buttons = {
+    btnDashboard: true,
+    btnHR: false,
+    btnReports: false,
+    btnProjectCosting: false,
+    btnApplications: false,
+    btnRequests: false,
+    btnPayslip: false,
+    btnInventory: false,
+    btnPortals: false
   };
 
-  // ✅ Portals section
-  if (page === "portals") {
-    if (portals) {
-      portals.style.display = "block";
-      loadPortals();
+  if (role === "Admin") {
+    buttons.btnDashboard = true;
+    buttons.btnHR = true;
+    buttons.btnReports = true;
+    buttons.btnApplications = true;
+    buttons.btnInventory = true;
+    buttons.btnPortals = true;
+  } 
+  else if (role === "Staff") {
+    buttons.btnDashboard = true;
+    buttons.btnRequests = true;
+    buttons.btnPayslip = true;
+    buttons.btnInventory = true;
+  } 
+  else if (role === "Purchaser") {
+    buttons.btnDashboard = true;
+    buttons.btnProjectCosting = true;
+    buttons.btnRequests = true;
+    buttons.btnPayslip = true;
+    buttons.btnInventory = true;
+  } 
+  else if (role === "System Admin") {
+    for (const key in buttons) buttons[key] = true;
+  }
+
+  Object.keys(buttons).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = buttons[id] ? "block" : "none";
+  });
+
+  // ✅ Sidebar functionality (fixed version)
+  const sidebar = document.getElementById('sidebar');
+  const menuToggle = document.getElementById('menuToggle');
+  let autoHideTimer;
+
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+    if (sidebar.classList.contains('active')) startAutoHide();
+    else clearTimeout(autoHideTimer);
+  });
+
+  function startAutoHide() {
+    clearTimeout(autoHideTimer);
+    if (window.innerWidth <= 768) {
+      autoHideTimer = setTimeout(() => {
+        sidebar.classList.remove('active');
+      }, 5000);
     }
-    return;
   }
 
-  // ✅ Default behavior
-  iframe.style.display = "block";
-  iframe.src = pages[page] || "dashboard.html";
+  sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
+  sidebar.addEventListener('mouseleave', startAutoHide);
 
-  // ✅ Hide sidebar on mobile
-  if (window.innerWidth <= 768) {
-    document.getElementById('sidebar').classList.remove('active');
-  }
-}
-
-
-    
-const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
-    async function loadPortals() {
-      try {
-        const res = await fetch(PORTALS_URL);
-        const portals = await res.json();
-        const grid = document.getElementById("portalsGrid");
-        grid.innerHTML = "";
-        portals.forEach(p => {
-          const card = document.createElement("div");
-          card.className = "portal-card";
-          card.onclick = () => window.open(p.url, "_blank");
-          const imgSrc = p.thumb || p.logo || "default_logo.png";
-          card.innerHTML = `<img src="${imgSrc}" alt="${p.name}"><p>${p.name}</p>`;
-          grid.appendChild(card);
-        });
-      } catch (err) {
-        console.error("Failed to load portals:", err);
+  // ✅ FIX: Don't hide sidebar on submenu toggle clicks
+  sidebar.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', (e) => {
+      const isExpandable = link.classList.contains('expandable');
+      if (window.innerWidth <= 768 && !isExpandable) {
+        sidebar.classList.remove('active');
       }
-    }    
+    });
+  });
 
-   
-    function logout() {
-      localStorage.clear();
-      window.location.href = '/';
+  function toggleMenu(id) {
+    const allSubmenus = document.querySelectorAll('.submenu');
+    const menu = document.getElementById(id);
+    allSubmenus.forEach(sub => { if (sub !== menu) sub.classList.remove('show'); });
+    menu.classList.toggle('show');
+  }
+
+  function showPage(page) {
+    const iframe = document.getElementById("mainFrame");
+    const portals = document.getElementById("portalsPage");
+    const role = localStorage.getItem("role");
+
+    iframe.style.display = "none";
+    if (portals) portals.style.display = "none";
+
+    if (page === "dashboard") {
+      if (role === "Admin" || role === "System Admin") {
+        iframe.style.display = "block";
+        iframe.src = "Admin Dashboard.html";
+      } else {
+        iframe.style.display = "block";
+        iframe.src = "dashboard.html";
+      }
+      return;
     }
+
+    const pages = {
+      employee: "Employee.html",
+      attendance: "HR_Attendance.html",
+      payroll: "HR_Payroll.html",
+      projects: "Reports_Projects.html",
+      sales: "Reports_Sales.html",
+      ar: "AR.html",
+      ap: "AP.html",
+      pc: "Costing.html",
+      is: "IS.html",
+      inventoryGallery: "inventory.html",
+      inventoryList: "Inventory List.html",
+      projectCosting: "Project Costing.html",
+      aleave: "aleave.html",
+      aadvances: "aadvances.html",
+      aovertime: "aovertime.html",    
+      rleave: "rleave.html",
+      radvances: "rAdvances.html",
+      rovertime: "rovertime.html",
+      payslip: "Payslip.html"
+    };
+
+    if (page === "portals") {
+      if (portals) {
+        portals.style.display = "block";
+        loadPortals();
+      }
+      return;
+    }
+
+    iframe.style.display = "block";
+    iframe.src = pages[page] || "dashboard.html";
+
+    if (window.innerWidth <= 768) {
+      document.getElementById('sidebar').classList.remove('active');
+    }
+  }
+
+  const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
+  async function loadPortals() {
+    try {
+      const res = await fetch(PORTALS_URL);
+      const portals = await res.json();
+      const grid = document.getElementById("portalsGrid");
+      grid.innerHTML = "";
+      portals.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "portal-card";
+        card.onclick = () => window.open(p.url, "_blank");
+        const imgSrc = p.thumb || p.logo || "default_logo.png";
+        card.innerHTML = `<img src="${imgSrc}" alt="${p.name}"><p>${p.name}</p>`;
+        grid.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Failed to load portals:", err);
+    }
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = '/';
+  }
   </script>
 </body>
 </html>
