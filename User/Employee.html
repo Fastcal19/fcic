@@ -213,7 +213,7 @@
 
   <script>
     const EMPLOYEES_URL = "https://script.google.com/macros/s/AKfycbzV3fJh832S_9b_Nd4eDnH3Xdgof-dNqTJOmmkf7UbkpBTmt1PT9cgWk27JYnVr21Sg/exec?type=employees";
-    const DEFAULT_VISIBLE_COLS = [1,2,3,9,10,16,17,11,12,13,14]; // ✅ Only these visible by default
+    const DEFAULT_VISIBLE_COLS = [1,2,3,9,10,16,17]; // ✅ Only these visible by default
     window.activeEmployees = [];
 
     function safeNumber(val){if(val===undefined||val===null)return NaN;const n=Number(String(val).replace(/[,\s\u00A0]+/g,''));return isNaN(n)?NaN:n;}
