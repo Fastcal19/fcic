@@ -145,6 +145,11 @@ th {
   justify-content: flex-end;
 }
 
+/* Hide EID and Name fields by default */
+#eid, #name {
+  display: none;
+}
+
 .close-btn {
   background: #dc3545;
   color: #fff;
@@ -250,20 +255,26 @@ function pad(n){ return String(n).padStart(2,'0'); }
 function formatDateOnly(value){ const d=new Date(value); if(isNaN(d)) return value; return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear(); }
 function formatDateTime(value){ const d=new Date(value); if(isNaN(d)) return value; let h=d.getHours(),ampm=h>=12?'PM':'AM'; h=h%12||12; return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear()+' '+pad(h)+':'+pad(d.getMinutes())+' '+ampm; }
 
-function openModal(){
-  currentLID=null;
-  currentRow=null;
-  modalTitle.textContent="Apply Leave";
-  submitBtn.textContent="Submit";
-  submitBtn.className="new";
-  document.getElementById('eid').value=applicantEID||"";
-  document.getElementById('name').value=applicantName||"";
-  document.getElementById('dateFiled').value=formatDateTime(new Date());
-  ['reason','fromDate','toDate','days'].forEach(id=>document.getElementById(id).value="");
-  cancelBtn.style.display="none";
+function openModal() {
+  currentLID = null;
+  currentRow = null;
+  modalTitle.textContent = "Apply Leave";
+  submitBtn.textContent = "Submit";
+  submitBtn.className = "new";
+
+  // Hide employee info when applying
+  document.getElementById('eid').style.display = "none";
+  document.getElementById('name').style.display = "none";
+
+  document.getElementById('eid').value = applicantEID || "";
+  document.getElementById('name').value = applicantName || "";
+  document.getElementById('dateFiled').value = formatDateTime(new Date());
+  ['reason', 'fromDate', 'toDate', 'days'].forEach(id => document.getElementById(id).value = "");
+  cancelBtn.style.display = "none";
   refreshSaveState();
-  modalBg.style.display='flex';
+  modalBg.style.display = 'flex';
 }
+
 
 function openEditModal(record,index){
   currentLID = record.LID;
