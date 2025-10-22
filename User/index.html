@@ -163,6 +163,13 @@
 
       <a onclick="showPage('projectCosting')">Project Costing</a>
 
+      <a id="btnApplications" class="expandable" onclick="toggleMenu('applicationsMenu')">Applications ▸</a>
+      <div class="submenu" id="requestsMenu">
+        <a onclick="showPage('advances')">Advances</a>
+        <a onclick="showPage('leave')">Leave</a>
+        <a onclick="showPage('overtime')">Overtime</a>
+      </div>
+      
       <a id="btnRequests" class="expandable" onclick="toggleMenu('requestsMenu')">Requests ▸</a>
       <div class="submenu" id="requestsMenu">
         <a onclick="showPage('advances')">Advances</a>
@@ -220,6 +227,7 @@
       btnHR: false,
       btnReports: false,
       btnProjectCosting: false,
+      btnApplications: false,
       btnRequests: false,
       btnPayslip: false,
       btnInventory: false,
@@ -230,7 +238,7 @@
       buttons.btnDashboard = true;
       buttons.btnHR = true;
       buttons.btnReports = true;
-      buttons.btnRequests = true;
+      buttons.btnApplications = true;
       buttons.btnInventory = true;
       buttons.btnPortals = true;
     } 
