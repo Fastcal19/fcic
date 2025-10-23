@@ -250,7 +250,7 @@
   const photo = localStorage.getItem("photo");
   const role = localStorage.getItem("role");
 
-  if(fullName) document.getElementById("usernameDisplay").textContent = fullName + " ▼";
+  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
   if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
   // ✅ Username dropdown
