@@ -40,24 +40,55 @@
 
     .sidebar.hidden { transform: translateX(-100%); }
 
-    .userbox{
-      text-align:center;
-      padding:20px 0 10px;
+    .userbox {
+      text-align: center;
+      padding: 20px 0 10px;
+      position: relative;
     }
-    .userbox img{
-      width:160px;
-      height:160px;
-      border-radius:50%;
-      object-fit:cover;
-      box-shadow:0 2px 6px rgba(0,0,0,0.3);
-      background:#fff;
+    .userbox img {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      background: #fff;
     }
-    .username{
-      font-weight:bold;
-      font-size:16px;
-      color:#000;
-      margin-top:10px;
-      margin-bottom:30px;
+    .username {
+      font-weight: bold;
+      font-size: 16px;
+      color: #000;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Dropdown for user menu */
+    .user-dropdown {
+      position: absolute;
+      top: 220px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      min-width: 140px;
+      overflow: hidden;
+      z-index: 2000;
+    }
+
+    .user-dropdown a {
+      color: #000;
+      padding: 10px;
+      text-decoration: none;
+      display: block;
+      font-weight: bold;
+    }
+
+    .user-dropdown a:hover {
+      background: #FFD580;
     }
 
     .sidebar a {
@@ -68,7 +99,7 @@
       border-radius: 6px;
       font-weight: bold;
       margin: 2px 0;
-      cursor: hand;
+      cursor: pointer;
     }
     .sidebar a:hover { background: #FFD580; }
 
@@ -140,6 +171,12 @@
       <div class="userbox">
         <img id="userPhoto" src="fcic logo.png" alt="User Photo">
         <div class="username" id="usernameDisplay">User</div>
+
+        <!-- Dropdown Menu -->
+        <div class="user-dropdown" id="userDropdown">
+          <a id="profileLink">User Profile</a>
+          <a id="logoutLink">Logout</a>
+        </div>
       </div>
 
       <!-- MENU LINKS -->
@@ -191,9 +228,9 @@
     <button class="logout-btn" onclick="logout()">Logout</button>
   </aside>
 
- <div class="main">
-  <iframe id="mainFrame"></iframe>
-</div>
+  <div class="main">
+    <iframe id="mainFrame"></iframe>
+  </div>
 
   <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -202,23 +239,43 @@
 
     if (!iframe) return;
 
-    // ✅ Load dashboard based on role
     if (role === "System Admin" || role === "Admin") {
       iframe.src = "Admin Dashboard.html";
-    } else if (role === "Staff" || role === "Purchaser") {
-      iframe.src = "dashboard.html";
     } else {
       iframe.src = "dashboard.html";
     }
   });
     
-  // Read user info
   const fullName = localStorage.getItem("full");
   const photo = localStorage.getItem("photo");
   const role = localStorage.getItem("role");
 
-  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+  if(fullName) document.getElementById("usernameDisplay").textContent = fullName + " ▼";
   if(photo) document.getElementById("userPhoto").src = "./" + photo;
+
+  // ✅ Username dropdown
+  const usernameDisplay = document.getElementById("usernameDisplay");
+  const userDropdown = document.getElementById("userDropdown");
+
+  usernameDisplay.addEventListener("click", (e) => {
+    e.stopPropagation();
+    userDropdown.style.display = userDropdown.style.display === "flex" ? "none" : "flex";
+  });
+
+  document.addEventListener("click", () => {
+    userDropdown.style.display = "none";
+  });
+
+  document.getElementById("profileLink").addEventListener("click", (e) => {
+    e.stopPropagation();
+    showPage("employee");
+    userDropdown.style.display = "none";
+  });
+
+  document.getElementById("logoutLink").addEventListener("click", (e) => {
+    e.stopPropagation();
+    logout();
+  });
 
   // Role-based visibility
   const buttons = {
@@ -263,7 +320,7 @@
     if (el) el.style.display = buttons[id] ? "block" : "none";
   });
 
-  // ✅ Sidebar functionality (fixed version)
+  // Sidebar toggle
   const sidebar = document.getElementById('sidebar');
   const menuToggle = document.getElementById('menuToggle');
   let autoHideTimer;
@@ -286,7 +343,6 @@
   sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
   sidebar.addEventListener('mouseleave', startAutoHide);
 
-  // ✅ FIX: Don't hide sidebar on submenu toggle clicks
   sidebar.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', (e) => {
       const isExpandable = link.classList.contains('expandable');
@@ -323,7 +379,7 @@
     }
 
     const pages = {
-      employee: "Employee.html",
+      employee: "Employee Profile.html",
       attendance: "HR_Attendance.html",
       payroll: "HR_Payroll.html",
       projects: "Reports_Projects.html",
@@ -344,39 +400,11 @@
       payslip: "Payslip.html"
     };
 
-    if (page === "portals") {
-      if (portals) {
-        portals.style.display = "block";
-        loadPortals();
-      }
-      return;
-    }
-
     iframe.style.display = "block";
     iframe.src = pages[page] || "dashboard.html";
 
     if (window.innerWidth <= 768) {
       document.getElementById('sidebar').classList.remove('active');
-    }
-  }
-
-  const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
-  async function loadPortals() {
-    try {
-      const res = await fetch(PORTALS_URL);
-      const portals = await res.json();
-      const grid = document.getElementById("portalsGrid");
-      grid.innerHTML = "";
-      portals.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "portal-card";
-        card.onclick = () => window.open(p.url, "_blank");
-        const imgSrc = p.thumb || p.logo || "default_logo.png";
-        card.innerHTML = `<img src="${imgSrc}" alt="${p.name}"><p>${p.name}</p>`;
-        grid.appendChild(card);
-      });
-    } catch (err) {
-      console.error("Failed to load portals:", err);
     }
   }
 
