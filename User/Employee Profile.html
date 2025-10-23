@@ -208,7 +208,8 @@
   </div>
 
 <script>
-const EMPLOYEE_ID = "008"; // ← can be dynamic
+const EMPLOYEE_ID = localStorage.getItem("eid");
+
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIdnzBHEDjyMBXsrgWZyGmhVl7VJdx8V56g8QYEvXI2x8tS8_Tf2iEiH8DWm2YHOf1Fg/exec"; // ← replace with your Apps Script web app URL
 
 async function loadEmployeeData() {
