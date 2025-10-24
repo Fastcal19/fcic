@@ -183,7 +183,7 @@
       <a id="btnDashboard" onclick="showPage('dashboard')">Dashboard</a>
       <a id="btnHR" class="expandable" onclick="toggleMenu('hrMenu')">Human Resources ▸</a>
       <div class="submenu" id="hrMenu">
-        <a onclick="showPage('employee')">Employee Profile</a>
+        <a onclick="showPage('employee')">Employee List</a>
         <a onclick="showPage('attendance')">Attendance</a>
         <a onclick="showPage('payroll')">Payroll</a>
       </div>
@@ -380,6 +380,7 @@
 
     const pages = {
       employee: "Employee Profile.html",
+      employeelist: "Employee",
       attendance: "HR_Attendance.html",
       payroll: "HR_Payroll.html",
       projects: "Reports_Projects.html",
