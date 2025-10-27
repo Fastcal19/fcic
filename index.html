@@ -344,13 +344,6 @@ function parseJwt(token) {
   return JSON.parse(atob(token.split('.')[1]));
 }
 </script>
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log('SW registered'))
-    .catch(err => console.log('SW failed', err));
-}
-</script>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
