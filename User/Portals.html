@@ -5,32 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portals | Fast Cal Industrial Corp</title>
   <style>
-    body {
+    /* === Global Styles === */
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
       font-family: Arial, sans-serif;
       background: gray;
       color: black;
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
+      flex-direction: column;
+      justify-content: space-between; /* keeps footer at bottom */
+      overflow: hidden;
     }
 
-    /* Main Container */
+    /* === Main Container === */
     .main-container {
       background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
       border-radius: 16px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      width: 100%;
+      width: 95%;
       max-width: 95%;
-      margin: 40px 0;
+      margin: 40px auto;
       padding: 30px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      flex-grow: 1; /* pushes footer down */
     }
 
-    /* Portals Section */
+    /* === Portals Section === */
     #portalsPage {
       width: 100%;
     }
@@ -87,15 +91,15 @@
       color: #333;
     }
 
+    /* === Footer === */
     footer {
       text-align: center;
       padding: 15px;
       color: white;
       font-size: 14px;
       background: #FF8C00;
-      border-radius: 0 0 16px 16px;
       width: 100%;
-      margin-top: 30px;
+      border-radius: 0;
     }
   </style>
 </head>
@@ -105,8 +109,9 @@
       <h2>Portals</h2>
       <div class="portals-grid" id="portalsGrid"></div>
     </div>
-    <footer>© 2025 Fast Cal Industrial Corp</footer>
   </div>
+
+  <footer>© 2025 Fast Cal Industrial Corp</footer>
 
   <script>
     const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
