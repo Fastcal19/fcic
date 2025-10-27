@@ -1,37 +1,35 @@
 const CACHE_NAME = 'app-cache-v1';
+const STATIC_EXT = ['.css', '.js', '.png', '.jpg', '.webp', '.svg', '.ico', '.html'];
 
 self.addEventListener('install', event => {
-  // Skip waiting so new SW activates immediately
   self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-  // Claim clients so it works without reload
   clients.claim();
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(cacheRes => {
-      // If in cache → serve it
-      if (cacheRes) return cacheRes;
+  const req = event.request;
+  const url = req.url;
 
-      // Else fetch from network and cache it
-      return fetch(event.request).then(networkRes => {
-        // Avoid caching non-GET or failed responses
-        if (!networkRes || event.request.method !== 'GET' || networkRes.status !== 200) {
+  // Do not cache Google Apps Script or dynamic user area
+  if (url.includes('script.google.com') || url.includes('/User/')) {
+    return; // let network handle it
+  }
+
+  // Only cache GET static assets
+  if (req.method === 'GET' && STATIC_EXT.some(ext => url.endsWith(ext))) {
+    event.respondWith(
+      caches.match(req).then(cacheRes => {
+        if (cacheRes) return cacheRes;
+        return fetch(req).then(networkRes => {
+          if (!networkRes || networkRes.status !== 200) return networkRes;
+          const clone = networkRes.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
           return networkRes;
-        }
-
-        // Save copy to cache
-        let responseClone = networkRes.clone();
-        caches.open(CCACHE_NAME).then(cache => cache.put(event.request, responseClone));
-
-        return networkRes;
-      }).catch(() => {
-        // Optional: handle offline fallback here
-        // return caches.match('/offline.html');
-      });
-    })
-  );
+        });
+      })
+    );
+  }
 });
