@@ -325,14 +325,12 @@ function handleLoginResponse(response) {
     localStorage.setItem("photo", response.photo);
     status.style.color = "green";
     status.textContent = "✅ Welcome, " + response.name;
-    s.style.color = "green";
-    s.textContent = "✅ Welcome, " + res.name;
-
+    
     setTimeout(()=>location.href="/User/",1000);
 
   } else {
-    s.style.color = "red";
-    s.textContent = res.message || "❌ Invalid login.";
+    status.style.color = "red";
+    status.textContent = response.message || "❌ Invalid login.";
   }
 }
 
