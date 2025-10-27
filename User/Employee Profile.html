@@ -243,14 +243,39 @@ function formatSalary(salary) {
 
 function calculateServiceLength(dateHired, dateResigned) {
   if (!dateHired) return "";
-  const start = new Date(dateHired);
-  const end = dateResigned ? new Date(dateResigned) : new Date();
+
+  // Try to handle Google Sheets date format (e.g., "12/10/2021" or "2021-12-10")
+  const parseDate = (str) => {
+    if (!str) return null;
+    const parts = str.split(/[-/]/);
+    if (parts.length === 3) {
+      // Detect format: YYYY-MM-DD or MM-DD-YYYY
+      if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
+      else return new Date(parts[2], parts[0] - 1, parts[1]);
+    }
+    const d = new Date(str);
+    return isNaN(d) ? null : d;
+  };
+
+  const start = parseDate(dateHired);
+  const end = parseDate(dateResigned) || new Date();
+
+  if (!start) return "Invalid start date";
+  if (isNaN(start) || isNaN(end)) return "";
+
   let years = end.getFullYear() - start.getFullYear();
   let months = end.getMonth() - start.getMonth();
-  if (months < 0) { years--; months += 12; }
-  if (years < 1) return `${months} month${months > 1 ? "s" : ""}`;
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  if (years < 0) return "Invalid dates";
+  if (years === 0 && months === 0) return "Less than a month";
+  if (years === 0) return `${months} month${months > 1 ? "s" : ""}`;
   return `${years} year${years > 1 ? "s" : ""}, ${months} month${months > 1 ? "s" : ""}`;
 }
+
 
 async function loadEmployeeData() {
   try {
