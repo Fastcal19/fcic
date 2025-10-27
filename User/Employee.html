@@ -242,7 +242,6 @@
       try{
         const res=await fetch(EMPLOYEES_URL);const data=await res.json();
         if(!Array.isArray(data)||data.length===0){tbody.innerHTML='<tr><td colspan="20">No data</td></tr>';return;}
-        const activeData=data.filter(emp=>String((emp['STATUS']||'')).toLowerCase()==='active');
         if(activeData.length===0){tbody.innerHTML='<tr><td colspan="20">No active employees</td></tr>';return;}
 
         window.activeEmployees=activeData.map(emp=>{
