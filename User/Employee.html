@@ -361,7 +361,7 @@ window.activeEmployees.forEach((emp, i) => {
         {label:'TIN',v:emp['TIN']},{label:'SSS',v:emp['SSS']},{label:'PhilHealth',v:emp['PHILHEALTH']},{label:'Pag-IBIG',v:emp['PAG-IBIG']}
       ];
       document.getElementById('basicDetails').innerHTML=basic.map(d=>`<div class="detail-row"><div class="detail-label">${d.label}:</div><div class="detail-value">${d.v||''}</div></div>`).join('');
-      const ec=[{l:'Name',v:emp['E.CONTACT NAME']},{l:'Contact No',v:emp['E.CONTACT NUMBER']},{l:'Address',v:emp['E.ADDRESS']}];
+      const ec=[{l:'Name',v:emp['E.CONTACT NAME']},{l:'Contact No',v:emp['E.CONTACT NUMBER']},{l:'Address',v:emp['CONTACT ADDRESS']}];
       document.getElementById('emergencyContact').innerHTML=ec.map(d=>`<div class="detail-row"><div class="detail-label">${d.l}:</div><div class="detail-value">${d.v||''}</div></div>`).join('');
       const ed=[{l:'Date Hired',v:emp['DATE HIRED']?new Date(emp['DATE HIRED']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):''},
         {l:'Length of Service',v:getLengthOfService(emp['DATE HIRED'])},
