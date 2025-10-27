@@ -753,6 +753,9 @@ dayNames.forEach(d => {
 document.querySelector("#noteModal .close-btn").addEventListener("click", closeModal);
 document.querySelector("#noteModal .save-btn").addEventListener("click", saveNote);
 
+localStorage.clear();
+location.href = "/"; 
+
   </script>
 </body>
 </html>
