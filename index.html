@@ -339,11 +339,6 @@ function handleLoginResponse(response) {
   }
 }
 
- // If already logged in, do NOT show login — redirect to dashboard
-  const role = localStorage.getItem("role");
-  if (role) {
-    window.location.href = "/User/";
-  }
   
 function parseJwt(token) {
   return JSON.parse(atob(token.split('.')[1]));
