@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portals | Fast Cal Industrial Corp</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: gray;
+      color: black;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    /* Main Container */
+    .main-container {
+      background: #f4f4f4;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 1200px;
+      margin: 40px 0;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Portals Section */
+    #portalsPage {
+      width: 100%;
+    }
+
+    #portalsPage h2 {
+      margin-bottom: 25px;
+      font-size: 26px;
+      font-weight: bold;
+      color: #FF8C00;
+      text-align: center;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .portals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 30px;
+      justify-items: center;
+    }
+
+    .portal-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      height: 150px;
+      width: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .portal-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+    }
+
+    .portal-card img {
+      max-width: 170px;
+      max-height: 120px;
+      object-fit: contain;
+      margin-top: 10px;
+    }
+
+    .portal-card p {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 15px 0 0 0;
+      text-align: center;
+      color: #333;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      color: white;
+      font-size: 14px;
+      background: #FF8C00;
+      border-radius: 0 0 16px 16px;
+      width: 100%;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div id="portalsPage">
+      <h2>Portals</h2>
+      <div class="portals-grid" id="portalsGrid"></div>
+    </div>
+    <footer>© 2025 Fast Cal Industrial Corp</footer>
+  </div>
+
+  <script>
+    const PORTALS_URL = "https://script.google.com/macros/s/AKfycbwluhec5Un9_wn6ppcnqElGgjoB32TjNucR7ARjh2RBWpHvN3oG9FtT0_vcKxQMjkFD/exec";
+
+    async function loadPortals() {
+      try {
+        const res = await fetch(PORTALS_URL);
+        const portals = await res.json();
+        const grid = document.getElementById("portalsGrid");
+        grid.innerHTML = "";
+
+        portals.forEach(p => {
+          const card = document.createElement("div");
+          card.className = "portal-card";
+          card.onclick = () => window.open(p.url, "_blank");
+
+          const imgSrc = p.thumb || p.logo || "default_logo.png";
+          card.innerHTML = `
+            <img src="${imgSrc}" alt="${p.name}">
+            <p>${p.name}</p>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Failed to load portals:", err);
+        document.getElementById("portalsGrid").innerHTML =
+          "<p style='color:#333; text-align:center;'>⚠️ Failed to load portals. Please try again later.</p>";
+      }
+    }
+
+    // Load on start
+    loadPortals();
+  </script>
+</body>
+</html>
