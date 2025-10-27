@@ -193,12 +193,26 @@
       <table id="employeesTable">
         <thead>
           <tr>
-            <th>#</th><th>EN</th><th>EMPLOYEE NAME</th>
-            <th>MARITAL STATUS</th><th>BIRTHDATE</th><th>AGE</th>
-            <th>GENDER</th><th>ADDRESS</th><th>CONTACT NUMBER</th>
-            <th>EMAIL ADDRESS</th><th>TIN</th><th>SSS</th><th>PHILHEALTH</th>
-            <th>PAG-IBIG</th><th>DATE HIRED</th><th>DESIGNATION</th>
-            <th>SALARY</th><th>CONTACT NAME</th><th>CONTACT NUMBER</th><th>ADDRESS</th>
+            <th>#</th>
+            <th>EN</th>
+            <th>EMPLOYEE NAME</th>
+            <th>MARITAL STATUS</th>
+            <th>BIRTHDATE</th>
+            <th>AGE</th>
+            <th>GENDER</th>
+            <th>ADDRESS</th>
+            <th>CONTACT NUMBER</th>
+            <th>EMAIL ADDRESS</th>
+            <th>TIN</th>
+            <th>SSS</th>
+            <th>PHILHEALTH</th>
+            <th>PAG-IBIG</th>
+            <th>DATE HIRED</th>
+            <th>DESIGNATION</th>
+            <th>SALARY</th>
+            <th>CONTACT NAME</th>
+            <th>CONTACT NUMBER</th>
+            <th>ADDRESS</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -230,7 +244,7 @@
   </div>
 
   <script>
-    const EMPLOYEES_URL = "https://script.google.com/macros/s/AKfycbz5qg8CYavw_COXwCYfIilonCN-EtbF1ElhIuffkiM1ykGPl5hCcrOStWOB2jyH6Lw_mw/exec";
+    const EMPLOYEES_URL = "https://script.google.com/macros/s/AKfycbyqA1bM9Dn27hqhXDZRMp31LjECTASMWfqHP1mBot0uK2ldULOmC2GoTSNzVLPzMoRl/exec";
     const DEFAULT_VISIBLE_COLS = [1,2,3,9,10,16,17]; // ✅ Only these visible by default
     window.activeEmployees = [];
 
@@ -238,40 +252,91 @@
     function formatCurrencyPH(val){const n=safeNumber(val);if(isNaN(n))return val||'';return '₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
     async function loadEmployees(){
-      const tbody=document.querySelector('#employeesTable tbody');tbody.innerHTML='';
-      try{
-        const res=await fetch(EMPLOYEES_URL);const data=await res.json();
-        if(!Array.isArray(data)||data.length===0){tbody.innerHTML='<tr><td colspan="20">No data</td></tr>';return;}
-        if(activeData.length===0){tbody.innerHTML='<tr><td colspan="20">No active employees</td></tr>';return;}
+  const tbody=document.querySelector('#employeesTable tbody');
+  tbody.innerHTML='';
 
-        window.activeEmployees=activeData.map(emp=>{
-          let n={...emp};
-          if(emp.photo||emp.thumb){n.photo=emp.photo||'';n.thumb=emp.thumb||'';}
-          else if(emp.PHOTO){const m=String(emp.PHOTO).match(/[-\w]{25,}/);if(m){n.photo=`https://drive.google.com/uc?export=view&id=${m[0]}`;n.thumb=`https://drive.google.com/thumbnail?id=${m[0]}`;}else{n.photo='';n.thumb='';}}
-          else{n.photo='';n.thumb='';}
-          return n;
-        });
+  try{
+    const res = await fetch(EMPLOYEES_URL);
+    const data = await res.json();
+    // Normalize all keys to uppercase for consistency
+const normalized = data.map(row => {
+  const obj = {};
+  for (let k in row) {
+    obj[k.trim().toUpperCase()] = row[k];
+  }
+  return obj;
+});
 
-        window.activeEmployees.forEach((emp,i)=>{
-          const tr=document.createElement('tr');
-          const name=(emp['LAST NAME']||'')+(emp['FIRST NAME']?', '+emp['FIRST NAME']:'')+(emp['MIDDLE NAME']?', '+emp['MIDDLE NAME']:'');
-          tr.innerHTML=`
-            <td>${i+1}</td><td>${emp['EN']||''}</td>
-            <td><a class="emp-link" href="javascript:void(0)" onclick="openModal(${i})">${name||emp['EN']}</a></td>
-            <td>${emp['MARITAL STATUS']||''}</td><td>${emp['BIRTHDATE']?new Date(emp['BIRTHDATE']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):''}</td>
-            <td>${emp['AGE']||''}</td><td>${emp['GENDER']||''}</td><td>${emp['ADDRESS']||''}</td>
-            <td>${emp['CONTACT NUMBER']||''}</td><td>${emp['EMAIL ADDRESS']||''}</td><td>${emp['TIN']||''}</td>
-            <td>${emp['SSS']||''}</td><td>${emp['PHILHEALTH']||''}</td><td>${emp['PAG-IBIG']||''}</td>
-            <td>${emp['DATE HIRED']?new Date(emp['DATE HIRED']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):''}</td>
-            <td>${emp['DESIGNATION']||''}</td><td>${formatCurrencyPH(emp['SALARY'])}</td>
-            <td>${emp['E.CONTACT NAME']||''}</td><td>${emp['E.CONTACT NUMBER']||''}</td><td>${emp['E.ADDRESS']||''}</td>`;
-          tbody.appendChild(tr);
-        });
 
-        applyDefaultColumnVisibility(); // ✅ hide others
-
-      }catch(e){console.error('Failed to load employees',e);tbody.innerHTML="<tr><td colspan='20'>Error loading data</td></tr>";}
+    if(!Array.isArray(data) || data.length === 0){
+      tbody.innerHTML = '<tr><td colspan="20">No data</td></tr>';
+      return;
     }
+
+    const activeData = normalized; // You can filter here if needed
+
+    if(activeData.length === 0){
+      tbody.innerHTML = '<tr><td colspan="20">No active employees</td></tr>';
+      return;
+    }
+
+    // ✅ Only one correct assignment
+    window.activeEmployees = activeData.map(emp => {
+      let n = {...emp};
+      if(emp.photo||emp.thumb){n.photo=emp.photo||'';n.thumb=emp.thumb||'';}
+      else if(emp.PHOTO){
+        const m=String(emp.PHOTO).match(/[-\w]{25,}/);
+        if(m){
+          n.photo=`https://drive.google.com/uc?export=view&id=${m[0]}`;
+          n.thumb=`https://drive.google.com/thumbnail?id=${m[0]}`;
+        }else{n.photo='';n.thumb='';}
+      }else{n.photo='';n.thumb='';}
+      return n;
+    });
+
+    // Build table — use UPPERCASE keys because we normalized above
+window.activeEmployees.forEach((emp, i) => {
+  const tr = document.createElement('tr');
+
+  // Build full name using uppercase keys (normalize made them uppercase)
+  const name = (emp['LAST NAME'] || '') +
+               (emp['FIRST NAME'] ? ', ' + emp['FIRST NAME'] : '') +
+               (emp['MIDDLE NAME'] ? ', ' + emp['MIDDLE NAME'] : '');
+
+  tr.innerHTML = `
+    <td>${i + 1}</td>
+    <td>${emp['EN'] || ''}</td>
+    <td><a class="emp-link" href="javascript:void(0)" onclick="openModal(${i})">${name || emp['EN']}</a></td>
+    <td>${emp['MARITAL STATUS'] || ''}</td>
+    <td>${emp['BIRTHDATE'] ? new Date(emp['BIRTHDATE']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : ''}</td>
+    <td>${emp['AGE'] || ''}</td>
+    <td>${emp['GENDER'] || ''}</td>
+    <td>${emp['ADDRESS'] || ''}</td>
+    <td>${emp['CONTACT NUMBER'] || ''}</td>
+    <td>${emp['EMAIL ADDRESS'] || ''}</td>
+    <td>${emp['TIN'] || ''}</td>
+    <td>${emp['SSS'] || ''}</td>
+    <td>${emp['PHILHEALTH'] || ''}</td>
+    <td>${emp['PAG-IBIG'] || ''}</td>
+    <td>${emp['DATE HIRED'] ? new Date(emp['DATE HIRED']).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : ''}</td>
+    <td>${emp['DESIGNATION'] || ''}</td>
+    <td>${formatCurrencyPH(emp['SALARY'])}</td>
+    <td>${emp['E.CONTACT NAME'] || ''}</td>
+    <td>${emp['E.CONTACT NUMBER'] || ''}</td>
+    <td>${emp['E.ADDRESS'] || ''}</td>
+  `;
+  tbody.appendChild(tr);
+});
+
+
+    applyDefaultColumnVisibility();
+
+  }catch(e){
+    console.error('Failed to load employees',e);
+    tbody.innerHTML="<tr><td colspan='20'>Error loading data</td></tr>";
+  }
+}
+
 
     function applyDefaultColumnVisibility(){
       const table=document.querySelector("#employeesTable");
