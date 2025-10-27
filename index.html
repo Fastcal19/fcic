@@ -325,15 +325,14 @@ function handleLoginResponse(response) {
     localStorage.setItem("photo", response.photo);
     status.style.color = "green";
     status.textContent = "✅ Welcome, " + response.name;
-    setTimeout(() => {
-      modal.style.display = 'none';
-      if (response.role === "Admin") location.href = "/User/";
-      else if (response.role === "Purchaser") location.href = "/User/";
-      else location.href = "/User/";
-    }, 1000);
+    s.style.color = "green";
+    s.textContent = "✅ Welcome, " + res.name;
+
+    setTimeout(()=>location.href="Admin Dashboard.html",1000);
+
   } else {
-    status.style.color = "red";
-    status.textContent = response.message || "❌ Invalid username or password.";
+    s.style.color = "red";
+    s.textContent = res.message || "❌ Invalid login.";
   }
 }
 
