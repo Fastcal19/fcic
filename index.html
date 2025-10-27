@@ -242,7 +242,14 @@ footer a:hover { color: #fff; }
 </div>
 
 <!-- SCRIPT -->
+
 <script>
+  // If already logged in, do NOT show login — redirect to dashboard
+  const role = localStorage.getItem("role");
+  if (role) {
+    window.location.href = "/User/";
+  }
+
 const webAppUrl = "https://script.google.com/macros/s/AKfycbzXpiMW3qLPvRwefUUq4VFrX9pkJxvfAwa-3csXpwUI6UcgYq8O_j6xr7BLILCe7nGi7g/exec";
 
 const modal = document.getElementById('loginModal');
