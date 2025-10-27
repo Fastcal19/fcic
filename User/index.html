@@ -233,6 +233,12 @@
   </div>
 
   <script>
+    // ========= LOGIN GUARD =========
+if (!localStorage.getItem("username")) {
+  // not logged in → go back to login page
+  window.location.href = "/";
+}
+
   document.addEventListener("DOMContentLoaded", () => {
     const iframe = document.getElementById("mainFrame");
     const role = localStorage.getItem("role");
