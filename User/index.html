@@ -10,13 +10,35 @@
       font-family: Arial, sans-serif;
       height: 100vh;
       display: flex;
+      flex-direction: column;
       overflow: hidden;
       background: orangered;
     }
 
+    /* Header (Desktop Only) */
+    header {
+      background: orangered;
+      color: #000;
+      padding: 10px 20px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    /* Footer (Desktop Only) */
+    footer {
+      background: gray;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
+    }
+
     /* Sidebar */
     .sidebar {
-      width: 180px;
+      width: 200px;
       background: linear-gradient(10deg, gold, orangered);
       color: #000;
       display: flex;
@@ -26,28 +48,27 @@
       position: fixed;
       left: 0;
       top: 0;
-      height: 96vh;
+      height: 100%;
       overflow: auto;
       scrollbar-width: thin;
       scrollbar-color: #333 #FFB347;
       transition: transform 0.3s ease-in-out;
       z-index: 1000;
     }
+    .sidebar.hidden { transform: translateX(-100%); }
 
     .sidebar::-webkit-scrollbar { width: 6px; }
     .sidebar::-webkit-scrollbar-track { background: #FFD580; }
     .sidebar::-webkit-scrollbar-thumb { background-color: #333; border-radius: 3px; }
 
-    .sidebar.hidden { transform: translateX(-100%); }
-
     .userbox {
       text-align: center;
-      padding: 20px 0 10px;
+      padding: 10px 0;
       position: relative;
     }
     .userbox img {
-      width: 160px;
-      height: 160px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
       object-fit: cover;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -58,15 +79,13 @@
       font-size: 16px;
       color: #000;
       margin-top: 10px;
-      margin-bottom: 10px;
       cursor: pointer;
       user-select: none;
     }
 
-    /* Dropdown for user menu */
     .user-dropdown {
       position: absolute;
-      top: 220px;
+      top: 180px;
       left: 50%;
       transform: translateX(-50%);
       background: #fff;
@@ -78,7 +97,6 @@
       overflow: hidden;
       z-index: 2000;
     }
-
     .user-dropdown a {
       color: #000;
       padding: 10px;
@@ -86,10 +104,7 @@
       display: block;
       font-weight: bold;
     }
-
-    .user-dropdown a:hover {
-      background: #FFD580;
-    }
+    .user-dropdown a:hover { background: #FFD580; }
 
     .sidebar a {
       color: #000;
@@ -117,12 +132,14 @@
     .main {
       flex: 1;
       background: #ccc;
-      margin-left: 220px;
+      margin-left: 200px;
       display: flex;
       flex-direction: column;
       transition: margin-left 0.3s ease;
       overflow: hidden;
     }
+
+    .main.expanded { margin-left: 0; }
 
     iframe {
       flex: 1;
@@ -130,40 +147,34 @@
       background: linear-gradient(180deg, gold, orangered);
     }
 
-    .submenu {
-      display: none;
-      margin-left: 15px;
-    }
-    .submenu.show {
-      display: block;
-    }
+    .submenu { display: none; margin-left: 15px; }
+    .submenu.show { display: block; }
 
+    /* Toggle button (visible always) */
     .menu-toggle {
-      display: none;
       position: fixed;
-      top: 5px;
-      left: 5px;
-      color: gray;
+      top: 12px;
+      left: 10px;
+      background: #333;
+      color: white;
       border: none;
-      font-size: 8px;
-      height: 2vh;
-      border-radius: 6px;
-      z-index: 1101;
+      font-size: 18px;
+      padding: 6px 10px;
+      border-radius: 4px;
       cursor: pointer;
+      z-index: 1101;
     }
+    .menu-toggle:hover { background: #555; }
 
+    /* Hide header/footer on mobile */
     @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-        width: 50%;
-      }
-      .sidebar.active { transform: translateX(0); }
-      .main { margin-left: 0; }
-      .menu-toggle { display: block; }
+      header, footer { display: none; }
     }
   </style>
 </head>
 <body>
+  <header id="pageHeader">Fast Cal Industrial Corp</header>
+
   <button class="menu-toggle" id="menuToggle">☰</button>
 
   <aside class="sidebar" id="sidebar">
@@ -171,8 +182,6 @@
       <div class="userbox">
         <img id="userPhoto" src="fcic logo.png" alt="User Photo">
         <div class="username" id="usernameDisplay">User</div>
-
-        <!-- Dropdown Menu -->
         <div class="user-dropdown" id="userDropdown">
           <a id="profileLink">User Profile</a>
           <a id="logoutLink">Logout</a>
@@ -228,198 +237,104 @@
     <button class="logout-btn" onclick="logout()">Logout</button>
   </aside>
 
-  <div class="main">
+  <div class="main" id="mainContent">
     <iframe id="mainFrame"></iframe>
   </div>
 
+  <footer>© 2025 Fast Cal Industrial Corp — All Rights Reserved</footer>
+
   <script>
-    // ========= LOGIN GUARD =========
-if (!localStorage.getItem("username")) {
-  // not logged in → go back to login page
-  window.location.href = "/";
+// Login guard
+if (!localStorage.getItem("username")) window.location.href = "/";
+
+// Initial setup
+document.addEventListener("DOMContentLoaded", () => {
+  const iframe = document.getElementById("mainFrame");
+  const role = localStorage.getItem("role");
+  if (!iframe) return;
+  iframe.src = (role === "System Admin" || role === "Admin") ? "Admin Dashboard.html" : "dashboard.html";
+});
+
+const fullName = localStorage.getItem("full");
+const photo = localStorage.getItem("photo");
+const role = localStorage.getItem("role");
+
+if (fullName) document.getElementById("usernameDisplay").textContent = fullName;
+if (photo) document.getElementById("userPhoto").src = "./" + photo;
+
+// Dropdown
+const usernameDisplay = document.getElementById("usernameDisplay");
+const userDropdown = document.getElementById("userDropdown");
+
+usernameDisplay.addEventListener("click", (e) => {
+  e.stopPropagation();
+  userDropdown.style.display = userDropdown.style.display === "flex" ? "none" : "flex";
+});
+document.addEventListener("click", () => userDropdown.style.display = "none");
+document.getElementById("profileLink").addEventListener("click", () => { showPage("employee"); userDropdown.style.display = "none"; });
+document.getElementById("logoutLink").addEventListener("click", logout);
+
+// Sidebar toggle (works on all devices)
+const sidebar = document.getElementById("sidebar");
+const main = document.getElementById("mainContent");
+document.getElementById("menuToggle").addEventListener("click", () => {
+  sidebar.classList.toggle("hidden");
+  main.classList.toggle("expanded");
+});
+
+function toggleMenu(id) {
+  const allSubmenus = document.querySelectorAll(".submenu");
+  const menu = document.getElementById(id);
+  allSubmenus.forEach(sub => { if (sub !== menu) sub.classList.remove("show"); });
+  menu.classList.toggle("show");
 }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const iframe = document.getElementById("mainFrame");
-    const role = localStorage.getItem("role");
+function showPage(page) {
+  const iframe = document.getElementById("mainFrame");
+  const header = document.getElementById("pageHeader");
 
-    if (!iframe) return;
-
-    if (role === "System Admin" || role === "Admin") {
-      iframe.src = "Admin Dashboard.html";
-    } else {
-      iframe.src = "dashboard.html";
-    }
-  });
-    
-  const fullName = localStorage.getItem("full");
-  const photo = localStorage.getItem("photo");
-  const role = localStorage.getItem("role");
-
-  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
-  if(photo) document.getElementById("userPhoto").src = "./" + photo;
-
-  // ✅ Username dropdown
-  const usernameDisplay = document.getElementById("usernameDisplay");
-  const userDropdown = document.getElementById("userDropdown");
-
-  usernameDisplay.addEventListener("click", (e) => {
-    e.stopPropagation();
-    userDropdown.style.display = userDropdown.style.display === "flex" ? "none" : "flex";
-  });
-
-  document.addEventListener("click", () => {
-    userDropdown.style.display = "none";
-  });
-
-  document.getElementById("profileLink").addEventListener("click", (e) => {
-    e.stopPropagation();
-    showPage("employee");
-    userDropdown.style.display = "none";
-  });
-
-  document.getElementById("logoutLink").addEventListener("click", (e) => {
-    e.stopPropagation();
-    logout();
-  });
-
-  // Role-based visibility
-  const buttons = {
-    btnDashboard: true,
-    btnHR: false,
-    btnReports: false,
-    btnProjectCosting: false,
-    btnApplications: false,
-    btnRequests: false,
-    btnPayslip: false,
-    btnInventory: false,
-    btnPortals: false
+  // Define page map
+  const pages = {
+    dashboard: ["Dashboard", "dashboard.html"],
+    employee: ["Employee Profile", "Employee Profile.html"],
+    employeelist: ["Employee List", "Employee"],
+    attendance: ["Attendance", "HR_Attendance.html"],
+    payroll: ["Payroll", "HR_Payroll.html"],
+    projects: ["Projects Report", "Reports_Projects.html"],
+    sales: ["Sales Report", "Sales.html"],
+    ar: ["Accounts Receivable", "Accounts Receivable.html"],
+    ap: ["Accounts Payable", "AP.html"],
+    pc: ["Costing Report", "Costing.html"],
+    is: ["Income Statement", "IS.html"],
+    inventoryGallery: ["Inventory Gallery", "inventory.html"],
+    inventoryList: ["Inventory List", "Inventory List.html"],
+    projectCosting: ["Project Costing", "Project Costing.html"],
+    aleave: ["Leave Application", "aleave.html"],
+    aadvances: ["Cash Advance Application", "aadvances.html"],
+    aovertime: ["Overtime Application", "aovertime.html"],
+    rleave: ["Leave Request", "rleave.html"],
+    radvances: ["Advance Request", "rAdvances.html"],
+    rovertime: ["Overtime Request", "rovertime.html"],
+    payslip: ["Pay Slips", "Payslip.html"],
+    portals: ["Portals", "Portals.html"]
   };
 
-  if (role === "Admin") {
-    buttons.btnDashboard = true;
-    buttons.btnHR = true;
-    buttons.btnReports = true;
-    buttons.btnApplications = true;
-    buttons.btnInventory = true;
-    buttons.btnPortals = true;
-  } 
-  else if (role === "Staff") {
-    buttons.btnDashboard = true;
-    buttons.btnRequests = true;
-    buttons.btnPayslip = true;
-    buttons.btnInventory = true;
-  } 
-  else if (role === "Purchaser") {
-    buttons.btnDashboard = true;
-    buttons.btnProjectCosting = true;
-    buttons.btnRequests = true;
-    buttons.btnPayslip = true;
-    buttons.btnInventory = true;
-  } 
-  else if (role === "System Admin") {
-    for (const key in buttons) buttons[key] = true;
+  // If page exists in map → update iframe + header
+  if (pages[page]) {
+    const [label, url] = pages[page];
+    iframe.src = url;
+    header.textContent = label;
+  } else {
+    iframe.src = "dashboard.html";
+    header.textContent = "Dashboard";
   }
+}
 
-  Object.keys(buttons).forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = buttons[id] ? "block" : "none";
-  });
 
-  // Sidebar toggle
-  const sidebar = document.getElementById('sidebar');
-  const menuToggle = document.getElementById('menuToggle');
-  let autoHideTimer;
-
-  menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('active');
-    if (sidebar.classList.contains('active')) startAutoHide();
-    else clearTimeout(autoHideTimer);
-  });
-
-  function startAutoHide() {
-    clearTimeout(autoHideTimer);
-    if (window.innerWidth <= 768) {
-      autoHideTimer = setTimeout(() => {
-        sidebar.classList.remove('active');
-      }, 5000);
-    }
-  }
-
-  sidebar.addEventListener('mouseenter', () => clearTimeout(autoHideTimer));
-  sidebar.addEventListener('mouseleave', startAutoHide);
-
-  sidebar.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', (e) => {
-      const isExpandable = link.classList.contains('expandable');
-      if (window.innerWidth <= 768 && !isExpandable) {
-        sidebar.classList.remove('active');
-      }
-    });
-  });
-
-  function toggleMenu(id) {
-    const allSubmenus = document.querySelectorAll('.submenu');
-    const menu = document.getElementById(id);
-    allSubmenus.forEach(sub => { if (sub !== menu) sub.classList.remove('show'); });
-    menu.classList.toggle('show');
-  }
-
-  function showPage(page) {
-    const iframe = document.getElementById("mainFrame");
-    const portals = document.getElementById("portalsPage");
-    const role = localStorage.getItem("role");
-
-    iframe.style.display = "none";
-    if (portals) portals.style.display = "none";
-
-    if (page === "dashboard") {
-      if (role === "Admin" || role === "System Admin") {
-        iframe.style.display = "block";
-        iframe.src = "Admin Dashboard.html";
-      } else {
-        iframe.style.display = "block";
-        iframe.src = "dashboard.html";
-      }
-      return;
-    }
-
-    const pages = {
-      employee: "Employee Profile.html",
-      employeelist: "Employee",
-      attendance: "HR_Attendance.html",
-      payroll: "HR_Payroll.html",
-      projects: "Reports_Projects.html",
-      sales: "Sales.html",
-      ar: "Accounts Receivable.html",
-      ap: "AP.html",
-      pc: "Costing.html",
-      is: "IS.html",
-      inventoryGallery: "inventory.html",
-      inventoryList: "Inventory List.html",
-      projectCosting: "Project Costing.html",
-      aleave: "aleave.html",
-      aadvances: "aadvances.html",
-      aovertime: "aovertime.html",    
-      rleave: "rleave.html",
-      radvances: "rAdvances.html",
-      rovertime: "rovertime.html",
-      payslip: "Payslip.html",
-      portals: "Portals.html"
-    };
-
-    iframe.style.display = "block";
-    iframe.src = pages[page] || "dashboard.html";
-
-    if (window.innerWidth <= 768) {
-      document.getElementById('sidebar').classList.remove('active');
-    }
-  }
-
-  function logout() {
-    localStorage.clear();
-    window.location.href = '/';
-  }
+function logout() {
+  localStorage.clear();
+  window.location.href = "/";
+}
   </script>
 </body>
 </html>
