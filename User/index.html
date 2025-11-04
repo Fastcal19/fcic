@@ -36,27 +36,32 @@
       box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
     }
 
-    /* Sidebar */
+    /* SIDEBAR (hidden by default) */
     .sidebar {
-      width: 200px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 220px;
       background: linear-gradient(10deg, gold, orangered);
       color: #000;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       padding: 20px;
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100%;
-      overflow: auto;
+      overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: #333 #FFB347;
+      transform: translateX(-100%);
       transition: transform 0.3s ease-in-out;
-      z-index: 1000;
+      z-index: 2000;
     }
-    .sidebar.hidden { transform: translateX(-100%); }
 
+    .sidebar.active {
+      transform: translateX(0);
+    }
+
+    /* Scrollbar style */
     .sidebar::-webkit-scrollbar { width: 6px; }
     .sidebar::-webkit-scrollbar-track { background: #FFD580; }
     .sidebar::-webkit-scrollbar-thumb { background-color: #333; border-radius: 3px; }
@@ -95,7 +100,7 @@
       flex-direction: column;
       min-width: 140px;
       overflow: hidden;
-      z-index: 2000;
+      z-index: 3000;
     }
     .user-dropdown a {
       color: #000;
@@ -132,14 +137,20 @@
     .main {
       flex: 1;
       background: #ccc;
-      margin-left: 200px;
+      margin-left: 0;
       display: flex;
       flex-direction: column;
-      transition: margin-left 0.3s ease;
+      transition: margin-left 0.3s ease-in-out;
       overflow: hidden;
+      height: calc(100vh - 80px);
     }
 
-    .main.expanded { margin-left: 0; }
+    /* Push content when sidebar open (desktop) */
+    @media (min-width: 769px) {
+      .sidebar.active ~ .main {
+        margin-left: 220px;
+      }
+    }
 
     iframe {
       flex: 1;
@@ -150,7 +161,7 @@
     .submenu { display: none; margin-left: 15px; }
     .submenu.show { display: block; }
 
-    /* Toggle button (visible always) */
+    /* Toggle button (always visible) */
     .menu-toggle {
       position: fixed;
       top: 12px;
@@ -162,21 +173,38 @@
       padding: 6px 10px;
       border-radius: 4px;
       cursor: pointer;
-      z-index: 1101;
+      z-index: 2500;
     }
     .menu-toggle:hover { background: #555; }
 
-    /* Hide header/footer on mobile */
-   @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-        width: 50%;
-      }
-      .sidebar.active { transform: translateX(0); }
-      .main { margin-left: 0; }
-      .menu-toggle { display: block; }
+    /* Overlay for mobile */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 1500;
+      display: none;
     }
-    
+    .overlay.active {
+      display: block;
+    }
+
+    /* Hide header/footer on mobile */
+    @media (max-width: 768px) {
+      .sidebar { width: 70%; }
+      .main { margin-left: 0; }
+      header, footer { display: none; }
+    }
+
+    /* Optional hover-open on desktop */
+    @media (min-width: 769px) {
+      .sidebar:not(.active):hover {
+        transform: translateX(0);
+      }
+    }
   </style>
 </head>
 <body>
@@ -196,15 +224,15 @@
       </div>
 
       <!-- MENU LINKS -->
-      <a id="btnDashboard" onclick="showPage('dashboard')">Dashboard</a>
-      <a id="btnHR" class="expandable" onclick="toggleMenu('hrMenu')">Human Resources ▸</a>
+      <a onclick="showPage('dashboard')">Dashboard</a>
+      <a class="expandable" onclick="toggleMenu('hrMenu')">Human Resources ▸</a>
       <div class="submenu" id="hrMenu">
         <a onclick="showPage('employeelist')">Employee List</a>
         <a onclick="showPage('attendance')">Attendance</a>
         <a onclick="showPage('payroll')">Payroll</a>
       </div>
 
-      <a id="btnReports" class="expandable" onclick="toggleMenu('reportsMenu')">Reports ▸</a>
+      <a class="expandable" onclick="toggleMenu('reportsMenu')">Reports ▸</a>
       <div class="submenu" id="reportsMenu">
         <a onclick="showPage('projects')">Projects</a>
         <a onclick="showPage('sales')">Sales</a>
@@ -216,33 +244,35 @@
 
       <a onclick="showPage('projectCosting')">Project Costing</a>
 
-      <a id="btnApplications" class="expandable" onclick="toggleMenu('applicationsMenu')">Applications ▸</a>
+      <a class="expandable" onclick="toggleMenu('applicationsMenu')">Applications ▸</a>
       <div class="submenu" id="applicationsMenu">
         <a onclick="showPage('aadvances')">Advances</a>
         <a onclick="showPage('aleave')">Leave</a>
         <a onclick="showPage('aovertime')">Overtime</a>
       </div>
       
-      <a id="btnRequests" class="expandable" onclick="toggleMenu('requestsMenu')">Requests ▸</a>
+      <a class="expandable" onclick="toggleMenu('requestsMenu')">Requests ▸</a>
       <div class="submenu" id="requestsMenu">
         <a onclick="showPage('radvances')">Advances</a>
         <a onclick="showPage('rleave')">Leave</a>
         <a onclick="showPage('rovertime')">Overtime</a>
       </div>
 
-      <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
+      <a onclick="showPage('payslip')">Pay Slips</a>  
 
-      <a id="btnInventory" class="expandable" onclick="toggleMenu('invMenu')">Inventory ▸</a>
+      <a class="expandable" onclick="toggleMenu('invMenu')">Inventory ▸</a>
       <div class="submenu" id="invMenu">
         <a onclick="showPage('inventoryGallery')">Gallery</a>
         <a onclick="showPage('inventoryList')">List</a>
       </div>
 
-      <a id="btnPortals" onclick="showPage('portals')">Portals</a>
+      <a onclick="showPage('portals')">Portals</a>
     </div>
 
     <button class="logout-btn" onclick="logout()">Logout</button>
   </aside>
+
+  <div class="overlay" id="overlay"></div>
 
   <div class="main" id="mainContent">
     <iframe id="mainFrame"></iframe>
@@ -251,28 +281,22 @@
   <footer>© 2025 Fast Cal Industrial Corp — All Rights Reserved</footer>
 
   <script>
-// Login guard
 if (!localStorage.getItem("username")) window.location.href = "/";
 
-// Initial setup
 document.addEventListener("DOMContentLoaded", () => {
   const iframe = document.getElementById("mainFrame");
   const role = localStorage.getItem("role");
-  if (!iframe) return;
   iframe.src = (role === "System Admin" || role === "Admin") ? "Admin Dashboard.html" : "dashboard.html";
 });
 
 const fullName = localStorage.getItem("full");
 const photo = localStorage.getItem("photo");
-const role = localStorage.getItem("role");
-
 if (fullName) document.getElementById("usernameDisplay").textContent = fullName;
 if (photo) document.getElementById("userPhoto").src = "./" + photo;
 
-// Dropdown
+// Dropdown menu
 const usernameDisplay = document.getElementById("usernameDisplay");
 const userDropdown = document.getElementById("userDropdown");
-
 usernameDisplay.addEventListener("click", (e) => {
   e.stopPropagation();
   userDropdown.style.display = userDropdown.style.display === "flex" ? "none" : "flex";
@@ -281,50 +305,62 @@ document.addEventListener("click", () => userDropdown.style.display = "none");
 document.getElementById("profileLink").addEventListener("click", () => { showPage("employee"); userDropdown.style.display = "none"; });
 document.getElementById("logoutLink").addEventListener("click", logout);
 
-// Sidebar toggle and auto-hide
+// Sidebar + overlay logic
 const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
 const menuToggle = document.getElementById('menuToggle');
 let autoHideTimer;
 let isHoveringSidebar = false;
 
-// Toggle sidebar manually
+// Toggle sidebar
 menuToggle.addEventListener('click', () => {
   sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
   if (sidebar.classList.contains('active')) startAutoHide();
   else clearTimeout(autoHideTimer);
 });
 
-// Detect mouse enter/leave for desktop
+// Overlay click closes
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('active');
+  overlay.classList.remove('active');
+  clearTimeout(autoHideTimer);
+});
+
+// Hover detection (desktop only)
 sidebar.addEventListener('mouseenter', () => {
   isHoveringSidebar = true;
   clearTimeout(autoHideTimer);
 });
 sidebar.addEventListener('mouseleave', () => {
   isHoveringSidebar = false;
-  startAutoHide();
+  if (window.innerWidth > 768) startAutoHide();
 });
 
-// Auto-hide logic
+// Auto-hide
 function startAutoHide() {
   clearTimeout(autoHideTimer);
   autoHideTimer = setTimeout(() => {
     if (!isHoveringSidebar && sidebar.classList.contains('active')) {
       sidebar.classList.remove('active');
+      overlay.classList.remove('active');
     }
-  }, 4000); // ⏱ auto hide after 4 seconds
+  }, 4000);
 }
 
-// Hide sidebar after a link click (for mobile)
+// Hide sidebar when clicking link
 sidebar.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', () => {
-    if (window.innerWidth <= 768) {
-      sidebar.classList.remove('active');
-    } else {
-      startAutoHide();
-    }
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
   });
 });
 
+// Ensure hidden on load
+document.addEventListener("DOMContentLoaded", () => {
+  sidebar.classList.remove("active");
+  overlay.classList.remove("active");
+});
 
 function toggleMenu(id) {
   const allSubmenus = document.querySelectorAll(".submenu");
@@ -336,8 +372,6 @@ function toggleMenu(id) {
 function showPage(page) {
   const iframe = document.getElementById("mainFrame");
   const header = document.getElementById("pageHeader");
-
-  // Define page map
   const pages = {
     dashboard: ["Fast Cal Industrial Corp", "dashboard.html"],
     employee: ["Employee Profile", "Employee Profile.html"],
@@ -362,8 +396,6 @@ function showPage(page) {
     payslip: ["Pay Slips", "Payslip.html"],
     portals: ["Portals", "Portals.html"]
   };
-
-  // If page exists in map → update iframe + header
   if (pages[page]) {
     const [label, url] = pages[page];
     iframe.src = url;
@@ -373,7 +405,6 @@ function showPage(page) {
     header.textContent = "Dashboard";
   }
 }
-
 
 function logout() {
   localStorage.clear();
