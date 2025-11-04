@@ -281,13 +281,50 @@ document.addEventListener("click", () => userDropdown.style.display = "none");
 document.getElementById("profileLink").addEventListener("click", () => { showPage("employee"); userDropdown.style.display = "none"; });
 document.getElementById("logoutLink").addEventListener("click", logout);
 
-// Sidebar toggle (works on all devices)
-const sidebar = document.getElementById("sidebar");
-const main = document.getElementById("mainContent");
-document.getElementById("menuToggle").addEventListener("click", () => {
-  sidebar.classList.toggle("hidden");
-  main.classList.toggle("expanded");
+// Sidebar toggle and auto-hide
+const sidebar = document.getElementById('sidebar');
+const menuToggle = document.getElementById('menuToggle');
+let autoHideTimer;
+let isHoveringSidebar = false;
+
+// Toggle sidebar manually
+menuToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('active');
+  if (sidebar.classList.contains('active')) startAutoHide();
+  else clearTimeout(autoHideTimer);
 });
+
+// Detect mouse enter/leave for desktop
+sidebar.addEventListener('mouseenter', () => {
+  isHoveringSidebar = true;
+  clearTimeout(autoHideTimer);
+});
+sidebar.addEventListener('mouseleave', () => {
+  isHoveringSidebar = false;
+  startAutoHide();
+});
+
+// Auto-hide logic
+function startAutoHide() {
+  clearTimeout(autoHideTimer);
+  autoHideTimer = setTimeout(() => {
+    if (!isHoveringSidebar && sidebar.classList.contains('active')) {
+      sidebar.classList.remove('active');
+    }
+  }, 4000); // ⏱ auto hide after 4 seconds
+}
+
+// Hide sidebar after a link click (for mobile)
+sidebar.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove('active');
+    } else {
+      startAutoHide();
+    }
+  });
+});
+
 
 function toggleMenu(id) {
   const allSubmenus = document.querySelectorAll(".submenu");
