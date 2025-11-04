@@ -396,13 +396,16 @@ function showPage(page) {
     payslip: ["Pay Slips", "Payslip.html"],
     portals: ["Portals", "Portals.html"]
   };
-  if (pages[page]) {
-    const [label, url] = pages[page];
-    iframe.src = url;
-    header.textContent = label;
-  } else {
-    iframe.src = "dashboard.html";
-    header.textContent = "Dashboard";
+  // ✅ Role-based Dashboard logic
+  if (page === "dashboard") {
+    if (role === "System Admin" || role === "Admin") {
+      iframe.src = "Admin Dashboard.html";
+      header.textContent = "Admin Dashboard";
+    } else {
+      iframe.src = "dashboard.html";
+      header.textContent = "Dashboard";
+    }
+    return;
   }
 }
 
