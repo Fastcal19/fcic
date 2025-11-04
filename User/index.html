@@ -372,8 +372,10 @@ function toggleMenu(id) {
 function showPage(page) {
   const iframe = document.getElementById("mainFrame");
   const header = document.getElementById("pageHeader");
+  const role = localStorage.getItem("role") || "";
+
+  // Define page map
   const pages = {
-    dashboard: ["Fast Cal Industrial Corp", "dashboard.html"],
     employee: ["Employee Profile", "Employee Profile.html"],
     employeelist: ["Employee List", "Employee"],
     attendance: ["Attendance", "HR_Attendance.html"],
@@ -396,18 +398,33 @@ function showPage(page) {
     payslip: ["Pay Slips", "Payslip.html"],
     portals: ["Portals", "Portals.html"]
   };
+
   // ✅ Role-based Dashboard logic
   if (page === "dashboard") {
     if (role === "System Admin" || role === "Admin") {
       iframe.src = "Admin Dashboard.html";
       header.textContent = "Admin Dashboard";
+    } else if (role === "HR") {
+      iframe.src = "HR Dashboard.html";
+      header.textContent = "HR Dashboard";
     } else {
       iframe.src = "dashboard.html";
       header.textContent = "Dashboard";
     }
     return;
   }
+
+  // ✅ Normal behavior for all other pages
+  if (pages[page]) {
+    const [label, url] = pages[page];
+    iframe.src = url;
+    header.textContent = label;
+  } else {
+    iframe.src = "dashboard.html";
+    header.textContent = "Dashboard";
+  }
 }
+
 
 function logout() {
   localStorage.clear();
