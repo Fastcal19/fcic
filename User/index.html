@@ -281,29 +281,97 @@
   <footer>© 2025 Fast Cal Industrial Corp — All Rights Reserved</footer>
 
   <script>
-if (!localStorage.getItem("username")) window.location.href = "/";
+f (!localStorage.getItem("username")) {
+  // not logged in → go back to login page
+  window.location.href = "/";
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  const iframe = document.getElementById("mainFrame");
+  document.addEventListener("DOMContentLoaded", () => {
+    const iframe = document.getElementById("mainFrame");
+    const role = localStorage.getItem("role");
+
+    if (!iframe) return;
+
+    if (role === "System Admin" || role === "Admin") {
+      iframe.src = "Admin Dashboard.html";
+    } else {
+      iframe.src = "dashboard.html";
+    }
+  });
+    
+  const fullName = localStorage.getItem("full");
+  const photo = localStorage.getItem("photo");
   const role = localStorage.getItem("role");
-  iframe.src = (role === "System Admin" || role === "Admin") ? "Admin Dashboard.html" : "dashboard.html";
-});
 
-const fullName = localStorage.getItem("full");
-const photo = localStorage.getItem("photo");
-if (fullName) document.getElementById("usernameDisplay").textContent = fullName;
-if (photo) document.getElementById("userPhoto").src = "./" + photo;
+  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+  if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
-// Dropdown menu
-const usernameDisplay = document.getElementById("usernameDisplay");
-const userDropdown = document.getElementById("userDropdown");
-usernameDisplay.addEventListener("click", (e) => {
-  e.stopPropagation();
-  userDropdown.style.display = userDropdown.style.display === "flex" ? "none" : "flex";
-});
-document.addEventListener("click", () => userDropdown.style.display = "none");
-document.getElementById("profileLink").addEventListener("click", () => { showPage("employee"); userDropdown.style.display = "none"; });
-document.getElementById("logoutLink").addEventListener("click", logout);
+  // ✅ Username dropdown
+  const usernameDisplay = document.getElementById("usernameDisplay");
+  const userDropdown = document.getElementById("userDropdown");
+
+  usernameDisplay.addEventListener("click", (e) => {
+    e.stopPropagation();
+    userDropdown.style.display = userDropdown.style.display === "flex" ? "none" : "flex";
+  });
+
+  document.addEventListener("click", () => {
+    userDropdown.style.display = "none";
+  });
+
+  document.getElementById("profileLink").addEventListener("click", (e) => {
+    e.stopPropagation();
+    showPage("employee");
+    userDropdown.style.display = "none";
+  });
+
+  document.getElementById("logoutLink").addEventListener("click", (e) => {
+    e.stopPropagation();
+    logout();
+  });
+
+  // Role-based visibility
+  const buttons = {
+    btnDashboard: true,
+    btnHR: false,
+    btnReports: false,
+    btnProjectCosting: false,
+    btnApplications: false,
+    btnRequests: false,
+    btnPayslip: false,
+    btnInventory: false,
+    btnPortals: false
+  };
+
+  if (role === "Admin") {
+    buttons.btnDashboard = true;
+    buttons.btnHR = true;
+    buttons.btnReports = true;
+    buttons.btnApplications = true;
+    buttons.btnInventory = true;
+    buttons.btnPortals = true;
+  } 
+  else if (role === "Staff") {
+    buttons.btnDashboard = true;
+    buttons.btnRequests = true;
+    buttons.btnPayslip = true;
+    buttons.btnInventory = true;
+  } 
+  else if (role === "Purchaser") {
+    buttons.btnDashboard = true;
+    buttons.btnProjectCosting = true;
+    buttons.btnRequests = true;
+    buttons.btnPayslip = true;
+    buttons.btnInventory = true;
+  } 
+  else if (role === "System Admin") {
+    for (const key in buttons) buttons[key] = true;
+  }
+
+  Object.keys(buttons).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = buttons[id] ? "block" : "none";
+  });
 
 // Sidebar + overlay logic
 const sidebar = document.getElementById('sidebar');
