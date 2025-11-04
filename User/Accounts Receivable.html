@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accounts Receivables</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 20px;
+      background: linear-gradient(70deg, gold, orange, orangered);;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    select, input {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 6px 12px;
+      border: none;
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #eaeaea;
+    }
+    .total-row {
+      font-weight: bold;
+      background: #f1f1f1;
+    }
+  </style>
+</head>
+<body>
+  <h2>Accounts Receivables</h2>
+
+  <div class="filters">
+    <label>Year:</label>
+    <select id="yearFilter"></select>
+    <label>Month:</label>
+    <select id="monthFilter">
+      <option value="">All</option>
+      <option value="0">Jan</option>
+      <option value="1">Feb</option>
+      <option value="2">Mar</option>
+      <option value="3">Apr</option>
+      <option value="4">May</option>
+      <option value="5">Jun</option>
+      <option value="6">Jul</option>
+      <option value="7">Aug</option>
+      <option value="8">Sep</option>
+      <option value="9">Oct</option>
+      <option value="10">Nov</option>
+      <option value="11">Dec</option>
+    </select>
+    <button onclick="refreshReceivables()">🔄 Refresh</button>
+  </div>
+
+  <table id="arTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Invoice #</th>
+        <th>Customer</th>
+        <th>Amount</th>
+        <th>Remarks</th>
+      </tr>
+    </thead>
+    <tbody id="arBody"></tbody>
+  </table>
+
+  <script>
+    const webAppURL = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
+
+    function formatDate(val) {
+      if (!val) return "";
+      const d = new Date(val);
+      if (isNaN(d)) return val;
+      return `${d.getDate()}-${d.toLocaleString("en-US",{month:"short"})}-${d.getFullYear()}`;
+    }
+
+    function populateYearFilter() {
+      const yearSelect = document.getElementById("yearFilter");
+      const currentYear = new Date().getFullYear();
+      yearSelect.innerHTML = '<option value="">All</option>';
+      for (let y = currentYear; y >= currentYear - 5; y--) {
+        yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+      }
+      yearSelect.value = currentYear;
+    }
+
+    async function loadReceivables() {
+      const year = document.getElementById("yearFilter").value;
+      const month = document.getElementById("monthFilter").value;
+      const tbody = document.getElementById("arBody");
+      tbody.innerHTML = "";
+
+      // Try from localStorage first
+      let data = JSON.parse(localStorage.getItem("receivablesData"));
+      if (!data) {
+        const res = await fetch(webAppURL + "?sheet=sales");
+        data = await res.json();
+        localStorage.setItem("receivablesData", JSON.stringify(data));
+      }
+
+      // Filter only PENDING
+      const filtered = data.filter(row => {
+        const status = (row.STATUS || "").toUpperCase();
+        if (status !== "PENDING") return false;
+        const d = new Date(row.DATE);
+        if (isNaN(d)) return false;
+        if (year && d.getFullYear().toString() !== year) return false;
+        if (month !== "" && d.getMonth().toString() !== month) return false;
+        return true;
+      });
+
+      // Group by Invoice
+      const grouped = {};
+      filtered.forEach(row => {
+        const inv = row.INVOICE || "NO-INVOICE";
+        if (!grouped[inv]) {
+          grouped[inv] = { DATE: row.DATE, INVOICE: inv, CUSTOMER: row.CUSTOMER || "", TOTAL: 0, REMARKS: row.REMARKS || "" };
+        }
+        grouped[inv].TOTAL += parseFloat(row.AMOUNT) || 0;
+      });
+
+      let grandTotal = 0;
+      Object.values(grouped)
+        .sort((a,b) => new Date(b.DATE) - new Date(a.DATE))
+        .forEach(item => {
+          grandTotal += item.TOTAL;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${formatDate(item.DATE)}</td>
+            <td>${item.INVOICE}</td>
+            <td>${item.CUSTOMER}</td>
+            <td style="text-align:right">${item.TOTAL.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+            <td>${item.REMARKS}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      // Total row
+      const totalRow = document.createElement("tr");
+      totalRow.classList.add("total-row");
+      totalRow.innerHTML = `
+        <td colspan="3" style="text-align:right">TOTAL</td>
+        <td style="text-align:right">${grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td></td>
+      `;
+      tbody.appendChild(totalRow);
+    }
+
+    function refreshReceivables() {
+      localStorage.removeItem("receivablesData");
+      loadReceivables();
+    }
+
+    // Initialize
+    populateYearFilter();
+    loadReceivables();
+  </script>
+</body>
+</html>
