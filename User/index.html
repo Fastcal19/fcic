@@ -167,8 +167,15 @@
     .menu-toggle:hover { background: #555; }
 
     /* Hide header/footer on mobile */
-    @media (max-width: 768px) {
-      header, footer { display: none; }
+   @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 50%;
+      }
+      .sidebar.active { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-toggle { display: block; }
+    }
     }
   </style>
 </head>
