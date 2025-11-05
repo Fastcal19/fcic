@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fast Cal Industrial Corp</title>
   <style>
     body {
@@ -15,7 +15,6 @@
       background: orangered;
     }
 
-    /* Header (Desktop Only) */
     header {
       background: orangered;
       color: #000;
@@ -26,7 +25,6 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
 
-    /* Footer (Desktop Only) */
     footer {
       background: darkgray;
       color: #fff;
@@ -36,7 +34,6 @@
       box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
     }
 
-    /* SIDEBAR (hidden by default) */
     .sidebar {
       position: fixed;
       top: 0;
@@ -57,20 +54,17 @@
       z-index: 2000;
     }
 
-    .sidebar.active {
-      transform: translateX(0);
-    }
+    .sidebar.active { transform: translateX(0); }
 
-    /* Scrollbar style */
     .sidebar::-webkit-scrollbar { width: 6px; }
-    .sidebar::-webkit-scrollbar-track { background: #FFD580; }
-    .sidebar::-webkit-scrollbar-thumb { background-color: #333; border-radius: 3px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
     .userbox {
       text-align: center;
       padding: 10px 0;
       position: relative;
     }
+
     .userbox img {
       width: 120px;
       height: 120px;
@@ -79,6 +73,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       background: #fff;
     }
+
     .username {
       font-weight: bold;
       font-size: 16px;
@@ -102,6 +97,7 @@
       overflow: hidden;
       z-index: 3000;
     }
+
     .user-dropdown a {
       color: #000;
       padding: 10px;
@@ -109,6 +105,7 @@
       display: block;
       font-weight: bold;
     }
+
     .user-dropdown a:hover { background: #FFD580; }
 
     .sidebar a {
@@ -121,6 +118,7 @@
       margin: 2px 0;
       cursor: pointer;
     }
+
     .sidebar a:hover { background: #FFD580; }
 
     .logout-btn {
@@ -137,7 +135,6 @@
     .main {
       flex: 1;
       background: #ccc;
-      margin-left: 0;
       display: flex;
       flex-direction: column;
       transition: margin-left 0.3s ease-in-out;
@@ -145,11 +142,8 @@
       height: calc(100vh - 80px);
     }
 
-    /* Push content when sidebar open (desktop) */
     @media (min-width: 769px) {
-      .sidebar.active ~ .main {
-        margin-left: 220px;
-      }
+      .sidebar.active ~ .main { margin-left: 220px; }
     }
 
     iframe {
@@ -161,7 +155,6 @@
     .submenu { display: none; margin-left: 15px; }
     .submenu.show { display: block; }
 
-    /* Toggle button (always visible) */
     .menu-toggle {
       position: fixed;
       top: 12px;
@@ -175,35 +168,23 @@
       cursor: pointer;
       z-index: 2500;
     }
+
     .menu-toggle:hover { background: #555; }
 
-    /* Overlay for mobile */
     .overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0,0,0,0.4);
       z-index: 1500;
       display: none;
     }
-    .overlay.active {
-      display: block;
-    }
 
-    /* Hide header/footer on mobile */
+    .overlay.active { display: block; }
+
     @media (max-width: 768px) {
       .sidebar { width: 70%; }
-      .main { margin-left: 0; }
       header, footer { display: none; }
-    }
-
-    /* Optional hover-open on desktop */
-    @media (min-width: 769px) {
-      .sidebar:not(.active):hover {
-        transform: translateX(0);
-      }
     }
   </style>
 </head>
@@ -223,50 +204,61 @@
         </div>
       </div>
 
-      <!-- MENU LINKS -->
-      <a onclick="showPage('dashboard')">Dashboard</a>
-      <a class="expandable" onclick="toggleMenu('hrMenu')">Human Resources ▸</a>
-      <div class="submenu" id="hrMenu">
-        <a onclick="showPage('employeelist')">Employee List</a>
-        <a onclick="showPage('attendance')">Attendance</a>
-        <a onclick="showPage('payroll')">Payroll</a>
+      <!-- MENU LINKS WITH IDS -->
+      <a id="btnDashboard" onclick="showPage('dashboard')">Dashboard</a>
+
+      <div id="btnHR">
+        <a class="expandable" onclick="toggleMenu('hrMenu')">Human Resources ▸</a>
+        <div class="submenu" id="hrMenu">
+          <a onclick="showPage('employeelist')">Employee List</a>
+          <a onclick="showPage('attendance')">Attendance</a>
+          <a onclick="showPage('payroll')">Payroll</a>
+        </div>
       </div>
 
-      <a class="expandable" onclick="toggleMenu('reportsMenu')">Reports ▸</a>
-      <div class="submenu" id="reportsMenu">
-        <a onclick="showPage('projects')">Projects</a>
-        <a onclick="showPage('sales')">Sales</a>
-        <a onclick="showPage('ar')">Receivables</a>
-        <a onclick="showPage('ap')">Payables</a>
-        <a onclick="showPage('pc')">Costing</a>
-        <a onclick="showPage('is')">Income Statement</a>
+      <div id="btnReports">
+        <a class="expandable" onclick="toggleMenu('reportsMenu')">Reports ▸</a>
+        <div class="submenu" id="reportsMenu">
+          <a onclick="showPage('projects')">Projects</a>
+          <a onclick="showPage('sales')">Sales</a>
+          <a onclick="showPage('ar')">Receivables</a>
+          <a onclick="showPage('ap')">Payables</a>
+          <a onclick="showPage('pc')">Costing</a>
+          <a onclick="showPage('is')">Income Statement</a>
+        </div>
       </div>
 
-      <a onclick="showPage('projectCosting')">Project Costing</a>
+      <a id="btnProjectCosting" onclick="showPage('projectCosting')">Project Costing</a>
 
-      <a class="expandable" onclick="toggleMenu('applicationsMenu')">Applications ▸</a>
-      <div class="submenu" id="applicationsMenu">
-        <a onclick="showPage('aadvances')">Advances</a>
-        <a onclick="showPage('aleave')">Leave</a>
-        <a onclick="showPage('aovertime')">Overtime</a>
+      <div id="btnApplications">
+        <a class="expandable" onclick="toggleMenu('applicationsMenu')">Applications ▸</a>
+        <div class="submenu" id="applicationsMenu">
+          <a onclick="showPage('aadvances')">Advances</a>
+          <a onclick="showPage('aleave')">Leave</a>
+          <a onclick="showPage('aovertime')">Overtime</a>
+        </div>
       </div>
       
-      <a class="expandable" onclick="toggleMenu('requestsMenu')">Requests ▸</a>
-      <div class="submenu" id="requestsMenu">
-        <a onclick="showPage('radvances')">Advances</a>
-        <a onclick="showPage('rleave')">Leave</a>
-        <a onclick="showPage('rovertime')">Overtime</a>
+      <div id="btnRequests">
+        <a class="expandable" onclick="toggleMenu('requestsMenu')">Requests ▸</a>
+        <div class="submenu" id="requestsMenu">
+          <a onclick="showPage('radvances')">Advances</a>
+          <a onclick="showPage('rleave')">Leave</a>
+          <a onclick="showPage('rovertime')">Overtime</a>
+        </div>
       </div>
 
-      <a onclick="showPage('payslip')">Pay Slips</a>  
+      <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
 
-      <a class="expandable" onclick="toggleMenu('invMenu')">Inventory ▸</a>
-      <div class="submenu" id="invMenu">
-        <a onclick="showPage('inventoryGallery')">Gallery</a>
-        <a onclick="showPage('inventoryList')">List</a>
+      <div id="btnInventory">
+        <a class="expandable" onclick="toggleMenu('invMenu')">Inventory ▸</a>
+        <div class="submenu" id="invMenu">
+          <a onclick="showPage('inventoryGallery')">Gallery</a>
+          <a onclick="showPage('inventoryList')">List</a>
+        </div>
       </div>
 
-      <a onclick="showPage('portals')">Portals</a>
+      <a id="btnPortals" onclick="showPage('portals')">Portals</a>
     </div>
 
     <button class="logout-btn" onclick="logout()">Logout</button>
@@ -282,31 +274,25 @@
 
   <script>
 if (!localStorage.getItem("username")) {
-  // not logged in → go back to login page
   window.location.href = "/";
 }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const iframe = document.getElementById("mainFrame");
-    const role = localStorage.getItem("role");
-
-    if (!iframe) return;
-
-    if (role === "System Admin" || role === "Admin") {
-      iframe.src = "Admin Dashboard.html";
-    } else {
-      iframe.src = "dashboard.html";
-    }
-  });
-    
-  const fullName = localStorage.getItem("full");
-  const photo = localStorage.getItem("photo");
+document.addEventListener("DOMContentLoaded", () => {
+  const iframe = document.getElementById("mainFrame");
   const role = localStorage.getItem("role");
 
+  if (role === "System Admin" || role === "Admin") {
+    iframe.src = "Admin Dashboard.html";
+  } else {
+    iframe.src = "dashboard.html";
+  }
+
+  const fullName = localStorage.getItem("full");
+  const photo = localStorage.getItem("photo");
   if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
   if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
-  // ✅ Username dropdown
+  // USER DROPDOWN
   const usernameDisplay = document.getElementById("usernameDisplay");
   const userDropdown = document.getElementById("userDropdown");
 
@@ -314,73 +300,36 @@ if (!localStorage.getItem("username")) {
     e.stopPropagation();
     userDropdown.style.display = userDropdown.style.display === "flex" ? "none" : "flex";
   });
-
-  document.addEventListener("click", () => {
-    userDropdown.style.display = "none";
-  });
-
+  document.addEventListener("click", () => userDropdown.style.display = "none");
   document.getElementById("profileLink").addEventListener("click", (e) => {
     e.stopPropagation();
     showPage("employee");
     userDropdown.style.display = "none";
   });
+  document.getElementById("logoutLink").addEventListener("click", logout);
 
-  document.getElementById("logoutLink").addEventListener("click", (e) => {
-    e.stopPropagation();
-    logout();
-  });
-
-  // Role-based visibility
-  const buttons = {
-    btnDashboard: true,
-    btnHR: false,
-    btnReports: false,
-    btnProjectCosting: false,
-    btnApplications: false,
-    btnRequests: false,
-    btnPayslip: false,
-    btnInventory: false,
-    btnPortals: false
+  // ✅ Role-Based Menu Visibility
+  const visible = {
+    Admin: ["btnDashboard", "btnHR", "btnReports", "btnApplications", "btnInventory", "btnPortals"],
+    Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
+    Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests", "btnPayslip", "btnInventory"],
+    "System Admin": ["btnDashboard", "btnHR", "btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btnInventory", "btnPortals"]
   };
 
-  if (role === "Admin") {
-    buttons.btnDashboard = true;
-    buttons.btnHR = true;
-    buttons.btnReports = true;
-    buttons.btnApplications = true;
-    buttons.btnInventory = true;
-    buttons.btnPortals = true;
-  } 
-  else if (role === "Staff") {
-    buttons.btnDashboard = true;
-    buttons.btnRequests = true;
-    buttons.btnPayslip = true;
-    buttons.btnInventory = true;
-  } 
-  else if (role === "Purchaser") {
-    buttons.btnDashboard = true;
-    buttons.btnProjectCosting = true;
-    buttons.btnRequests = true;
-    buttons.btnPayslip = true;
-    buttons.btnInventory = true;
-  } 
-  else if (role === "System Admin") {
-    for (const key in buttons) buttons[key] = true;
-  }
-
-  Object.keys(buttons).forEach(id => {
+  const allIds = ["btnDashboard","btnHR","btnReports","btnProjectCosting","btnApplications","btnRequests","btnPayslip","btnInventory","btnPortals"];
+  allIds.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = buttons[id] ? "block" : "none";
+    if (!el) return;
+    el.style.display = visible[role]?.includes(id) ? "block" : "none";
   });
+});
 
-// Sidebar + overlay logic
+// Sidebar logic
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('overlay');
 const menuToggle = document.getElementById('menuToggle');
-let autoHideTimer;
-let isHoveringSidebar = false;
+let autoHideTimer, isHoveringSidebar = false;
 
-// Toggle sidebar
 menuToggle.addEventListener('click', () => {
   sidebar.classList.toggle('active');
   overlay.classList.toggle('active');
@@ -388,14 +337,12 @@ menuToggle.addEventListener('click', () => {
   else clearTimeout(autoHideTimer);
 });
 
-// Overlay click closes
 overlay.addEventListener('click', () => {
   sidebar.classList.remove('active');
   overlay.classList.remove('active');
   clearTimeout(autoHideTimer);
 });
 
-// Hover detection (desktop only)
 sidebar.addEventListener('mouseenter', () => {
   isHoveringSidebar = true;
   clearTimeout(autoHideTimer);
@@ -405,7 +352,6 @@ sidebar.addEventListener('mouseleave', () => {
   if (window.innerWidth > 768) startAutoHide();
 });
 
-// Auto-hide
 function startAutoHide() {
   clearTimeout(autoHideTimer);
   autoHideTimer = setTimeout(() => {
@@ -415,20 +361,6 @@ function startAutoHide() {
     }
   }, 4000);
 }
-
-// Hide sidebar when clicking link
-sidebar.querySelectorAll('a').forEach(link => {
-  link.addEventListener('click', () => {
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-  });
-});
-
-// Ensure hidden on load
-document.addEventListener("DOMContentLoaded", () => {
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-});
 
 function toggleMenu(id) {
   const allSubmenus = document.querySelectorAll(".submenu");
@@ -442,7 +374,6 @@ function showPage(page) {
   const header = document.getElementById("pageHeader");
   const role = localStorage.getItem("role") || "";
 
-  // Define page map
   const pages = {
     employee: ["Employee Profile", "Employee Profile.html"],
     employeelist: ["Employee List", "Employee"],
@@ -467,7 +398,6 @@ function showPage(page) {
     portals: ["Portals", "Portals.html"]
   };
 
-  // ✅ Role-based Dashboard logic
   if (page === "dashboard") {
     if (role === "System Admin" || role === "Admin") {
       iframe.src = "Admin Dashboard.html";
@@ -482,7 +412,6 @@ function showPage(page) {
     return;
   }
 
-  // ✅ Normal behavior for all other pages
   if (pages[page]) {
     const [label, url] = pages[page];
     iframe.src = url;
@@ -492,7 +421,6 @@ function showPage(page) {
     header.textContent = "Dashboard";
   }
 }
-
 
 function logout() {
   localStorage.clear();
