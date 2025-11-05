@@ -9,14 +9,15 @@
     font-family: Arial, sans-serif;
     margin: 20px;
     background: linear-gradient(90deg, gold, orange, orangered);
+    color: #000;
   }
-  h2 {
-    margin-bottom: 10px;
-  }
+  h2 { margin-bottom: 10px; }
+
   .ap-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 10px;
   }
   .ap-actions {
     display: flex;
@@ -33,14 +34,15 @@
     background: none;
     border: none;
   }
-  .refresh-btn:hover {
-    color: #007BFF;
-  }
+  .refresh-btn:hover { color: #007BFF; }
+
   table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
-    background: white;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
   }
   th, td {
     border: 1px solid #ccc;
@@ -53,22 +55,27 @@
   td {
     text-align: left;
   }
-  tr:hover {
-    background-color: #f0f8ff;
-  }
+  tr:hover { background-color: #f0f8ff; }
   .total-row {
     font-weight: bold;
     background-color: #f9f9f9;
   }
+  #apTable a {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  #apTable a:hover {
+    text-decoration: underline;
+  }
+
   /* Modal */
   .modal {
     display: none;
     position: fixed;
     z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
     background-color: rgba(0,0,0,0.4);
   }
   .modal-content {
@@ -89,9 +96,9 @@
     font-weight: bold;
     cursor: pointer;
   }
-  .close:hover {
-    color: #000;
-  }
+  .close:hover { color: #000; }
+
+  /* Spinners */
   .spinner, .modal-spinner {
     display: none;
     border: 6px solid #f3f3f3;
@@ -100,6 +107,7 @@
     width: 50px;
     height: 50px;
     animation: spin 1s linear infinite;
+    z-index: 1100;
   }
   .spinner {
     position: fixed;
@@ -117,13 +125,12 @@
     0% { transform: translate(-50%, -50%) rotate(0deg); }
     100% { transform: translate(-50%, -50%) rotate(360deg); }
   }
-
-  
 </style>
 </head>
 <body>
 
   <div class="ap-header">
+    <h2></h2>
     <div class="ap-actions">
       <div class="ap-total">Total: 0.00</div>
       <button class="refresh-btn" onclick="loadAccountsPayables()" title="Refresh">🔄</button>
@@ -167,22 +174,23 @@
 <script>
 const webAppPayables = "https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec";
 
+// ✅ Load main Accounts Payables summary
 async function loadAccountsPayables() {
   const spinner = document.getElementById("spinner-ap");
   spinner.style.display = "block";
   try {
     const res = await fetch(webAppPayables + "?type=summary");
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } 
+    catch (err) { console.error("Invalid JSON:", text); data = []; }
+
     const tbody = document.getElementById("apBody");
     tbody.innerHTML = "";
-    let grandTotal = 0;
-    let counter = 1;
+    let grandTotal = 0, counter = 1;
 
     const filtered = data
-      .map(row => ({
-        ...row,
-        AMOUNT: parseFloat(row.AMOUNT) || 0
-      }))
+      .map(row => ({ ...row, AMOUNT: parseFloat(row.AMOUNT) || 0 }))
       .filter(row => row.AMOUNT > 0)
       .sort((a, b) => b.AMOUNT - a.AMOUNT);
 
@@ -191,7 +199,7 @@ async function loadAccountsPayables() {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td style="text-align:center">${counter++}</td>
-        <td><a href="#" onclick="openApModal('${row.NAME}')">${row.NAME}</a></td>
+        <td><a href="#" onclick="openApModal('${row.NAME.replace(/'/g, "\\'")}')">${row.NAME}</a></td>
         <td style="text-align:right">${row.AMOUNT.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
         <td>${row.REMARKS || ""}</td>
       `;
@@ -216,39 +224,112 @@ async function loadAccountsPayables() {
   }
 }
 
+// === Modal for AP Transactions ===
+function formatAmount(val) {
+  const num = parseFloat(val) || 0;
+  return num === 0 ? "" : num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
 async function openApModal(name) {
   const modal = document.getElementById("apModal");
-  const spinner = document.getElementById("spinner-apModal");
   const title = document.getElementById("apModalTitle");
   const tbody = document.getElementById("apModalBody");
+  const spinner = document.getElementById("spinner-apModal");
 
   modal.style.display = "block";
-  spinner.style.display = "block";
-  tbody.innerHTML = "";
   title.textContent = name;
+  tbody.innerHTML = "";
+  spinner.style.display = "block";
 
   try {
-    const res = await fetch(webAppPayables + "?type=details&name=" + encodeURIComponent(name));
-    const data = await res.json();
+    // 🔹 Fetch Summary (for beginning balance)
+    const summaryRes = await fetch(webAppPayables + "?type=summary");
+    const summaryData = await summaryRes.json();
+    const supplierSummary = summaryData.find(r => r.NAME === name);
 
-    data.forEach(row => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${row.DATE || ""}</td>
-        <td>${row.DESCRIPTION || ""}</td>
-        <td style="text-align:right">${row.DEBIT || ""}</td>
-        <td style="text-align:right">${row.CREDIT || ""}</td>
-        <td style="text-align:right">${row.BALANCE || ""}</td>
+    // 🔹 Fetch Transactions (by supplier name)
+    const txRes = await fetch(webAppPayables + "?name=" + encodeURIComponent(name));
+    const transactions = await txRes.json();
+
+    tbody.innerHTML = "";
+
+    // --- Running balance starts from forwarded balance
+    let runningBalance = supplierSummary ? (parseFloat(supplierSummary.BEGINNING) || 0) : 0;
+
+    // 🔹 Balance Forwarded row
+    if (runningBalance > 0) {
+      const year = new Date().getFullYear();
+      const balRow = document.createElement("tr");
+      balRow.innerHTML = `
+        <td>01-Jan-${year}</td>
+        <td>Balance forwarded</td>
+        <td></td>
+        <td></td>
+        <td style="text-align:right">${runningBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       `;
+      tbody.appendChild(balRow);
+    }
+
+    // 🔹 Transaction rows with computed balance
+    if (transactions && transactions.length > 0) {
+      transactions.forEach(row => {
+        const debit = parseFloat(row.Debit) || 0;
+        const credit = parseFloat(row.Credit) || 0;
+
+        // ✅ Formula: Previous balance − Debit + Credit
+        runningBalance = runningBalance - debit + credit;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.Date ? formatDate(row.Date) : ""}</td>
+          <td>${row.Description || ""}</td>
+          <td style="text-align:right">${formatAmount(debit)}</td>
+          <td style="text-align:right">${formatAmount(credit)}</td>
+          <td style="text-align:right">${runningBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      // If no transactions found
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="5" style="text-align:center; color:gray">No transactions found</td>`;
       tbody.appendChild(tr);
-    });
+    }
+
   } catch (err) {
-    console.error("Error loading details:", err);
+    console.error("Error loading transactions:", err);
+    tbody.innerHTML = `<tr><td colspan="5" style="color:red;text-align:center">Failed to load data</td></tr>`;
   } finally {
     spinner.style.display = "none";
   }
 }
 
+
+function formatDate(val) {
+  if (!val) return "";
+  try {
+    const d = new Date(val);
+    if (isNaN(d)) return val;
+
+    const day = String(d.getDate()).padStart(2, '0'); // 2-digit day
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = monthNames[d.getMonth()]; // abbreviated month
+    const year = String(d.getFullYear()).slice(-2); // last 2 digits of year
+
+    return `${day}-${month}-${year}`;
+  } catch (e) {
+    return val;
+  }
+}
+
+// Example:
+console.log(formatDate("2025-09-12")); // "12-Sep-25"
+
+// ✅ Modal close handling
 function closeApModal() {
   document.getElementById("apModal").style.display = "none";
 }
@@ -258,7 +339,9 @@ window.onclick = function(event) {
   if (event.target === modal) modal.style.display = "none";
 };
 
+// ✅ Auto-load summary when page opens
 document.addEventListener("DOMContentLoaded", loadAccountsPayables);
 </script>
+
 </body>
 </html>
