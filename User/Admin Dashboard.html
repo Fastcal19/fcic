@@ -279,9 +279,15 @@
     <div class="cards">
       <div class="card"><h3>Cash Balance</h3><p>0.00</p></div>
       <div class="card"><h3>Advances</h3><p>Php 0.00</p></div>
-      <div class="card"><h3>Receivables</h3><p>Php 0.00</p></div>
-      <div class="card"><h3>Payables</h3><p>Php 0.00</p></div>
+      <div class="card" id="receivablesCard" style="cursor:pointer;">
+        <h3>Receivables</h3>
+        <p>Php 0.00</p>
+      </div>
+      <div class="card" id="payablesCard" style="cursor:pointer;">
+        <h3>Payables</h3>
+        <p>Php 0.00</p>
     </div>
+     </div>
 
     <div class="calendar-notes">
       <!-- Left side: two equal containers -->
@@ -338,7 +344,17 @@
   </div>
 
   <script>
+    document.getElementById("receivablesCard").addEventListener("click", () => {
+    window.location.href = "Accounts Receivable.html";
+    });
+
+    document.getElementById("payablesCard").addEventListener("click", () => {
+    window.location.href = "AP.html";
+    });
+
   // <-- set your deployed Apps Script webapp URL here (must allow POST & CORS if needed) -->
+  const RECEIVABLES_URL = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
+  const PAYABLES_URL    = "https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec";
   const API_URL = "https://script.google.com/macros/s/AKfycbyP6xne0iCnV0nrgYg0TnS-dE2TisBlQS4DOtSTgkOfWAQUsC7No5aNLFpAsTEc6ax5/exec";
 
   const calendarGrid = document.getElementById("calendarGrid");
@@ -357,6 +373,54 @@
   let notes = {};
   let currentRequest = null; // full request object
   let currentRequestExtract = null; // extracted fields
+
+  //AR Total
+  async function loadReceivables() {
+  try {
+    // Fetch from your working Apps Script (Sales tab)
+    const res = await fetch(RECEIVABLES_URL + "?sheet=sales");
+    const data = await res.json();
+
+    // Filter only rows where STATUS = "PENDING"
+    const pending = data.filter(r => 
+      String(r.STATUS || r.Status || "").toUpperCase() === "PENDING"
+    );
+
+    // Total the AMOUNT column
+    const total = pending.reduce((sum, r) => {
+      const amt = parseFloat(
+        (r.AMOUNT || r.Amount || "0").toString().replace(/,/g, "")
+      );
+      return sum + (isNaN(amt) ? 0 : amt);
+    }, 0);
+
+    // Display total in Receivables card (#3)
+    document.querySelector(".card:nth-child(3) p").textContent =
+      "Php " + total.toLocaleString(undefined, { minimumFractionDigits: 2 });
+
+  } catch (err) {
+    console.error("Error loading receivables:", err);
+    document.querySelector(".card:nth-child(3) p").textContent = "Php 0.00";
+  }
+}
+
+// PAYABLES Total
+async function loadPayables() {
+  try {
+    const res = await fetch("https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec?type=summary");
+    const data = await res.json();
+
+    const total = data.reduce((sum, row) => sum + (parseFloat(row.AMOUNT) || 0), 0);
+
+    document.querySelector(".card:nth-child(4) p").textContent =
+      "Php " + total.toLocaleString(undefined, { minimumFractionDigits: 2 });
+  } catch (err) {
+    console.error("Error loading Payables total:", err);
+    document.querySelector(".card:nth-child(4) p").textContent = "Php 0.00";
+  }
+}
+
+
 
   // ---------------- helpers ----------------
   function formatDateForDisplay(dateInput) {
@@ -725,6 +789,9 @@ dayNames.forEach(d => {
   loadNotes();
   loadReminders();
   loadApprovals();
+  loadReceivables();
+  loadPayables();
+
 
   // close modal when clicking outside
   window.addEventListener('click', (e) => {
