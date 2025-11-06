@@ -48,13 +48,8 @@
     border: 1px solid #ccc;
     padding: 8px;
   }
-  th {
-    background-color: #f1f1f1;
-    text-align: center;
-  }
-  td {
-    text-align: left;
-  }
+  th { background-color: #f1f1f1; text-align: center; }
+  td { text-align: left; }
   tr:hover { background-color: #f0f8ff; }
   .total-row {
     font-weight: bold;
@@ -65,9 +60,7 @@
     text-decoration: none;
     cursor: pointer;
   }
-  #apTable a:hover {
-    text-decoration: underline;
-  }
+  #apTable a:hover { text-decoration: underline; }
 
   /* Modal */
   .modal {
@@ -133,7 +126,7 @@
     <h2></h2>
     <div class="ap-actions">
       <div class="ap-total">Total: 0.00</div>
-      <button class="refresh-btn" onclick="loadAccountsPayables()" title="Refresh">🔄</button>
+      <button class="refresh-btn" onclick="loadAccountsPayables(true)" title="Refresh">🔄</button>
     </div>
   </div>
 
@@ -175,53 +168,76 @@
 const webAppPayables = "https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec";
 
 // ✅ Load main Accounts Payables summary
-async function loadAccountsPayables() {
+async function loadAccountsPayables(forceRefresh = false) {
   const spinner = document.getElementById("spinner-ap");
   spinner.style.display = "block";
+
+  let data = [];
+
   try {
-    const res = await fetch(webAppPayables + "?type=summary");
-    const text = await res.text();
-    let data;
-    try { data = JSON.parse(text); } 
-    catch (err) { console.error("Invalid JSON:", text); data = []; }
+    // ✅ Try to load from localStorage
+    if (!forceRefresh) {
+      const cached = localStorage.getItem("accountsPayablesData");
+      if (cached) {
+        data = JSON.parse(cached);
+        console.log("Loaded from localStorage ✅");
+      }
+    }
 
-    const tbody = document.getElementById("apBody");
-    tbody.innerHTML = "";
-    let grandTotal = 0, counter = 1;
+    // ✅ If no data or refresh requested → fetch from Google Apps Script
+    if (data.length === 0 || forceRefresh) {
+      const res = await fetch(webAppPayables + "?type=summary");
+      const text = await res.text();
+      try { data = JSON.parse(text); } 
+      catch (err) { console.error("Invalid JSON:", text); data = []; }
 
-    const filtered = data
-      .map(row => ({ ...row, AMOUNT: parseFloat(row.AMOUNT) || 0 }))
-      .filter(row => row.AMOUNT > 0)
-      .sort((a, b) => b.AMOUNT - a.AMOUNT);
+      // 💾 Save to localStorage
+      localStorage.setItem("accountsPayablesData", JSON.stringify(data));
+      console.log("Saved to localStorage ✅");
+    }
 
-    filtered.forEach(row => {
-      grandTotal += row.AMOUNT;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="text-align:center">${counter++}</td>
-        <td><a href="#" onclick="openApModal('${row.NAME.replace(/'/g, "\\'")}')">${row.NAME}</a></td>
-        <td style="text-align:right">${row.AMOUNT.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-        <td>${row.REMARKS || ""}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+    renderPayablesTable(data);
 
-    const trTotal = document.createElement("tr");
-    trTotal.classList.add("total-row");
-    trTotal.innerHTML = `
-      <td colspan="2" style="text-align:right">TOTAL</td>
-      <td style="text-align:right">${grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-      <td></td>
-    `;
-    tbody.appendChild(trTotal);
-
-    document.querySelector(".ap-total").textContent =
-      "Total: " + grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   } catch (err) {
     console.error("Error loading payables:", err);
   } finally {
     spinner.style.display = "none";
   }
+}
+
+function renderPayablesTable(data) {
+  const tbody = document.getElementById("apBody");
+  tbody.innerHTML = "";
+  let grandTotal = 0, counter = 1;
+
+  const filtered = data
+    .map(row => ({ ...row, AMOUNT: parseFloat(row.AMOUNT) || 0 }))
+    .filter(row => row.AMOUNT > 0)
+    .sort((a, b) => b.AMOUNT - a.AMOUNT);
+
+  filtered.forEach(row => {
+    grandTotal += row.AMOUNT;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="text-align:center">${counter++}</td>
+      <td><a href="#" onclick="openApModal('${row.NAME.replace(/'/g, "\\'")}')">${row.NAME}</a></td>
+      <td style="text-align:right">${row.AMOUNT.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td>${row.REMARKS || ""}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const trTotal = document.createElement("tr");
+  trTotal.classList.add("total-row");
+  trTotal.innerHTML = `
+    <td colspan="2" style="text-align:right">TOTAL</td>
+    <td style="text-align:right">${grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td></td>
+  `;
+  tbody.appendChild(trTotal);
+
+  document.querySelector(".ap-total").textContent =
+    "Total: " + grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 // === Modal for AP Transactions ===
@@ -245,41 +261,40 @@ async function openApModal(name) {
   spinner.style.display = "block";
 
   try {
-    // 🔹 Fetch Summary (for beginning balance)
-    const summaryRes = await fetch(webAppPayables + "?type=summary");
-    const summaryData = await summaryRes.json();
+    // ✅ Check localStorage first
+    const cacheKey = "transactions_" + name;
+    let transactions = JSON.parse(localStorage.getItem(cacheKey)) || null;
+
+    if (!transactions) {
+      // Fetch transactions
+      const txRes = await fetch(webAppPayables + "?name=" + encodeURIComponent(name));
+      transactions = await txRes.json();
+
+      // 💾 Save transactions to localStorage
+      localStorage.setItem(cacheKey, JSON.stringify(transactions));
+      console.log(`Saved transactions for ${name} ✅`);
+    }
+
+    const summaryData = JSON.parse(localStorage.getItem("accountsPayablesData")) || [];
     const supplierSummary = summaryData.find(r => r.NAME === name);
-
-    // 🔹 Fetch Transactions (by supplier name)
-    const txRes = await fetch(webAppPayables + "?name=" + encodeURIComponent(name));
-    const transactions = await txRes.json();
-
-    tbody.innerHTML = "";
-
-    // --- Running balance starts from forwarded balance
     let runningBalance = supplierSummary ? (parseFloat(supplierSummary.BEGINNING) || 0) : 0;
 
-    // 🔹 Balance Forwarded row
     if (runningBalance > 0) {
       const year = new Date().getFullYear();
       const balRow = document.createElement("tr");
       balRow.innerHTML = `
         <td>01-Jan-${year}</td>
         <td>Balance forwarded</td>
-        <td></td>
-        <td></td>
+        <td></td><td></td>
         <td style="text-align:right">${runningBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       `;
       tbody.appendChild(balRow);
     }
 
-    // 🔹 Transaction rows with computed balance
     if (transactions && transactions.length > 0) {
       transactions.forEach(row => {
         const debit = parseFloat(row.Debit) || 0;
         const credit = parseFloat(row.Credit) || 0;
-
-        // ✅ Formula: Previous balance − Debit + Credit
         runningBalance = runningBalance - debit + credit;
 
         const tr = document.createElement("tr");
@@ -293,10 +308,7 @@ async function openApModal(name) {
         tbody.appendChild(tr);
       });
     } else {
-      // If no transactions found
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="5" style="text-align:center; color:gray">No transactions found</td>`;
-      tbody.appendChild(tr);
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:gray">No transactions found</td></tr>`;
     }
 
   } catch (err) {
@@ -307,29 +319,22 @@ async function openApModal(name) {
   }
 }
 
-
 function formatDate(val) {
   if (!val) return "";
   try {
     const d = new Date(val);
     if (isNaN(d)) return val;
-
-    const day = String(d.getDate()).padStart(2, '0'); // 2-digit day
+    const day = String(d.getDate()).padStart(2, '0');
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const month = monthNames[d.getMonth()]; // abbreviated month
-    const year = String(d.getFullYear()).slice(-2); // last 2 digits of year
-
+    const month = monthNames[d.getMonth()];
+    const year = String(d.getFullYear()).slice(-2);
     return `${day}-${month}-${year}`;
   } catch (e) {
     return val;
   }
 }
 
-// Example:
-console.log(formatDate("2025-09-12")); // "12-Sep-25"
-
-// ✅ Modal close handling
 function closeApModal() {
   document.getElementById("apModal").style.display = "none";
 }
@@ -340,8 +345,7 @@ window.onclick = function(event) {
 };
 
 // ✅ Auto-load summary when page opens
-document.addEventListener("DOMContentLoaded", loadAccountsPayables);
+document.addEventListener("DOMContentLoaded", () => loadAccountsPayables(false));
 </script>
-
 </body>
 </html>
