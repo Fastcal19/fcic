@@ -25,6 +25,7 @@
     .total-row{font-weight:700;background:#f1f3f5}
     .loading{padding:30px 0;text-align:center;color:var(--muted)}
     .spinner{display:inline-block;width:28px;height:28px;border:4px solid #e9eef5;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px}
+    #lastUpdated{font-size:12px;color:#444;margin-left:auto}
     @keyframes spin{to{transform:rotate(360deg)}}
     @media(max-width:600px){th,td{padding:8px;font-size:13px}}
   </style>
@@ -48,7 +49,8 @@
         </select>
       </label>
       <button onclick="loadSales(true)" title="Refresh">🔄 Refresh</button>
-      <div id="hdrTotal" style="margin-left:12px;font-weight:700;white-space:nowrap">Total: 0.00</div>
+      <div id="hdrTotal" style="font-weight:700;white-space:nowrap">Total: 0.00</div>
+      <div id="lastUpdated"></div>
     </div>
 
     <div class="card">
@@ -99,17 +101,41 @@ function populateYearFilter(){
   sel.value = cur;
 }
 
-async function loadSales(silent=false){
+async function loadSales(forceRefresh=false){
   const loading = document.getElementById('loading');
   const table = document.getElementById('srTable');
   const tbody = document.getElementById('srBody');
   const hdrTotal = document.getElementById('hdrTotal');
+  const lastUpdated = document.getElementById('lastUpdated');
 
-  if(!silent) { loading.style.display='block'; table.style.display='none'; }
+  if(!forceRefresh) { loading.style.display='block'; table.style.display='none'; }
+
   try{
-    const res = await fetch(`${webAppSales}?sheet=sales`);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data = await res.json();
+    let data;
+
+    // 🔹 Try loading from localStorage
+    if(!forceRefresh){
+      const cached = localStorage.getItem('salesData');
+      if(cached){
+        const parsed = JSON.parse(cached);
+        data = parsed.data;
+        const savedTime = new Date(parsed.timestamp);
+        lastUpdated.textContent = `Last updated: ${savedTime.toLocaleString()}`;
+      }
+    }
+
+    // 🔹 Fetch new data if no cache or force refresh
+    if(!data || forceRefresh){
+      const res = await fetch(`${webAppSales}?sheet=sales`);
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      data = await res.json();
+
+      localStorage.setItem('salesData', JSON.stringify({
+        data,
+        timestamp: new Date().toISOString()
+      }));
+      lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
+    }
 
     if(!Array.isArray(data) || data.length===0){
       loading.textContent = 'No sales data found.';
@@ -191,8 +217,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   populateYearFilter();
   document.getElementById('monthFilter').value = "";
   loadSales(false);
-  document.getElementById('yearFilter').addEventListener('change', ()=> loadSales(true));
-  document.getElementById('monthFilter').addEventListener('change', ()=> loadSales(true));
+  document.getElementById('yearFilter').addEventListener('change', ()=> loadSales());
+  document.getElementById('monthFilter').addEventListener('change', ()=> loadSales());
 });
 </script>
 </body>
