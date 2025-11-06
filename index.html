@@ -341,7 +341,7 @@ function handleLoginResponse(response) {
     
     setTimeout(() => {
       if (response.role.toLowerCase() === "admin") {
-        location.href = "/Admin/";
+        location.href = "/User/";
       } else {
         location.href = "/User/";
       }
