@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pages — Under Development</title>
+  <style>
+    :root{
+      --bg1:#0f172a; --bg2:#071330; --accent:#ffb86b; --muted:#94a3b8; --glass: rgba(255,255,255,0.06);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,'Helvetica Neue',Arial}
+    body{
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(255,184,107,0.05), transparent),
+                  radial-gradient(900px 400px at 90% 90%, rgba(6,182,212,0.03), transparent),
+                  linear-gradient(180deg,var(--bg1),var(--bg2));
+      color: #e6eef8;
+      display:flex;align-items:center;justify-content:center;padding:32px;overflow:hidden;
+    }
+
+    .floaters{position:absolute;inset:0;pointer-events:none}
+    .floater{position:absolute;opacity:0.14;filter:blur(6px);transform-origin:center;mix-blend-mode:screen}
+
+    .card{
+      width:min(920px,96vw);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:18px;padding:28px;backdrop-filter: blur(6px);box-shadow: 0 10px 40px rgba(2,6,23,0.6);
+      display:flex;flex-direction:column;align-items:flex-start;gap:20px;position:relative;overflow:hidden
+    }
+
+    .left h1{font-size:clamp(28px,4.2vw,40px);margin:0 0 8px}
+    .left p{margin:0 0 18px;color:var(--muted)}
+
+    .progress-wrap{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px;width:100%}
+    .progress{height:14px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#06b6d4);border-radius:999px;transition:width 1.4s cubic-bezier(.2,.9,.2,1)}
+
+    .gear{width:84px;height:84px;display:inline-block}
+    .gear svg{width:100%;height:100%}
+    .gear.spin{animation:spin 6s linear infinite}
+    .gear.spin-rev{animation:spin 8s linear infinite reverse}
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+    .btn{padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#06b6d4);color:#041022;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(6,182,212,0.1);transition:transform .18s ease}
+    .btn:active{transform:translateY(2px)}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+
+    .card{transform:translateY(10px);opacity:0;animation:intro .7s cubic-bezier(.2,.9,.2,1) forwards}
+    @keyframes intro{to{transform:none;opacity:1}}
+
+    .under {display:inline-block;color:var(--accent);font-weight:700;animation:bounce 2s ease-in-out infinite}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+    .shimmer{position:relative;overflow:hidden}
+    .shimmer::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);transform:translateX(-120%);animation:shm 2.6s linear infinite}
+    @keyframes shm{to{transform:translateX(120%)}}
+
+    footer{position:absolute;left:18px;bottom:12px;color:rgba(255,255,255,0.06);font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="floaters" aria-hidden>
+    <svg class="floater" style="left:6%;top:10%;width:240px;" viewBox="0 0 200 200">
+      <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#ffb86b"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
+      <circle cx="100" cy="100" r="80" fill="url(#g1)" />
+    </svg>
+    <svg class="floater" style="right:4%;bottom:6%;width:180px;" viewBox="0 0 200 200">
+      <rect x="10" y="10" width="180" height="180" rx="20" fill="#06b6d4"/>
+    </svg>
+  </div>
+
+  <main class="card">
+    <section class="left">
+      <h1 class="shimmer">Pages — <span class="under">Under Development</span></h1>
+      <p>Stay tuned for updates and improvements rolling out soon.</p>
+
+      <div style="display:flex;gap:16px;align-items:center;margin-top:8px;flex-wrap:wrap">
+        <div class="progress-wrap">
+          <small style="color:var(--muted)">On Progress</small>
+          <div class="progress"><div class="bar" id="progBar"></div></div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="gear spin" title="working"><svg viewBox="0 0 100 100"><g transform="translate(50,50)"><path d="M-6-34 L6-34 L10-20 L22-12 L18 2 L28 18 L18 34 L2 36 L-12 24 L-28 26 L-34 10 L-22 -4 L-28 -20 Z" fill="#ffd6a8"/></g></svg></div>
+          <div class="gear spin-rev"><svg viewBox="0 0 100 100"><g transform="translate(50,50)"><circle r="18" fill="#bdefff"/></g></svg></div>
+        </div>
+      </div>
+
+    </section>
+
+    <footer>Made with care • Animated status • {2025}</footer>
+  </main>
+
+  <script>
+    const progEl = document.getElementById('progBar');
+    let progress = 64;
+    function setProgress(p){ progEl.style.width = p + '%'; }
+    setProgress(progress);
+
+    let grow = true;
+    setInterval(()=>{
+      if (grow){ progress += Math.random()*2; if (progress>86) grow=false }
+      else { progress -= Math.random()*0.8; if (progress<62) grow=true }
+      progress = Math.min(98, Math.max(12, Math.round(progress*10)/10));
+      setProgress(progress);
+    }, 2200);
+  </script>
+</body>
+</html>
