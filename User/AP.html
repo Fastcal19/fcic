@@ -175,6 +175,15 @@ async function loadAccountsPayables(forceRefresh = false) {
   let data = [];
 
   try {
+    // ✅ Clear all cached transaction data if refreshing
+    if (forceRefresh) {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith("transactions_"))
+        .forEach(k => localStorage.removeItem(k));
+      console.log("Cleared all cached transaction data ✅");
+    }
+
+    // ✅ Try to load from localStorage
     if (!forceRefresh) {
       const cached = localStorage.getItem("accountsPayablesData");
       if (cached) {
@@ -183,12 +192,14 @@ async function loadAccountsPayables(forceRefresh = false) {
       }
     }
 
+    // ✅ If no data or refresh requested → fetch from Google Apps Script
     if (data.length === 0 || forceRefresh) {
       const res = await fetch(webAppPayables + "?type=summary");
       const text = await res.text();
       try { data = JSON.parse(text); } 
       catch (err) { console.error("Invalid JSON:", text); data = []; }
 
+      // 💾 Save to localStorage
       localStorage.setItem("accountsPayablesData", JSON.stringify(data));
       console.log("Saved to localStorage ✅");
     }
@@ -217,7 +228,7 @@ function renderPayablesTable(data) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td style="text-align:center">${counter++}</td>
-      <td><a href="#" onclick="openApModal('${row.NAME.replace(/'/g, "\\'")}')">${row.NAME}</a></td>
+      <td><a href="#" onclick="openApModal('${row.NAME.replace(/'/g, "\\'")}', false)">${row.NAME}</a></td>
       <td style="text-align:right">${row.AMOUNT.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       <td>${row.REMARKS || ""}</td>
     `;
@@ -246,7 +257,7 @@ function formatAmount(val) {
   });
 }
 
-async function openApModal(name) {
+async function openApModal(name, forceRefresh = false) {
   const modal = document.getElementById("apModal");
   const title = document.getElementById("apModalTitle");
   const tbody = document.getElementById("apModalBody");
@@ -259,22 +270,33 @@ async function openApModal(name) {
 
   try {
     const cacheKey = "transactions_" + name;
-    let transactions = JSON.parse(localStorage.getItem(cacheKey)) || null;
+    let transactions = null;
 
-    if (!transactions) {
-      const txRes = await fetch(webAppPayables + "?name=" + encodeURIComponent(name));
-      transactions = await txRes.json();
-      localStorage.setItem(cacheKey, JSON.stringify(transactions));
-      console.log(`Saved transactions for ${name} ✅`);
+    // ✅ If forceRefresh is true, clear cache
+    if (forceRefresh) {
+      localStorage.removeItem(cacheKey);
+    } else {
+      transactions = JSON.parse(localStorage.getItem(cacheKey)) || null;
     }
 
-    // ✅ Sort transactions by date ascending (January → December)
-    transactions.sort((a, b) => {
+    // ✅ Fetch fresh data if no cache or after refresh
+    if (!transactions) {
+      const txRes = await fetch(webAppPayables + "?name=" + encodeURIComponent(name));
+      const text = await txRes.text();
+      try { transactions = JSON.parse(text); }
+      catch { transactions = []; }
+
+      // 💾 Save fresh copy
+      localStorage.setItem(cacheKey, JSON.stringify(transactions));
+      console.log(`Updated transactions for ${name} ✅`);
+    }
+      // ✅ Sort transactions by date ascending (January → December)
+      transactions.sort((a, b) => {
       const da = new Date(a.Date);
       const db = new Date(b.Date);
       return da - db;
     });
-
+    
     const summaryData = JSON.parse(localStorage.getItem("accountsPayablesData")) || [];
     const supplierSummary = summaryData.find(r => r.NAME === name);
     let runningBalance = supplierSummary ? (parseFloat(supplierSummary.BEGINNING) || 0) : 0;
