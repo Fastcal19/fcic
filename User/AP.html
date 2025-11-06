@@ -175,6 +175,14 @@ async function loadAccountsPayables(forceRefresh = false) {
   let data = [];
 
   try {
+    // ✅ Clear all cached transaction data if refreshing
+    if (forceRefresh) {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith("transactions_"))
+        .forEach(k => localStorage.removeItem(k));
+      console.log("Cleared all cached transaction data ✅");
+    }
+
     // ✅ Try to load from localStorage
     if (!forceRefresh) {
       const cached = localStorage.getItem("accountsPayablesData");
@@ -220,7 +228,7 @@ function renderPayablesTable(data) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td style="text-align:center">${counter++}</td>
-      <td><a href="#" onclick="openApModal('${row.NAME.replace(/'/g, "\\'")}')">${row.NAME}</a></td>
+      <td><a href="#" onclick="openApModal('${row.NAME.replace(/'/g, "\\'")}', false)">${row.NAME}</a></td>
       <td style="text-align:right">${row.AMOUNT.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       <td>${row.REMARKS || ""}</td>
     `;
@@ -249,7 +257,7 @@ function formatAmount(val) {
   });
 }
 
-async function openApModal(name) {
+async function openApModal(name, forceRefresh = false) {
   const modal = document.getElementById("apModal");
   const title = document.getElementById("apModalTitle");
   const tbody = document.getElementById("apModalBody");
@@ -261,18 +269,26 @@ async function openApModal(name) {
   spinner.style.display = "block";
 
   try {
-    // ✅ Check localStorage first
     const cacheKey = "transactions_" + name;
-    let transactions = JSON.parse(localStorage.getItem(cacheKey)) || null;
+    let transactions = null;
 
+    // ✅ If forceRefresh is true, clear cache
+    if (forceRefresh) {
+      localStorage.removeItem(cacheKey);
+    } else {
+      transactions = JSON.parse(localStorage.getItem(cacheKey)) || null;
+    }
+
+    // ✅ Fetch fresh data if no cache or after refresh
     if (!transactions) {
-      // Fetch transactions
       const txRes = await fetch(webAppPayables + "?name=" + encodeURIComponent(name));
-      transactions = await txRes.json();
+      const text = await txRes.text();
+      try { transactions = JSON.parse(text); }
+      catch { transactions = []; }
 
-      // 💾 Save transactions to localStorage
+      // 💾 Save fresh copy
       localStorage.setItem(cacheKey, JSON.stringify(transactions));
-      console.log(`Saved transactions for ${name} ✅`);
+      console.log(`Updated transactions for ${name} ✅`);
     }
 
     const summaryData = JSON.parse(localStorage.getItem("accountsPayablesData")) || [];
