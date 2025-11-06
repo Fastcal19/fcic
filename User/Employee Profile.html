@@ -3,349 +3,479 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Accounts Payables</title>
+<title>Employee Details</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #808080;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+
+  .wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
     margin: 20px;
-    background: linear-gradient(90deg, gold, orange, orangered);
-    color: #000;
-  }
-  h2 { margin-bottom: 10px; }
-
-  .ap-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  .ap-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .ap-total {
-    font-weight: bold;
-    font-size: 16px;
-  }
-  .refresh-btn {
-    cursor: pointer;
-    font-size: 18px;
-    background: none;
-    border: none;
-  }
-  .refresh-btn:hover { color: #007BFF; }
-
-  table {
+    justify-content: center;
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+    max-width: 1100px;
+  }
+
+  .main-container, .login-container {
     background: #fff;
-    border-radius: 6px;
-    overflow: hidden;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
-  th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
-  }
-  th { background-color: #f1f1f1; text-align: center; }
-  td { text-align: left; }
-  tr:hover { background-color: #f0f8ff; }
-  .total-row {
-    font-weight: bold;
-    background-color: #f9f9f9;
-  }
-  #apTable a {
-    color: inherit;
-    text-decoration: none;
-    cursor: pointer;
-  }
-  #apTable a:hover { text-decoration: underline; }
 
-  /* Modal */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.4);
+  .main-container {
+    flex: 1;
+    min-width: 250px;
+    max-width: 650px;
   }
-  .modal-content {
-    background-color: #fff;
-    margin: 5% auto;
-    padding: 20px;
+
+  .login-container {
+    width: 250px;
+    align-self: flex-start;
+    position: sticky;
+    top: 20px;
+  }
+
+  h1 {
+    text-align: center;
+    color: #0056A6;
+    font-size: 22px;
+    margin-bottom: 25px;
+  }
+
+  h2 {
+    color: #0056A6;
+    font-size: 16px;
+    border-bottom: 2px solid #0056A6;
+    padding-bottom: 5px;
+    margin-top: 25px;
+    text-transform: uppercase;
+  }
+
+  .row {
+    display: flex;
+    margin-bottom: 8px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .label {
+    font-weight: bold;
+    width: 180px;
+    flex-shrink: 0;
+    color: #333;
+  }
+
+  .value {
+    flex: 1;
+    word-wrap: break-word;
+    color: #555;
+  }
+
+  input.editable, select.editable {
+    width: 95%;
+    padding: 6px;
     border: 1px solid #ccc;
-    width: 80%;
-    max-height: 80%;
-    overflow-y: auto;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+
+  .button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  button {
+    padding: 10px 18px;
+    background-color: #0056A6;
+    color: #fff;
+    border: none;
     border-radius: 8px;
-    position: relative;
-  }
-  .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
     cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: 0.3s;
   }
-  .close:hover { color: #000; }
 
-  /* Spinners */
-  .spinner, .modal-spinner {
-    display: none;
-    border: 6px solid #f3f3f3;
-    border-top: 6px solid #3498db;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    z-index: 1100;
+  button:hover {
+    background-color: #0070d1;
   }
-  .spinner {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+
+  /* ===== LOGIN FORM ===== */
+  .login-container h2 {
+    text-align: center;
+    font-size: 18px;
+    border: none;
+    text-transform: none;
   }
-  .modal-spinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+
+  .form-group { margin-bottom: 15px; }
+
+  label {
+    display: block;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+    font-size: 14px;
   }
-  @keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
+
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 600px) {
+    .label { width: 100%; }
+    .row { flex-direction: column; }
   }
 </style>
 </head>
 <body>
 
-  <div class="ap-header">
-    <h2></h2>
-    <div class="ap-actions">
-      <div class="ap-total">Total: 0.00</div>
-      <button class="refresh-btn" onclick="loadAccountsPayables(true)" title="Refresh">🔄</button>
+<div class="wrapper">
+  <!-- LEFT -->
+  <div class="main-container">
+    <h1>EMPLOYEE PROFILE</h1>
+
+    <div class="section" id="employeeSection">
+      <h2>Employee Details</h2>
+      <div class="row"><span class="label">Employee No:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Last Name:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">First Name:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Middle Name:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Marital Status:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Birthdate:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Age:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Address:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Gender:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Contact:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Email:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">TIN:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">SSS:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">PhilHealth:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Pag-IBIG:</span> <span class="value"></span></div>
+    </div>
+
+    <div class="section" id="emergencySection">
+      <h2>Contact Person in Case of Emergency</h2>
+      <div class="row"><span class="label">Name:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Relationship:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Contact No:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Contact Address:</span> <span class="value"></span></div>
+    </div>
+
+    <div class="section">
+      <h2>Employment Details</h2>
+      <div class="row"><span class="label">Date Hired:</span> <span class="value"></span></div>
+      <div class="row" id="dateResignedRow"><span class="label">Date Resigned:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Length of Service:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Designation:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Salary:</span> <span class="value"></span></div>
+      <div class="row"><span class="label">Employment Status:</span> <span class="value"></span></div>
+    </div>
+
+    <div class="button-group">
+      <button id="editBtn">Edit</button>
+      <button id="saveBtn" style="display:none;">Save</button>
     </div>
   </div>
 
-  <div id="spinner-ap" class="spinner"></div>
-  <table id="apTable">
-    <thead>
-      <tr>
-        <th>No.</th>
-        <th>NAME</th>
-        <th>AMOUNT</th>
-        <th>REMARKS</th>
-      </tr>
-    </thead>
-    <tbody id="apBody"></tbody>
-  </table>
-
-  <!-- Modal -->
-  <div id="apModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeApModal()">&times;</span>
-      <div id="spinner-apModal" class="modal-spinner"></div>
-      <h3 id="apModalTitle"></h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Debit</th>
-            <th>Credit</th>
-            <th>Balance</th>
-          </tr>
-        </thead>
-        <tbody id="apModalBody"></tbody>
-      </table>
-    </div>
+  <!-- RIGHT -->
+  <div class="login-container">
+    <h2>Login Credentials</h2>
+    <form id="updateCredentialsForm">
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter new username">
+      </div>
+      <div class="form-group">
+        <label for="oldPassword">Old Password:</label>
+        <input type="password" id="oldPassword" placeholder="Enter old password">
+      </div>
+      <div class="form-group">
+        <label for="newPassword">New Password:</label>
+        <input type="password" id="newPassword" placeholder="Enter new password">
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password:</label>
+        <input type="password" id="confirmPassword" placeholder="Confirm new password">
+      </div>
+      <button type="submit">Save Changes</button>
+    </form>
   </div>
+</div>
 
 <script>
-const webAppPayables = "https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec";
+const EMPLOYEE_ID = localStorage.getItem("eid");
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyhO6krcG7bdyKYkvZ592GdhKqEZAwy-FNIcG2QG8TSLtDYpwgQiyOrbsRdnYzVvMNIg/exec";
+let employeeData = {};
 
-// ✅ Load main Accounts Payables summary
-async function loadAccountsPayables(forceRefresh = false) {
-  const spinner = document.getElementById("spinner-ap");
-  spinner.style.display = "block";
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${mm}-${dd}-${yyyy}`;
+}
 
-  let data = [];
+function formatSalary(salary) {
+  const num = parseFloat(salary.toString().replace(/[^0-9.]/g, ""));
+  if (isNaN(num)) return salary;
+  return "Php " + num.toLocaleString("en-PH", { minimumFractionDigits: 2 });
+}
 
-  try {
-    if (!forceRefresh) {
-      const cached = localStorage.getItem("accountsPayablesData");
-      if (cached) {
-        data = JSON.parse(cached);
-        console.log("Loaded from localStorage ✅");
-      }
+function calculateServiceLength(dateHired, dateResigned) {
+  if (!dateHired) return "";
+
+  // Try to handle Google Sheets date format (e.g., "12/10/2021" or "2021-12-10")
+  const parseDate = (str) => {
+    if (!str) return null;
+    const parts = str.split(/[-/]/);
+    if (parts.length === 3) {
+      // Detect format: YYYY-MM-DD or MM-DD-YYYY
+      if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
+      else return new Date(parts[2], parts[0] - 1, parts[1]);
     }
+    const d = new Date(str);
+    return isNaN(d) ? null : d;
+  };
 
-    if (data.length === 0 || forceRefresh) {
-      const res = await fetch(webAppPayables + "?type=summary");
-      const text = await res.text();
-      try { data = JSON.parse(text); } 
-      catch (err) { console.error("Invalid JSON:", text); data = []; }
+  const start = parseDate(dateHired);
+  const end = parseDate(dateResigned) || new Date();
 
-      localStorage.setItem("accountsPayablesData", JSON.stringify(data));
-      console.log("Saved to localStorage ✅");
-    }
+  if (!start) return "Invalid start date";
+  if (isNaN(start) || isNaN(end)) return "";
 
-    renderPayablesTable(data);
-
-  } catch (err) {
-    console.error("Error loading payables:", err);
-  } finally {
-    spinner.style.display = "none";
+  let years = end.getFullYear() - start.getFullYear();
+  let months = end.getMonth() - start.getMonth();
+  if (months < 0) {
+    years--;
+    months += 12;
   }
+
+  if (years < 0) return "Invalid dates";
+  if (years === 0 && months === 0) return "Less than a month";
+  if (years === 0) return `${months} month${months > 1 ? "s" : ""}`;
+  return `${years} year${years > 1 ? "s" : ""}, ${months} month${months > 1 ? "s" : ""}`;
 }
 
-function renderPayablesTable(data) {
-  const tbody = document.getElementById("apBody");
-  tbody.innerHTML = "";
-  let grandTotal = 0, counter = 1;
 
-  const filtered = data
-    .map(row => ({ ...row, AMOUNT: parseFloat(row.AMOUNT) || 0 }))
-    .filter(row => row.AMOUNT > 0)
-    .sort((a, b) => b.AMOUNT - a.AMOUNT);
-
-  filtered.forEach(row => {
-    grandTotal += row.AMOUNT;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td style="text-align:center">${counter++}</td>
-      <td><a href="#" onclick="openApModal('${row.NAME.replace(/'/g, "\\'")}')">${row.NAME}</a></td>
-      <td style="text-align:right">${row.AMOUNT.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-      <td>${row.REMARKS || ""}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  const trTotal = document.createElement("tr");
-  trTotal.classList.add("total-row");
-  trTotal.innerHTML = `
-    <td colspan="2" style="text-align:right">TOTAL</td>
-    <td style="text-align:right">${grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-    <td></td>
-  `;
-  tbody.appendChild(trTotal);
-
-  document.querySelector(".ap-total").textContent =
-    "Total: " + grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-
-// === Modal for AP Transactions ===
-function formatAmount(val) {
-  const num = parseFloat(val) || 0;
-  return num === 0 ? "" : num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
-
-async function openApModal(name) {
-  const modal = document.getElementById("apModal");
-  const title = document.getElementById("apModalTitle");
-  const tbody = document.getElementById("apModalBody");
-  const spinner = document.getElementById("spinner-apModal");
-
-  modal.style.display = "block";
-  title.textContent = name;
-  tbody.innerHTML = "";
-  spinner.style.display = "block";
-
+async function loadEmployeeData() {
   try {
-    const cacheKey = "transactions_" + name;
-    let transactions = JSON.parse(localStorage.getItem(cacheKey)) || null;
+    const res = await fetch(`${SCRIPT_URL}?id=${EMPLOYEE_ID}`);
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    employeeData = data;
 
-    if (!transactions) {
-      const txRes = await fetch(webAppPayables + "?name=" + encodeURIComponent(name));
-      transactions = await txRes.json();
-      localStorage.setItem(cacheKey, JSON.stringify(transactions));
-      console.log(`Saved transactions for ${name} ✅`);
-    }
+    const map = {
+      "Employee No:": data["EN"],
+      "Last Name:": data["LAST NAME"],
+      "First Name:": data["FIRST NAME"],
+      "Middle Name:": data["MIDDLE NAME"],
+      "Marital Status:": data["MARITAL STATUS"],
+      "Birthdate:": formatDate(data["BIRTHDATE"]),
+      "Age:": data["AGE"],
+      "Address:": data["ADDRESS"],
+      "Gender:": data["GENDER"],
+      "Contact:": data["CONTACT NUMBER"],
+      "Email:": data["EMAIL ADDRESS"],
+      "TIN:": data["TIN"],
+      "SSS:": data["SSS"],
+      "PhilHealth:": data["PHILHEALTH"],
+      "Pag-IBIG:": data["PAG-IBIG"],
+      "Name:": data["E.CONTACT NAME"],
+      "Relationship:": data["RELATIONSHIP"],
+      "Contact No:": data["E.CONTACT NUMBER"],
+      "Contact Address:": data["CONTACT ADDRESS"],
+      "Date Hired:": formatDate(data["DATE HIRED"]),
+      "Date Resigned:": formatDate(data["DATE RESIGNED"]),
+      "Length of Service:": calculateServiceLength(data["DATE HIRED"], data["DATE RESIGNED"]),
+      "Designation:": data["DESIGNATION"],
+      "Salary:": formatSalary(data["SALARY"]),
+      "Employment Status:": data["EMPLOYMENT STATUS"]
+    };
 
-    // ✅ Sort transactions by date ascending (January → December)
-    transactions.sort((a, b) => {
-      const da = new Date(a.Date);
-      const db = new Date(b.Date);
-      return da - db;
+    document.querySelectorAll('.row').forEach(row => {
+      const label = row.querySelector('.label').textContent.trim();
+      const valueSpan = row.querySelector('.value');
+      valueSpan.textContent = map[label] || "";
     });
 
-    const summaryData = JSON.parse(localStorage.getItem("accountsPayablesData")) || [];
-    const supplierSummary = summaryData.find(r => r.NAME === name);
-    let runningBalance = supplierSummary ? (parseFloat(supplierSummary.BEGINNING) || 0) : 0;
-
-    if (runningBalance > 0) {
-      const year = new Date().getFullYear();
-      const balRow = document.createElement("tr");
-      balRow.innerHTML = `
-        <td>01-Jan-${year}</td>
-        <td>Balance forwarded</td>
-        <td></td><td></td>
-        <td style="text-align:right">${runningBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-      `;
-      tbody.appendChild(balRow);
-    }
-
-    if (transactions && transactions.length > 0) {
-      transactions.forEach(row => {
-        const debit = parseFloat(row.Debit) || 0;
-        const credit = parseFloat(row.Credit) || 0;
-        runningBalance = runningBalance - debit + credit;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${row.Date ? formatDate(row.Date) : ""}</td>
-          <td>${row.Description || ""}</td>
-          <td style="text-align:right">${formatAmount(debit)}</td>
-          <td style="text-align:right">${formatAmount(credit)}</td>
-          <td style="text-align:right">${runningBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    } else {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:gray">No transactions found</td></tr>`;
-    }
+    toggleDateResignedRow(map["Employment Status:"]);
 
   } catch (err) {
-    console.error("Error loading transactions:", err);
-    tbody.innerHTML = `<tr><td colspan="5" style="color:red;text-align:center">Failed to load data</td></tr>`;
-  } finally {
-    spinner.style.display = "none";
+    alert("Failed to load employee data.");
   }
 }
 
-function formatDate(val) {
-  if (!val) return "";
+function toggleDateResignedRow(status) {
+  document.getElementById("dateResignedRow").style.display = (status === "Resigned") ? "flex" : "none";
+}
+
+// ====== LOGIN CREDENTIALS UPDATE ======
+document.getElementById("updateCredentialsForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById("username").value.trim();
+  const oldPassword = document.getElementById("oldPassword").value.trim();
+  const newPassword = document.getElementById("newPassword").value.trim();
+  const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    alert("Please fill in all password fields.");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    alert("New password and confirmation do not match!");
+    return;
+  }
+
   try {
-    const d = new Date(val);
-    if (isNaN(d)) return val;
-    const day = String(d.getDate()).padStart(2, '0');
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const month = monthNames[d.getMonth()];
-    const year = String(d.getFullYear()).slice(-2);
-    return `${day}-${month}-${year}`;
-  } catch (e) {
-    return val;
+    const res = await fetch(SCRIPT_URL, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    action: "updateCredentials",
+    employeeNo: EMPLOYEE_ID,
+    oldPassword,
+    newPassword,
+    username
+  }),
+});
+
+
+    const result = await res.json();
+    if (result.success) {
+      alert(result.message || "Credentials updated successfully!");
+      document.getElementById("updateCredentialsForm").reset();
+    } else {
+      alert(result.message || "Failed to update credentials.");
+    }
+  } catch (err) {
+    alert("Error connecting to the server. Please try again.");
   }
+});
+
+// Edit Mode
+document.getElementById("editBtn").addEventListener("click", () => {
+  document.getElementById("editBtn").style.display = "none";
+  document.getElementById("saveBtn").style.display = "inline-block";
+
+  const editableLabels = [
+    "Marital Status:", "Birthdate:", "Address:", "Gender:", "Contact:", "Email:",
+    "TIN:", "SSS:", "PhilHealth:", "Pag-IBIG:",
+    "Name:", "Relationship:", "Contact No:", "Contact Address:"
+  ];
+
+  const maritalOptions = ["Single", "Married", "Divorced", "Widowed", "Separated"];
+  const genderOptions = ["Male", "Female"];
+  const relationOptions = ["Parent", "Sibling","Spouse", "Son", "Daughter", "Friend", "Relative"];
+
+  document.querySelectorAll('.row').forEach(row => {
+    const label = row.querySelector('.label').textContent.trim();
+    const valueSpan = row.querySelector('.value');
+    const currentValue = valueSpan.textContent.trim();
+    if (editableLabels.includes(label)) {
+      if (label === "Marital Status:") {
+        valueSpan.innerHTML = createDropdown(maritalOptions, currentValue);
+      } else if (label === "Gender:") {
+        valueSpan.innerHTML = createDropdown(genderOptions, currentValue);
+      } else if (label === "Relationship:") {
+        valueSpan.innerHTML = createDropdown(relationOptions, currentValue);
+      } else {
+        const type = (label.includes("Birthdate")) ? "date" : "text";
+        valueSpan.innerHTML = `<input class="editable" type="${type}" value="${currentValue.replace(/-/g, '-')}" required>`;
+      }
+    }
+  });
+});
+
+function createDropdown(options, selectedValue) {
+  let html = `<select class="editable">`;
+  options.forEach(opt => {
+    const sel = opt === selectedValue ? "selected" : "";
+    html += `<option value="${opt}" ${sel}>${opt}</option>`;
+  });
+  html += `</select>`;
+  return html;
 }
 
-function closeApModal() {
-  document.getElementById("apModal").style.display = "none";
-}
+// Save
+document.getElementById("saveBtn").addEventListener("click", async () => {
+  const updates = {};
+  let isValid = true;
+  let msg = "";
 
-window.onclick = function(event) {
-  const modal = document.getElementById("apModal");
-  if (event.target === modal) modal.style.display = "none";
-};
+  document.querySelectorAll('.row').forEach(row => {
+    const label = row.querySelector('.label').textContent.trim();
+    const input = row.querySelector('input, select');
+    if (input) {
+      const value = input.value.trim();
+      if (!value) {
+        isValid = false;
+        msg = "All fields are required!";
+      }
+      if (label === "Contact:" || label === "Contact No:") {
+        const phoneRegex = /^09\d{2}-\d{3}-\d{4}$/;
+        if (!phoneRegex.test(value)) {
+          isValid = false;
+          msg = "Invalid contact number format. Use 0930-648-4698.";
+        }
+      }
+      if (label === "Email:") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          isValid = false;
+          msg = "Invalid email address!";
+        }
+      }
+      updates[label] = value;
+    }
+  });
 
-// ✅ Auto-load summary when page opens
-document.addEventListener("DOMContentLoaded", () => loadAccountsPayables(false));
+  if (!isValid) {
+    alert(msg);
+    return;
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "updateEmployee",
+        id: EMPLOYEE_ID,
+        updates
+      }),
+    });
+    const result = await res.json();
+    alert(result.message || "Saved successfully!");
+    document.getElementById("saveBtn").style.display = "none";
+    document.getElementById("editBtn").style.display = "inline-block";
+    loadEmployeeData();
+  } catch (err) {
+    alert("Failed to save updates.");
+  }
+});
+
+window.addEventListener("DOMContentLoaded", loadEmployeeData);
 </script>
 </body>
 </html>
