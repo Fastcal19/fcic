@@ -2,824 +2,430 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fast Cal Industrial Corp</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; display:flex; height:100vh; }
-    .main{ flex:1; background: gray; padding:20px; overflow:hidden; display:flex; flex-direction:column;}
-    .header{ background:#f97316; padding:10px; border-radius:10px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;}
-    .header h1{ font-size:1.4em; margin:0;}
-    .cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:15px; margin-bottom:15px;}
-    .card{ background:#f97316; padding:10px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); text-align:center;}
-    .card h3{ margin:6px 0; font-size:1em;}
-    .card p{ margin:0; font-size:0.95em;}
-
-    .calendar-notes{ flex:1; display:flex; gap:20px; overflow:hidden;}
-    .notes-columns{ display:flex; flex-direction:column; width:25%; gap:20px; height:100%; }
-    .notes-section{ 
-      flex:1; 
-      background:#fb923c; 
-      border-radius:10px; 
-      padding:12px; 
-      box-shadow:0 2px 6px rgba(0,0,0,0.2); 
-      font-size:0.85em; 
-      display:flex; 
-      flex-direction:column; 
-      overflow:hidden;
-    }
-    .notes-section h2{ margin-top:0; text-align:center; font-size:1.1em;}
-    .notes-list{ flex:1; overflow-y:auto; margin-top:8px; }
-    .note-item{ background:#f5deb3; padding:6px; border-radius:6px; margin-bottom:6px; font-size:0.8em; cursor:pointer;}
-
-    .calendar-container{ flex:1; display:flex; flex-direction:column; overflow:hidden;}
-    .calendar{ flex:1; background:#fb923c; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.2); padding:15px; display:flex; flex-direction:column; overflow:hidden;}
-    .calendar-header{ display:flex; justify-content:center; align-items:center; margin-bottom:4px; gap:10px;}
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: auto repeat(6, 1fr);
-      flex: 1;
-      gap: 5px;
-      height: 100%;
-    }
-    .day-name {
-      font-weight: bold;
-      text-align: center;
-      background: #FFC107;
-      border-radius: 6px;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9em;
+      flex-direction: column;
+      overflow: hidden;
+      background: orangered;
     }
-    .day{ padding:5px; border-radius:5px; cursor:pointer; background:#f5deb3; position:relative; overflow:hidden; display:flex; flex-direction:column;}
-    .day-number{ font-size:0.85em; font-weight:bold; color:darkred; position:absolute; top:5px; right:6px;}
-    .day:hover{ background:#deb887; color:white;}
-    .today{ background:linear-gradient(135deg, #FFA500, #FFD700); font-weight:bold; box-shadow:0 0 6px rgba(0,0,0,0.4);}
-    .note{ font-size:0.7em; margin-top:18px; color:darkgreen; text-align:left; word-break:break-word; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;}
-    .faded{ background:#eee !important; color:#999 !important; cursor:default !important; pointer-events:none;}
 
-    .modal{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;}
-    .modal-content{ background:white; padding:20px; border-radius:10px; width:380px; max-width:95%; box-sizing:border-box;}
-    .modal-content h3{ margin-top:0;}
-    .modal-content textarea, .modal-content input {
-      width:100%; padding:6px; margin-top:4px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em;
+    header {
+      background: orangered;
+      color: #000;
+      padding: 10px 20px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
-    .modal-content button{ padding:8px 12px; margin-right:10px; border:none; border-radius:5px; cursor:pointer;}
-    .save-btn{ background:#228b22; color:white;}
-    .reject-btn{ background:#b22222; color:white;}
-    .approve-btn{ background:#006400; color:white;}
-    .close-btn{ background:#a9a9a9; color:white;}
-    .approval-field { margin-bottom:8px; }
-    .approval-label { font-weight:700; display:block; margin-bottom:4px; }
-    .small-muted { font-size:0.95em; color:#222; }
 
-    /* 📱 On mobile: show only the calendar, hide others */
-@media (max-width: 768px) {
-  body {
-    display: block;
-  }
+    footer {
+      background: darkgray;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
+    }
 
-  .header,
-  .cards,
-  .notes-columns,
-  #approvalModal {
-    display: none !important;
-  }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 220px;
+      background: linear-gradient(10deg, gold, orangered);
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #333 #FFB347;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+      z-index: 2000;
+    }
 
-  .calendar-container {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-  }
+    .sidebar.active { transform: translateX(0); }
 
-  .calendar {
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    padding: 10px;
-    padding-bottom: env(safe-area-inset-bottom);
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
-  }
-}
+    .userbox {
+      text-align: center;
+      padding: 10px 0;
+      position: relative;
+    }
 
-/* Adjust Note Modal layout */
-/* 🟠 FULLSCREEN NOTE MODAL — MOBILE SAFE VERSION */
-#noteModal {
-  display: none;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%;
-  height: 95%;
-  background: rgba(0,0,0,0.6);
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
+    .userbox img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      background: #fff;
+    }
 
-#noteModal .modal-content {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  border-radius: 0;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
-}
+    .username {
+      font-weight: bold;
+      font-size: 16px;
+      color: #000;
+      margin-top: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
 
-/* Header */
-#noteModal h3 {
-  margin: 0 0 10px 0;
-  text-align: center;
-  font-size: 1.2em;
-  background: #f97316;
-  color: white;
-  padding: 10px;
-  border-radius: 8px;
-}
+    .user-dropdown {
+      position: absolute;
+      top: 180px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      min-width: 140px;
+      overflow: hidden;
+      z-index: 3000;
+    }
 
-/* Text area fills screen space above buttons */
-#noteText {
-  flex: 1;
-  width: 100%;
-  font-size: 1em;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 10px;
-  box-sizing: border-box;
-  resize: none;
-  outline: none;
-  margin-top: 10px;
-  overflow-y: auto;
-}
+    .user-dropdown a {
+      color: #000;
+      padding: 10px;
+      text-decoration: none;
+      display: block;
+      font-weight: bold;
+    }
 
-/* Buttons container fixed to bottom, safe from mobile navbar */
-#noteModal .modal-footer {
-  position: sticky;
-  bottom: 0;
-  background: #fff;
-  padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  z-index: 2;
-}
+    .user-dropdown a:hover { background: #FFD580; }
 
-.save-btn, .close-btn {
-  flex: 1;
-  padding: 14px;
-  font-size: 1em;
-  border: none;
-  border-radius: 8px;
-  color: white;
-  cursor: pointer;
-}
+    .sidebar a {
+      color: #000;
+      text-decoration: none;
+      padding: 10px;
+      display: block;
+      border-radius: 6px;
+      font-weight: bold;
+      margin: 2px 0;
+      cursor: pointer;
+    }
 
-.save-btn { background: #228b22; }
-.close-btn { background: #b22222; }
+    .sidebar a:hover { background: #FFD580; }
 
-/* Mobile tweaks */
-@media (max-width: 768px) {
-  #noteModal .modal-content {
-    padding: 15px 15px calc(15px + env(safe-area-inset-bottom));
-  }
+    .logout-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
 
-  #noteModal h3 {
-    font-size: 1.1em;
-    padding: 8px;
-  }
+    .main {
+      flex: 1;
+      background: #ccc;
+      display: flex;
+      flex-direction: column;
+      transition: margin-left 0.3s ease-in-out;
+      overflow: hidden;
+      height: calc(100vh - 80px);
+    }
 
-  .save-btn, .close-btn {
-    font-size: 1.1em;
-    padding: 16px;
-  }
-}
+    @media (min-width: 769px) {
+      .sidebar.active ~ .main { margin-left: 220px; }
+    }
 
+    iframe {
+      flex: 1;
+      border: none;
+      background: linear-gradient(180deg, gold, orangered);
+    }
 
+    .submenu { display: none; margin-left: 15px; }
+    .submenu.show { display: block; }
 
+    .menu-toggle {
+      position: fixed;
+      top: 12px;
+      left: 10px;
+      background: #333;
+      color: white;
+      border: none;
+      font-size: 18px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 2500;
+    }
 
-@media (max-width: 768px) {
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100dvh; /* ✅ dynamic full height */
-    overflow: hidden;
-    background: #fb923c;
-  }
+    .menu-toggle:hover { background: #555; }
 
-  .main {
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    overflow: hidden;
-  }
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 1500;
+      display: none;
+    }
 
-  /* Hide desktop-only sections */
-  .header,
-  .cards,
-  .notes-columns,
-  #approvalModal {
-    display: none !important;
-  }
+    .overlay.active { display: block; }
 
-  /* Main mobile view container */
-  .calendar-notes {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .calendar-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  /* ✅ Calendar itself fills safe area */
-  .calendar {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: calc(100dvh - env(safe-area-inset-bottom));
-    border-radius: 0;
-    padding: 10px;
-    padding-bottom: calc(80px + env(safe-area-inset-bottom)); /* ✅ prevents overlap */
-    box-sizing: border-box;
-    overflow-y: auto;
-  }
-
-  .calendar-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: auto repeat(6, 1fr);
-    gap: 5px;
-    min-height: 0;
-  }
-
-  .day-name {
-    font-size: 0.8em;
-  }
-}
-
-
+    @media (max-width: 768px) {
+      .sidebar { width: 70%; }
+      header, footer { display: none; }
+    }
   </style>
 </head>
 <body>
-  <div class="main">
+  <header id="pageHeader">Fast Cal Industrial Corp</header>
 
-    <div class="cards">
-      <div class="card"><h3>Cash Balance</h3><p>0.00</p></div>
-      <div class="card"><h3>Advances</h3><p>Php 0.00</p></div>
-      <div class="card" id="receivablesCard" style="cursor:pointer;">
-        <h3>Receivables</h3>
-        <p>Php 0.00</p>
-      </div>
-      <div class="card" id="payablesCard" style="cursor:pointer;">
-        <h3>Payables</h3>
-        <p>Php 0.00</p>
-    </div>
-     </div>
+  <button class="menu-toggle" id="menuToggle">☰</button>
 
-    <div class="calendar-notes">
-      <!-- Left side: two equal containers -->
-      <div class="notes-columns">
-        <div class="notes-section">
-          <h2>FOR APPROVAL</h2>
-          <div class="notes-list" id="approvalList"></div>
-        </div>
-        <div class="notes-section">
-          <h2>REMINDERS</h2>
-          <div class="notes-list" id="remindersList"></div>
+  <aside class="sidebar" id="sidebar">
+    <div>
+      <div class="userbox">
+        <img id="userPhoto" src="fcic logo.png" alt="User Photo">
+        <div class="username" id="usernameDisplay">User</div>
+        <div class="user-dropdown" id="userDropdown">
+          <a id="profileLink">User Profile</a>
+          <a id="logoutLink">Logout</a>
         </div>
       </div>
 
-      <!-- Right side: calendar -->
-      <div class="calendar-container">
-        <div class="calendar">
-          <div class="calendar-header">
-            <button onclick="prevMonth()">&#8592;</button>
-            <h2 id="monthYear"></h2>
-            <button onclick="nextMonth()">&#8594;</button>
-          </div>
-          <div class="calendar-grid" id="calendarGrid"></div>
+      <!-- MENU LINKS WITH IDS -->
+      <a id="btnDashboard" onclick="showPage('dashboard')">Dashboard</a>
+
+      <div id="btnHR">
+        <a class="expandable" onclick="toggleMenu('hrMenu')">Human Resources ▸</a>
+        <div class="submenu" id="hrMenu">
+          <a onclick="showPage('employeelist')">Employee List</a>
+          <a onclick="showPage('attendance')">Attendance</a>
+          <a onclick="showPage('payroll')">Payroll</a>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Notes Modal -->
-  <div id="noteModal" class="modal">
-  <div class="modal-content">
-    <h3>Notes</h3>
-    <h4 id="modalDate" style="text-align:center; color:#333; margin-top:-5px;"></h4>
-    <textarea id="noteText" placeholder="Enter your note..."></textarea>
-    <div class="modal-footer">
-      <button class="close-btn">Close</button>
-      <button class="save-btn">Save</button>
-    </div>
-  </div>
-</div>
-
-
-  <!-- Approval Modal -->
-  <div class="modal" id="approvalModal">
-    <div class="modal-content">
-      <h3>Request Details</h3>
-      <div id="approvalDetails"></div>
-      <div style="margin-top:12px;">
-        <button class="approve-btn" onclick="handleApproval('approved')">Approve</button>
-        <button class="reject-btn" onclick="handleApproval('rejected')">Reject</button>
-        <button class="close-btn" onclick="closeApprovalModal()">Close</button>
+      <div id="btnReports">
+        <a class="expandable" onclick="toggleMenu('reportsMenu')">Reports ▸</a>
+        <div class="submenu" id="reportsMenu">
+          <a onclick="showPage('projects')">Projects</a>
+          <a onclick="showPage('sales')">Sales</a>
+          <a onclick="showPage('ar')">Receivables</a>
+          <a onclick="showPage('ap')">Payables</a>
+          <a onclick="showPage('pc')">Costing</a>
+          <a onclick="showPage('is')">Income Statement</a>
+        </div>
       </div>
+
+      <a id="btnProjectCosting" onclick="showPage('projectCosting')">Project Costing</a>
+
+      <div id="btnApplications">
+        <a class="expandable" onclick="toggleMenu('applicationsMenu')">Applications ▸</a>
+        <div class="submenu" id="applicationsMenu">
+          <a onclick="showPage('aadvances')">Advances</a>
+          <a onclick="showPage('aleave')">Leave</a>
+          <a onclick="showPage('aovertime')">Overtime</a>
+        </div>
+      </div>
+      
+      <div id="btnRequests">
+        <a class="expandable" onclick="toggleMenu('requestsMenu')">Requests ▸</a>
+        <div class="submenu" id="requestsMenu">
+          <a onclick="showPage('radvances')">Advances</a>
+          <a onclick="showPage('rleave')">Leave</a>
+          <a onclick="showPage('rovertime')">Overtime</a>
+        </div>
+      </div>
+
+      <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
+
+      <div id="btnInventory">
+        <a class="expandable" onclick="toggleMenu('invMenu')">Inventory ▸</a>
+        <div class="submenu" id="invMenu">
+          <a onclick="showPage('inventoryGallery')">Gallery</a>
+          <a onclick="showPage('inventoryList')">List</a>
+        </div>
+      </div>
+
+      <a id="btnPortals" onclick="showPage('portals')">Portals</a>
     </div>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <div class="main" id="mainContent">
+    <iframe id="mainFrame"></iframe>
   </div>
+
+  <footer>© 2025 Fast Cal Industrial Corp — All Rights Reserved</footer>
 
   <script>
-    document.getElementById("receivablesCard").addEventListener("click", () => {
-    window.location.href = "Accounts Receivable.html";
-    });
-
-    document.getElementById("payablesCard").addEventListener("click", () => {
-    window.location.href = "AP.html";
-    });
-
-  // <-- set your deployed Apps Script webapp URL here (must allow POST & CORS if needed) -->
-  const RECEIVABLES_URL = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
-  const PAYABLES_URL    = "https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec";
-  const API_URL = "https://script.google.com/macros/s/AKfycbyP6xne0iCnV0nrgYg0TnS-dE2TisBlQS4DOtSTgkOfWAQUsC7No5aNLFpAsTEc6ax5/exec";
-
-  const calendarGrid = document.getElementById("calendarGrid");
-  const monthYear = document.getElementById("monthYear");
-  const noteModal = document.getElementById("noteModal");
-  const modalDate = document.getElementById("modalDate");
-  const noteText = document.getElementById("noteText");
-  const remindersList = document.getElementById("remindersList");
-  const approvalList = document.getElementById("approvalList");
-
-  const approvalModal = document.getElementById("approvalModal");
-  const approvalDetails = document.getElementById("approvalDetails");
-
-  let currentDate = new Date();
-  let selectedDate = null;
-  let notes = {};
-  let currentRequest = null; // full request object
-  let currentRequestExtract = null; // extracted fields
-
-  //AR Total
-  async function loadReceivables() {
-  try {
-    // Fetch from your working Apps Script (Sales tab)
-    const res = await fetch(RECEIVABLES_URL + "?sheet=sales");
-    const data = await res.json();
-
-    // Filter only rows where STATUS = "PENDING"
-    const pending = data.filter(r => 
-      String(r.STATUS || r.Status || "").toUpperCase() === "PENDING"
-    );
-
-    // Total the AMOUNT column
-    const total = pending.reduce((sum, r) => {
-      const amt = parseFloat(
-        (r.AMOUNT || r.Amount || "0").toString().replace(/,/g, "")
-      );
-      return sum + (isNaN(amt) ? 0 : amt);
-    }, 0);
-
-    // Display total in Receivables card (#3)
-    document.querySelector(".card:nth-child(3) p").textContent =
-      "Php " + total.toLocaleString(undefined, { minimumFractionDigits: 2 });
-
-  } catch (err) {
-    console.error("Error loading receivables:", err);
-    document.querySelector(".card:nth-child(3) p").textContent = "Php 0.00";
-  }
+if (!localStorage.getItem("username")) {
+  window.location.href = "/";
 }
 
-// PAYABLES Total
-async function loadPayables() {
-  try {
-    const res = await fetch("https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec?type=summary");
-    const data = await res.json();
+document.addEventListener("DOMContentLoaded", () => {
+  const iframe = document.getElementById("mainFrame");
+  const role = localStorage.getItem("role");
 
-    const total = data.reduce((sum, row) => sum + (parseFloat(row.AMOUNT) || 0), 0);
-
-    document.querySelector(".card:nth-child(4) p").textContent =
-      "Php " + total.toLocaleString(undefined, { minimumFractionDigits: 2 });
-  } catch (err) {
-    console.error("Error loading Payables total:", err);
-    document.querySelector(".card:nth-child(4) p").textContent = "Php 0.00";
-  }
-}
-
-
-
-  // ---------------- helpers ----------------
-  function formatDateForDisplay(dateInput) {
-    if (!dateInput) return "";
-    // try to parse different formats robustly
-    const d = new Date(dateInput);
-    if (isNaN(d.getTime())) {
-      // try replacing space-only formats or common variants
-      const tryParse = Date.parse(String(dateInput).replace(/(\s)+/g, ' '));
-      if (!isNaN(tryParse)) return new Date(tryParse).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-      return String(dateInput);
-    }
-    return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  if (role === "System Admin" || role === "Admin") {
+    iframe.src = "Admin Dashboard.html";
+  } else {
+    iframe.src = "dashboard.html";
   }
 
-  function getFirstKeyValue(obj, candidates) {
-    if (!obj) return undefined;
-    for (const k of candidates) if (k in obj && obj[k] !== undefined && obj[k] !== null) return obj[k];
-    const lower = {};
-    for (const [k,v] of Object.entries(obj)) lower[k.toLowerCase()] = v;
-    for (const k of candidates) {
-      const lk = k.toLowerCase();
-      if (lk in lower) return lower[lk];
-    }
-    return undefined;
-  }
-  function findByPattern(obj, regex) {
-    for (const v of Object.values(obj)) {
-      if (typeof v === 'string' && regex.test(v)) return v;
-    }
-    return undefined;
-  }
+  const fullName = localStorage.getItem("full");
+  const photo = localStorage.getItem("photo");
+  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+  if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
-  function extractRequestData(req) {
-    if (!req) return {};
-    const date = getFirstKeyValue(req, ['Date','date','Timestamp','timestamp','Date Filed','Created','Submitted']) ||
-                 findByPattern(req, /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/) ||
-                 findByPattern(req, /\d{4}-\d{1,2}-\d{1,2}/);
-    const name = getFirstKeyValue(req, ['Name','name','Employee','Employee Name','EmployeeName','Full Name','FullName','Requested By','Requester']) ||
-                 (() => {
-                   for (const v of Object.values(req)) {
-                     if (typeof v === 'string') {
-                       const s = v.trim();
-                       if (s.length>2 && /[a-zA-Z]/.test(s) && /\s/.test(s) &&
-                           !/advance|leave|cash|php|₱|\d{2,4}-\d{1,2}-\d{1,2}/i.test(s)) return s;
-                     }
-                   }
-                   return undefined;
-                 })();
-    const type = getFirstKeyValue(req, ['Type','type','Request Type','RequestType','Form','Form Type','Request']) ||
-                 findByPattern(req, /advance|cash advance|leave|sick|vacation|overtime|ot/i);
-    const purpose = getFirstKeyValue(req, ['Purpose','purpose','Remarks','Detail','Details','Purpose of Advance']) ||
-                    getFirstKeyValue(req, ['Remarks','remarks','Notes']);
-    const amount = getFirstKeyValue(req, ['Amount','amount','Amt','AMOUNT','Amount (PHP)']) ||
-                   (() => {
-                     for (const v of Object.values(req)) {
-                       if (typeof v === 'string' && /^(php|₱)?\s?[0-9,]+(\.\d+)?$/i.test(v.trim())) return v;
-                       if (typeof v === 'number') return v;
-                     }
-                     return undefined;
-                   })();
-    const reason = getFirstKeyValue(req, ['Reason','reason','Reason for Leave','Leave Reason']) || purpose;
-    const dateCovered = getFirstKeyValue(req, ['Date Covered','DateCovered','Date Range','Dates','From','To','Date From - To','Covered Dates']) ||
-                        getFirstKeyValue(req, ['Date From','Date To','From Date','To Date']);
-    const days = getFirstKeyValue(req, ['No. of Days','No of Days','Days','Number of Days','NoDays','Days Count']) ||
-                 findByPattern(req, /\b\d+\s*(day|days)\b/i) || undefined;
-    const id = getFirstKeyValue(req, ['ID','Id','id','Row','row','_id','rowIndex','RowIndex']);
-    return { date, name, type, purpose, amount, reason, dateCovered, days, id };
-  }
+  // USER DROPDOWN
+  const usernameDisplay = document.getElementById("usernameDisplay");
+  const userDropdown = document.getElementById("userDropdown");
 
-  // ---------------- data loaders ----------------
-  async function loadNotes() {
-    try {
-      const res = await fetch(API_URL + "?type=notes");
-      const json = await res.json();
-      notes = {};
-      json.forEach(n => { notes[n.date] = n.note; });
-      renderCalendar();
-    } catch (err) {
-      console.error("Error loading notes:", err);
-    }
-  }
+  usernameDisplay.addEventListener("click", (e) => {
+    e.stopPropagation();
+    userDropdown.style.display = userDropdown.style.display === "flex" ? "none" : "flex";
+  });
+  document.addEventListener("click", () => userDropdown.style.display = "none");
+  document.getElementById("profileLink").addEventListener("click", (e) => {
+    e.stopPropagation();
+    showPage("employee");
+    userDropdown.style.display = "none";
+  });
+  document.getElementById("logoutLink").addEventListener("click", logout);
 
-  async function loadReminders() {
-    try {
-      const res = await fetch(API_URL + "?type=reminders");
-      const json = await res.json();
-      const nowMonth = currentDate.toLocaleString("default", { month: "long" }).toLowerCase();
-      remindersList.innerHTML = "";
-      const filtered = json.filter(r => String(r[Object.keys(r)[0]]).toLowerCase() === nowMonth);
-      if (filtered.length > 0) {
-        filtered.forEach(r => {
-          const reminderText = r[Object.keys(r)[1]];
-          if (reminderText) {
-            const div = document.createElement("div");
-            div.className = "note-item";
-            div.textContent = reminderText;
-            remindersList.appendChild(div);
-          }
-        });
-      } else {
-        remindersList.innerHTML = "<div class='note-item'>No reminders</div>";
-      }
-    } catch (err) {
-      console.error("Error loading reminders:", err);
-    }
-  }
+  // ✅ Role-Based Menu Visibility
+  const visible = {
+    Admin: ["btnDashboard", "btnHR", "btnReports", "btnApplications", "btnInventory", "btnPortals"],
+    Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
+    Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests", "btnPayslip", "btnInventory"],
+    "System Admin": ["btnDashboard", "btnHR", "btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btnInventory", "btnPortals"]
+  };
 
-  // ---------------- approvals list & modal ----------------
-  async function loadApprovals() {
-    try {
-      const res = await fetch(API_URL + "?type=requests");
-      let json = await res.json();
-
-      json = json.filter(r => String((r.Status || r.status || '')).toLowerCase() === "pending");
-
-      json.sort((a, b) => {
-        const da = extractRequestData(a).date;
-        const db = extractRequestData(b).date;
-        const ta = new Date(da || 0).getTime();
-        const tb = new Date(db || 0).getTime();
-        return ta - tb;
-      });
-
-      approvalList.innerHTML = "";
-
-      if (json.length > 0) {
-        json.forEach(r => {
-          const extracted = extractRequestData(r);
-          const displayName = extracted.name || (r[Object.keys(r)[1]] || 'Unknown');
-          const displayType = (extracted.type || (r[Object.keys(r)[2]] || 'Request')).toString();
-          const div = document.createElement("div");
-          div.className = "note-item";
-          // include formatted date for quick glance if available
-          const smallDate = extracted.date ? ` (${formatDateShort(extracted.date)})` : '';
-          div.textContent = `${displayName} - ${displayType}${smallDate}`;
-          div.onclick = () => openApprovalModal(r);
-          approvalList.appendChild(div);
-        });
-      } else {
-        approvalList.innerHTML = "<div class='note-item'>No pending requests</div>";
-      }
-    } catch (err) {
-      console.error("Error loading approvals:", err);
-    }
-  }
-
-  // short date for list: e.g., Sep 17
-  function formatDateShort(d) {
-    try {
-      const dt = new Date(d);
-      if (isNaN(dt)) return String(d).slice(0,10);
-      return dt.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-    } catch { return String(d).slice(0,10); }
-  }
-
-  function openApprovalModal(request) {
-    currentRequest = request;
-    currentRequestExtract = extractRequestData(request);
-    const typeRaw = (currentRequestExtract.type || '').toString().toLowerCase();
-
-    let html = '';
-
-    // For both types we add editable Notes and, for Advances, editable Amount
-    if (typeRaw.includes('advance') || typeRaw.includes('cash')) {
-      html = `
-        <div class="approval-field"><span class="approval-label">Date:</span><span class="small-muted">${formatDateForDisplay(currentRequestExtract.date || request.Date || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Name:</span><span class="small-muted">${escapeHtml(currentRequestExtract.name || request.Name || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Purpose:</span><span class="small-muted">${escapeHtml(currentRequestExtract.purpose || request.Purpose || '')}</span></div>
-
-        <div class="approval-field">
-          <label class="approval-label" for="approvalAmount">Amount</label>
-          <input id="approvalAmount" type="number" step="0.01" value="${sanitizeNumber(currentRequestExtract.amount || request.Amount || '')}">
-        </div>
-
-        <div class="approval-field">
-          <label class="approval-label" for="approvalNotes">Notes</label>
-          <textarea id="approvalNotes">${escapeHtml(currentRequest.Notes || currentRequest.Notes === "" ? currentRequest.Notes : (request.Notes || ''))}</textarea>
-        </div>
-      `;
-    } else if (typeRaw.includes('leave')) {
-      html = `
-        <div class="approval-field"><span class="approval-label">Date:</span><span class="small-muted">${formatDateForDisplay(currentRequestExtract.date || request.Date || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Name:</span><span class="small-muted">${escapeHtml(currentRequestExtract.name || request.Name || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Reason:</span><span class="small-muted">${escapeHtml(currentRequestExtract.reason || request.Reason || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Date Covered:</span><span class="small-muted">${escapeHtml(currentRequestExtract.dateCovered || request.DateCovered || '')}</span></div>
-        <div class="approval-field"><span class="approval-label"># of Days:</span><span class="small-muted">${escapeHtml(currentRequestExtract.days || request.Days || '')}</span></div>
-
-        <div class="approval-field">
-          <label class="approval-label" for="approvalNotes">Notes</label>
-          <textarea id="approvalNotes">${escapeHtml(currentRequest.Notes || currentRequest.Notes === "" ? currentRequest.Notes : (request.Notes || ''))}</textarea>
-        </div>
-      `;
-    } else {
-      // generic fallback with editable notes
-      html = `
-        <div class="approval-field"><span class="approval-label">Date:</span><span class="small-muted">${formatDateForDisplay(currentRequestExtract.date || request.Date || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Name:</span><span class="small-muted">${escapeHtml(currentRequestExtract.name || request.Name || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Type:</span><span class="small-muted">${escapeHtml(currentRequestExtract.type || request.Type || '')}</span></div>
-        <div class="approval-field">
-          <label class="approval-label" for="approvalNotes">Notes</label>
-          <textarea id="approvalNotes">${escapeHtml(currentRequest.Notes || currentRequest.Notes === "" ? currentRequest.Notes : (request.Notes || ''))}</textarea>
-        </div>
-      `;
-    }
-
-    approvalDetails.innerHTML = html;
-    approvalModal.style.display = "flex";
-  }
-
-  function closeApprovalModal() {
-    approvalModal.style.display = "none";
-    currentRequest = null;
-    currentRequestExtract = null;
-  }
-
-  // ---------------- Approve/Reject -> send to Apps Script ----------------
-  async function handleApproval(action) {
-    if (!currentRequest) return;
-    try {
-      // collect editable fields
-      const notesEl = document.getElementById("approvalNotes");
-      const amountEl = document.getElementById("approvalAmount");
-      const notes = notesEl ? notesEl.value : (currentRequest.Notes || '');
-      const amount = amountEl ? amountEl.value : (currentRequest.Amount || currentRequest.amount || '');
-
-      // robust id detection
-      const idVal = (currentRequestExtract && currentRequestExtract.id) ? currentRequestExtract.id :
-                    (currentRequest.ID || currentRequest.Id || currentRequest.id || '');
-
-      // Build payload as FormData (Apps Script friendly)
-      const fd = new FormData();
-      fd.append('action', 'updateStatus'); // custom action flag for your script
-      fd.append('id', idVal);
-      fd.append('status', action);
-      fd.append('type', currentRequestExtract.type || currentRequest.Type || '');
-      fd.append('name', currentRequestExtract.name || currentRequest.Name || '');
-      fd.append('date', currentRequestExtract.date || currentRequest.Date || '');
-      fd.append('notes', notes);
-      if (amount !== undefined) fd.append('amount', amount);
-
-      const res = await fetch(API_URL, { method: 'POST', body: fd });
-      // some Apps Script deployments return JSON, some plain text — handle both
-      let result;
-      try { result = await res.json(); } catch (e) { result = { success: true }; }
-
-      if (result && (result.success === true || result.ok === true || result.updated === true)) {
-        // success
-        closeApprovalModal();
-        await loadApprovals(); // refresh
-      } else {
-        // if result falsey still try reload but inform user
-        console.warn('Unexpected response from API:', result);
-        alert('Update sent. If sheet did not change, check Apps Script logs.');
-        closeApprovalModal();
-        await loadApprovals();
-      }
-    } catch (err) {
-      console.error("Error updating request:", err);
-      alert("Failed to update request. Check console for details.");
-    }
-  }
-
-  // ---------------- Calendar render (unchanged) ----------------
-  function renderCalendar() {
-    calendarGrid.innerHTML = "";
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-
-    monthYear.textContent = currentDate.toLocaleString("default", { month: "long" }) + " " + year;
-
-    const isMobile = window.innerWidth <= 768;
-const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-dayNames.forEach(d => {
-  const dn = document.createElement("div");
-  dn.className = "day-name";
-  dn.textContent = isMobile ? d.slice(0, 3) : d.toUpperCase(); // "Sun" or "SUNDAY"
-  calendarGrid.appendChild(dn);
+  const allIds = ["btnDashboard","btnHR","btnReports","btnProjectCosting","btnApplications","btnRequests","btnPayslip","btnInventory","btnPortals"];
+  allIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = visible[role]?.includes(id) ? "block" : "none";
+  });
 });
 
+// Sidebar logic
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+const menuToggle = document.getElementById('menuToggle');
+let autoHideTimer, isHoveringSidebar = false;
 
+menuToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
+  if (sidebar.classList.contains('active')) startAutoHide();
+  else clearTimeout(autoHideTimer);
+});
 
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrevMonth = new Date(year, month, 0).getDate();
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('active');
+  overlay.classList.remove('active');
+  clearTimeout(autoHideTimer);
+});
 
-    for (let i = firstDay - 1; i >= 0; i--) {
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "day faded";
-      dayDiv.innerHTML = `<div class="day-number">${daysInPrevMonth - i}</div>`;
-      calendarGrid.appendChild(dayDiv);
+sidebar.addEventListener('mouseenter', () => {
+  isHoveringSidebar = true;
+  clearTimeout(autoHideTimer);
+});
+sidebar.addEventListener('mouseleave', () => {
+  isHoveringSidebar = false;
+  if (window.innerWidth > 768) startAutoHide();
+});
+
+function startAutoHide() {
+  clearTimeout(autoHideTimer);
+  autoHideTimer = setTimeout(() => {
+    if (!isHoveringSidebar && sidebar.classList.contains('active')) {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
     }
+  }, 4000);
+}
 
-    const today = new Date();
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateKey = `${year}-${month+1}-${day}`;
-      const savedNote = notes[dateKey] || "";
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "day";
-      if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-        dayDiv.classList.add("today");
-      }
-      dayDiv.innerHTML = `
-        <div class="day-number">${day}</div>
-        ${savedNote ? `<div class="note">${savedNote}</div>` : ""}
-      `;
-      dayDiv.onclick = () => openModal(dateKey, savedNote);
-      calendarGrid.appendChild(dayDiv);
+function toggleMenu(id) {
+  const allSubmenus = document.querySelectorAll(".submenu");
+  const menu = document.getElementById(id);
+  allSubmenus.forEach(sub => { if (sub !== menu) sub.classList.remove("show"); });
+  menu.classList.toggle("show");
+}
+
+function showPage(page) {
+  const iframe = document.getElementById("mainFrame");
+  const header = document.getElementById("pageHeader");
+  const role = localStorage.getItem("role") || "";
+
+  const pages = {
+    employee: ["Employee Profile", "Employee Profile.html"],
+    employeelist: ["Employee List", "Employee"],
+    attendance: ["Attendance", "HR_Attendance.html"],
+    payroll: ["Payroll", "HR_Payroll.html"],
+    projects: ["Projects Report", "Reports_Projects.html"],
+    sales: ["Sales Report", "Sales.html"],
+    ar: ["Accounts Receivable", "Accounts Receivable.html"],
+    ap: ["Accounts Payable", "AP.html"],
+    pc: ["Costing Report", "Costing.html"],
+    is: ["Income Statement", "IS.html"],
+    inventoryGallery: ["Inventory Gallery", "inventory.html"],
+    inventoryList: ["Inventory List", "Inventory List.html"],
+    projectCosting: ["Project Costing", "Project Costing.html"],
+    aleave: ["Leave Application", "aleave.html"],
+    aadvances: ["Cash Advance Application", "aadvances.html"],
+    aovertime: ["Overtime Application", "aovertime.html"],
+    rleave: ["Leave Request", "rleave.html"],
+    radvances: ["Advances Request", "rAdvances.html"],
+    rovertime: ["Overtime Request", "rovertime.html"],
+    payslip: ["Pay Slips", "Payslip.html"],
+    portals: ["Portals", "Portals.html"]
+  };
+
+  if (page === "dashboard") {
+    if (role === "System Admin" || role === "Admin") {
+      iframe.src = "Admin Dashboard.html";
+      header.textContent = "Admin Dashboard";
+    } else if (role === "HR") {
+      iframe.src = "HR Dashboard.html";
+      header.textContent = "HR Dashboard";
+    } else {
+      iframe.src = "dashboard.html";
+      header.textContent = "Dashboard";
     }
-
-    const totalCells = firstDay + daysInMonth;
-    const nextDays = 42 - totalCells;
-    for (let i = 1; i <= nextDays; i++) {
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "day faded";
-      dayDiv.innerHTML = `<div class="day-number">${i}</div>`;
-      calendarGrid.appendChild(dayDiv);
-    }
+    return;
   }
 
-  // ---------------- Notes modal ----------------
-  function openModal(dateKey, savedNote) {
-    selectedDate = dateKey;
-    modalDate.textContent = "Notes for " + dateKey;
-    noteText.value = savedNote;
-    noteModal.style.display = "flex";
-  }
-  function closeModal() { noteModal.style.display = "none"; }
-
-  async function saveNote() {
-    if (!selectedDate) return;
-    const fd = new FormData();
-    fd.append("type", "saveNote");
-    fd.append("date", selectedDate);
-    fd.append("note", noteText.value);
-
-    try {
-      await fetch(API_URL, { method: "POST", body: fd });
-      notes[selectedDate] = noteText.value;
-      closeModal();
-      renderCalendar();
-    } catch (err) {
-      console.error("Error saving note:", err);
-    }
-  }
-
-  function prevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); loadReminders(); }
-  function nextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); loadReminders(); }
-
-  // ---------------- util ----------------
-  function escapeHtml(s) {
-    if (s === undefined || s === null) return '';
-    return String(s)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'",'&#39;');
-  }
-  function sanitizeNumber(v) {
-    if (v === undefined || v === null) return '';
-    return String(v).replace(/[^0-9.\-]/g,'');
-  }
-
-  // ---------------- initial load ----------------
-  loadNotes();
-  loadReminders();
-  loadApprovals();
-  loadReceivables();
-  loadPayables();
-
-
-  // close modal when clicking outside
-  window.addEventListener('click', (e) => {
-    if (e.target === approvalModal) closeApprovalModal();
-    if (e.target === noteModal) closeModal();
-  });
-
-  // --- Preserve URL parameters (like ?id=123) across reloads ---
-(function preserveParams() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.toString()) {
-    // Store params temporarily in sessionStorage
-    sessionStorage.setItem("savedParams", params.toString());
+  if (pages[page]) {
+    const [label, url] = pages[page];
+    iframe.src = url;
+    header.textContent = label;
   } else {
-    // Restore if missing
-    const saved = sessionStorage.getItem("savedParams");
-    if (saved) {
-      const newUrl = window.location.pathname + "?" + saved;
-      window.history.replaceState({}, "", newUrl);
-    }
+    iframe.src = "dashboard.html";
+    header.textContent = "Dashboard";
   }
-})();
+}
 
-// Attach event listeners for Note Modal buttons
-document.querySelector("#noteModal .close-btn").addEventListener("click", closeModal);
-document.querySelector("#noteModal .save-btn").addEventListener("click", saveNote);
-
-
+function logout() {
+  localStorage.clear();
+  window.location.href = "/";
+}
   </script>
 </body>
 </html>
