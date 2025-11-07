@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard</title>
+  <title>Dashboard</title>
   <style>
     body { margin: 0; font-family: Arial, sans-serif; display:flex; height:100vh; }
     .main{ flex:1; background: gray; padding:20px; overflow:hidden; display:flex; flex-direction:column;}
@@ -41,7 +41,7 @@
       flex: 1;
       gap: 5px;
       height: 100%;
-      overflow: auto;
+      overflow:auto;
     }
     .day-name {
       font-weight: bold;
@@ -102,6 +102,29 @@
     padding-bottom: env(safe-area-inset-bottom);
 
   }
+}
+
+/* ✅ SPINNER — WORKS BOTH DESKTOP & MOBILE */
+.lds-dual-ring {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 28px;
+  height: 28px;
+  margin: 2px;
+  border-radius: 50%;
+  border: 4px solid #f97316;
+  border-color: #f97316 transparent #f97316 transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+
+@keyframes lds-dual-ring {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Adjust Note Modal layout */
@@ -269,8 +292,6 @@
   .day-name {
     font-size: 0.8em;
   }
-}
-
 
   </style>
 </head>
@@ -323,6 +344,10 @@
     <h3>Notes</h3>
     <h4 id="modalDate" style="text-align:center; color:#333; margin-top:-5px;"></h4>
     <textarea id="noteText" placeholder="Enter your note..."></textarea>
+    <div id="noteSpinner" 
+     style="display:none; text-align:center; width:100%; margin-bottom:10px;">
+     <div class="lds-dual-ring"></div>
+      </div>
     <div class="modal-footer">
       <button class="close-btn">Close</button>
       <button class="save-btn">Save</button>
@@ -346,480 +371,566 @@
 
   <script>
     document.getElementById("receivablesCard").addEventListener("click", () => {
-    window.location.href = "Accounts Receivable.html";
+      window.location.href = "Accounts Receivable.html";
     });
 
     document.getElementById("payablesCard").addEventListener("click", () => {
-    window.location.href = "AP.html";
+      window.location.href = "AP.html";
     });
 
-  // <-- set your deployed Apps Script webapp URL here (must allow POST & CORS if needed) -->
-  const RECEIVABLES_URL = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
-  const PAYABLES_URL    = "https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec";
-  const API_URL = "https://script.google.com/macros/s/AKfycbyP6xne0iCnV0nrgYg0TnS-dE2TisBlQS4DOtSTgkOfWAQUsC7No5aNLFpAsTEc6ax5/exec";
+    // <-- set your deployed Apps Script webapp URL here (must allow POST & CORS if needed) -->
+    const RECEIVABLES_URL = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
+    const PAYABLES_URL    = "https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec";
+    const API_NOTES       = "https://script.google.com/macros/s/AKfycbxfQ_h4sW1QHUHR9zImCxpJ4h1lDajPJWIO6PVUk04MNkDyGV3poXMjijL3KQh6XilOWA/exec";
+    const API_REMINDERS   = "https://script.google.com/macros/s/REMINDERS_ID/exec";
+    const API_REQUESTS    = "https://script.google.com/macros/s/REQUESTS_ID/exec";
 
-  const calendarGrid = document.getElementById("calendarGrid");
-  const monthYear = document.getElementById("monthYear");
-  const noteModal = document.getElementById("noteModal");
-  const modalDate = document.getElementById("modalDate");
-  const noteText = document.getElementById("noteText");
-  const remindersList = document.getElementById("remindersList");
-  const approvalList = document.getElementById("approvalList");
+    const API_URL = "https://script.google.com/macros/s/AKfycbyP6xne0iCnV0nrgYg0TnS-dE2TisBlQS4DOtSTgkOfWAQUsC7No5aNLFpAsTEc6ax5/exec";
 
-  const approvalModal = document.getElementById("approvalModal");
-  const approvalDetails = document.getElementById("approvalDetails");
+    const calendarGrid = document.getElementById("calendarGrid");
+    const monthYear = document.getElementById("monthYear");
+    const noteModal = document.getElementById("noteModal");
+    const modalDate = document.getElementById("modalDate");
+    const noteText = document.getElementById("noteText");
+    const remindersList = document.getElementById("remindersList");
+    const approvalList = document.getElementById("approvalList");
 
-  let currentDate = new Date();
-  let selectedDate = null;
-  let notes = {};
-  let currentRequest = null; // full request object
-  let currentRequestExtract = null; // extracted fields
+    const approvalModal = document.getElementById("approvalModal");
+    const approvalDetails = document.getElementById("approvalDetails");
 
-  //AR Total
-  async function loadReceivables() {
-  try {
-    // Fetch from your working Apps Script (Sales tab)
-    const res = await fetch(RECEIVABLES_URL + "?sheet=sales");
-    const data = await res.json();
+    let currentDate = new Date();
+    let selectedDate = null;
+    let notes = {};
+    let currentRequest = null; // full request object
+    let currentRequestExtract = null; // extracted fields
 
-    // Filter only rows where STATUS = "PENDING"
-    const pending = data.filter(r => 
-      String(r.STATUS || r.Status || "").toUpperCase() === "PENDING"
-    );
-
-    // Total the AMOUNT column
-    const total = pending.reduce((sum, r) => {
-      const amt = parseFloat(
-        (r.AMOUNT || r.Amount || "0").toString().replace(/,/g, "")
-      );
-      return sum + (isNaN(amt) ? 0 : amt);
-    }, 0);
-
-    // Display total in Receivables card (#3)
-    document.querySelector(".card:nth-child(3) p").textContent =
-      "Php " + total.toLocaleString(undefined, { minimumFractionDigits: 2 });
-
-  } catch (err) {
-    console.error("Error loading receivables:", err);
-    document.querySelector(".card:nth-child(3) p").textContent = "Php 0.00";
-  }
-}
-
-// PAYABLES Total
-async function loadPayables() {
-  try {
-    const res = await fetch("https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec?type=summary");
-    const data = await res.json();
-
-    const total = data.reduce((sum, row) => sum + (parseFloat(row.AMOUNT) || 0), 0);
-
-    document.querySelector(".card:nth-child(4) p").textContent =
-      "Php " + total.toLocaleString(undefined, { minimumFractionDigits: 2 });
-  } catch (err) {
-    console.error("Error loading Payables total:", err);
-    document.querySelector(".card:nth-child(4) p").textContent = "Php 0.00";
-  }
-}
-
-
-
-  // ---------------- helpers ----------------
-  function formatDateForDisplay(dateInput) {
-    if (!dateInput) return "";
-    // try to parse different formats robustly
-    const d = new Date(dateInput);
-    if (isNaN(d.getTime())) {
-      // try replacing space-only formats or common variants
-      const tryParse = Date.parse(String(dateInput).replace(/(\s)+/g, ' '));
-      if (!isNaN(tryParse)) return new Date(tryParse).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-      return String(dateInput);
+    // ---------- DATE HELPERS (fix for missing notes) ----------
+    function pad(n){ return n < 10 ? "0"+n : String(n); }
+    function formatYMDFromDateObj(d){
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
     }
-    return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-  }
+    function normalizeToYMD(value){
+      // Accept Date, ISO, "YYYY-M-D", "MM/DD/YYYY", etc. -> local YYYY-MM-DD
+      if (value instanceof Date && !isNaN(value)) return formatYMDFromDateObj(value);
+      const tryDate = new Date(value);
+      if (!isNaN(tryDate)) return formatYMDFromDateObj(tryDate);
 
-  function getFirstKeyValue(obj, candidates) {
-    if (!obj) return undefined;
-    for (const k of candidates) if (k in obj && obj[k] !== undefined && obj[k] !== null) return obj[k];
-    const lower = {};
-    for (const [k,v] of Object.entries(obj)) lower[k.toLowerCase()] = v;
-    for (const k of candidates) {
-      const lk = k.toLowerCase();
-      if (lk in lower) return lower[lk];
-    }
-    return undefined;
-  }
-  function findByPattern(obj, regex) {
-    for (const v of Object.values(obj)) {
-      if (typeof v === 'string' && regex.test(v)) return v;
-    }
-    return undefined;
-  }
+      // Loose regex fallback for "YYYY-M-D"
+      const m = String(value).trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
 
-  function extractRequestData(req) {
-    if (!req) return {};
-    const date = getFirstKeyValue(req, ['Date','date','Timestamp','timestamp','Date Filed','Created','Submitted']) ||
-                 findByPattern(req, /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/) ||
-                 findByPattern(req, /\d{4}-\d{1,2}-\d{1,2}/);
-    const name = getFirstKeyValue(req, ['Name','name','Employee','Employee Name','EmployeeName','Full Name','FullName','Requested By','Requester']) ||
-                 (() => {
-                   for (const v of Object.values(req)) {
-                     if (typeof v === 'string') {
-                       const s = v.trim();
-                       if (s.length>2 && /[a-zA-Z]/.test(s) && /\s/.test(s) &&
-                           !/advance|leave|cash|php|₱|\d{2,4}-\d{1,2}-\d{1,2}/i.test(s)) return s;
-                     }
-                   }
-                   return undefined;
-                 })();
-    const type = getFirstKeyValue(req, ['Type','type','Request Type','RequestType','Form','Form Type','Request']) ||
-                 findByPattern(req, /advance|cash advance|leave|sick|vacation|overtime|ot/i);
-    const purpose = getFirstKeyValue(req, ['Purpose','purpose','Remarks','Detail','Details','Purpose of Advance']) ||
-                    getFirstKeyValue(req, ['Remarks','remarks','Notes']);
-    const amount = getFirstKeyValue(req, ['Amount','amount','Amt','AMOUNT','Amount (PHP)']) ||
+      // As last resort return raw string (won't usually be needed)
+      return String(value);
+    }
+
+    //AR Total
+    async function loadReceivables() {
+      try {
+        // Fetch from your working Apps Script (Sales tab)
+        const res = await fetch(RECEIVABLES_URL + "?sheet=sales");
+        const data = await res.json();
+
+        // Filter only rows where STATUS = "PENDING"
+        const pending = data.filter(r => 
+          String(r.STATUS || r.Status || "").toUpperCase() === "PENDING"
+        );
+
+        // Total the AMOUNT column
+        const total = pending.reduce((sum, r) => {
+          const amt = parseFloat(
+            (r.AMOUNT || r.Amount || "0").toString().replace(/,/g, "")
+          );
+          return sum + (isNaN(amt) ? 0 : amt);
+        }, 0);
+
+        // Display total in Receivables card (#3)
+        document.querySelector(".card:nth-child(3) p").textContent =
+          "Php " + total.toLocaleString(undefined, { minimumFractionDigits: 2 });
+
+      } catch (err) {
+        console.error("Error loading receivables:", err);
+        document.querySelector(".card:nth-child(3) p").textContent = "Php 0.00";
+      }
+    }
+
+    // PAYABLES Total
+    async function loadPayables() {
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbwf2NPUcNlKaGE7LPf5NsXfZuhM1xz_xfA7AMQQv3qdw9FB4bFQk-Ik2V0OVH5YQckh1Q/exec?type=summary");
+        const data = await res.json();
+
+        const total = data.reduce((sum, row) => sum + (parseFloat(row.AMOUNT) || 0), 0);
+
+        document.querySelector(".card:nth-child(4) p").textContent =
+          "Php " + total.toLocaleString(undefined, { minimumFractionDigits: 2 });
+      } catch (err) {
+        console.error("Error loading Payables total:", err);
+        document.querySelector(".card:nth-child(4) p").textContent = "Php 0.00";
+      }
+    }
+
+    // ---------------- helpers ----------------
+    function formatDateForDisplay(dateInput) {
+      if (!dateInput) return "";
+      const d = new Date(dateInput);
+      if (isNaN(d.getTime())) {
+        const tryParse = Date.parse(String(dateInput).replace(/(\s)+/g, ' '));
+        if (!isNaN(tryParse)) return new Date(tryParse).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+        return String(dateInput);
+      }
+      return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+    }
+
+    function getFirstKeyValue(obj, candidates) {
+      if (!obj) return undefined;
+      for (const k of candidates) if (k in obj && obj[k] !== undefined && obj[k] !== null) return obj[k];
+      const lower = {};
+      for (const [k,v] of Object.entries(obj)) lower[k.toLowerCase()] = v;
+      for (const k of candidates) {
+        const lk = k.toLowerCase();
+        if (lk in lower) return lower[lk];
+      }
+      return undefined;
+    }
+    function findByPattern(obj, regex) {
+      for (const v of Object.values(obj)) {
+        if (typeof v === 'string' && regex.test(v)) return v;
+      }
+      return undefined;
+    }
+
+    function extractRequestData(req) {
+      if (!req) return {};
+      const date = getFirstKeyValue(req, ['Date','date','Timestamp','timestamp','Date Filed','Created','Submitted']) ||
+                   findByPattern(req, /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/) ||
+                   findByPattern(req, /\d{4}-\d{1,2}-\d{1,2}/);
+      const name = getFirstKeyValue(req, ['Name','name','Employee','Employee Name','EmployeeName','Full Name','FullName','Requested By','Requester']) ||
                    (() => {
                      for (const v of Object.values(req)) {
-                       if (typeof v === 'string' && /^(php|₱)?\s?[0-9,]+(\.\d+)?$/i.test(v.trim())) return v;
-                       if (typeof v === 'number') return v;
+                       if (typeof v === 'string') {
+                         const s = v.trim();
+                         if (s.length>2 && /[a-zA-Z]/.test(s) && /\s/.test(s) &&
+                             !/advance|leave|cash|php|₱|\d{2,4}-\d{1,2}-\d{1,2}/i.test(s)) return s;
+                       }
                      }
                      return undefined;
                    })();
-    const reason = getFirstKeyValue(req, ['Reason','reason','Reason for Leave','Leave Reason']) || purpose;
-    const dateCovered = getFirstKeyValue(req, ['Date Covered','DateCovered','Date Range','Dates','From','To','Date From - To','Covered Dates']) ||
-                        getFirstKeyValue(req, ['Date From','Date To','From Date','To Date']);
-    const days = getFirstKeyValue(req, ['No. of Days','No of Days','Days','Number of Days','NoDays','Days Count']) ||
-                 findByPattern(req, /\b\d+\s*(day|days)\b/i) || undefined;
-    const id = getFirstKeyValue(req, ['ID','Id','id','Row','row','_id','rowIndex','RowIndex']);
-    return { date, name, type, purpose, amount, reason, dateCovered, days, id };
-  }
-
-  // ---------------- data loaders ----------------
-  async function loadNotes() {
-    try {
-      const res = await fetch(API_URL + "?type=notes");
-      const json = await res.json();
-      notes = {};
-      json.forEach(n => { notes[n.date] = n.note; });
-      renderCalendar();
-    } catch (err) {
-      console.error("Error loading notes:", err);
+      const type = getFirstKeyValue(req, ['Type','type','Request Type','RequestType','Form','Form Type','Request']) ||
+                   findByPattern(req, /advance|cash advance|leave|sick|vacation|overtime|ot/i);
+      const purpose = getFirstKeyValue(req, ['Purpose','purpose','Remarks','Detail','Details','Purpose of Advance']) ||
+                      getFirstKeyValue(req, ['Remarks','remarks','Notes']);
+      const amount = getFirstKeyValue(req, ['Amount','amount','Amt','AMOUNT','Amount (PHP)']) ||
+                     (() => {
+                       for (const v of Object.values(req)) {
+                         if (typeof v === 'string' && /^(php|₱)?\s?[0-9,]+(\.\d+)?$/i.test(v.trim())) return v;
+                         if (typeof v === 'number') return v;
+                       }
+                       return undefined;
+                     })();
+      const reason = getFirstKeyValue(req, ['Reason','reason','Reason for Leave','Leave Reason']) || purpose;
+      const dateCovered = getFirstKeyValue(req, ['Date Covered','DateCovered','Date Range','Dates','From','To','Date From - To','Covered Dates']) ||
+                          getFirstKeyValue(req, ['Date From','Date To','From Date','To Date']);
+      const days = getFirstKeyValue(req, ['No. of Days','No of Days','Days','Number of Days','NoDays','Days Count']) ||
+                   findByPattern(req, /\b\d+\s*(day|days)\b/i) || undefined;
+      const id = getFirstKeyValue(req, ['ID','Id','id','Row','row','_id','rowIndex','RowIndex']);
+      return { date, name, type, purpose, amount, reason, dateCovered, days, id };
     }
-  }
 
-  async function loadReminders() {
-    try {
-      const res = await fetch(API_URL + "?type=reminders");
-      const json = await res.json();
-      const nowMonth = currentDate.toLocaleString("default", { month: "long" }).toLowerCase();
-      remindersList.innerHTML = "";
-      const filtered = json.filter(r => String(r[Object.keys(r)[0]]).toLowerCase() === nowMonth);
-      if (filtered.length > 0) {
-        filtered.forEach(r => {
-          const reminderText = r[Object.keys(r)[1]];
-          if (reminderText) {
-            const div = document.createElement("div");
-            div.className = "note-item";
-            div.textContent = reminderText;
-            remindersList.appendChild(div);
+    // ---------------- data loaders ----------------
+    async function loadNotes() {
+      try {
+        const res = await fetch(API_NOTES + "?type=notes");
+        const json = await res.json();
+        notes = {};
+
+        json.forEach(row => {
+          // Detect date and note columns automatically (supports "Notes", "Remarks", etc.)
+          let dateVal = null, noteVal = null;
+          for (const [k, v] of Object.entries(row)) {
+            const key = k.toLowerCase();
+            if (key.includes("date")) dateVal = v;
+            if (key.includes("note") || key.includes("remark") || key.includes("desc")) noteVal = v;
+          }
+          if (dateVal && noteVal !== undefined && noteVal !== null) {
+            // ✅ Use LOCAL YYYY-MM-DD to avoid UTC shifting issues
+            const key = normalizeToYMD(dateVal);
+            notes[key] = String(noteVal);
           }
         });
-      } else {
-        remindersList.innerHTML = "<div class='note-item'>No reminders</div>";
+
+        localStorage.setItem("calendarNotes", JSON.stringify(notes)); // cache
+        renderCalendar();
+      } catch (err) {
+        console.error("Error loading notes:", err);
+        // fallback to local cache
+        const cached = localStorage.getItem("calendarNotes");
+        if (cached) notes = JSON.parse(cached);
+        renderCalendar();
       }
-    } catch (err) {
-      console.error("Error loading reminders:", err);
     }
-  }
 
-  // ---------------- approvals list & modal ----------------
-  async function loadApprovals() {
-    try {
-      const res = await fetch(API_URL + "?type=requests");
-      let json = await res.json();
+    async function loadReminders() {
+      try {
+        const res = await fetch(API_URL + "?type=reminders");
+        const json = await res.json();
+        const nowMonth = currentDate.toLocaleString("default", { month: "long" }).toLowerCase();
+        remindersList.innerHTML = "";
+        const filtered = json.filter(r => String(r[Object.keys(r)[0]]).toLowerCase() === nowMonth);
+        if (filtered.length > 0) {
+          filtered.forEach(r => {
+            const reminderText = r[Object.keys(r)[1]];
+            if (reminderText) {
+              const div = document.createElement("div");
+              div.className = "note-item";
+              div.textContent = reminderText;
+              remindersList.appendChild(div);
+            }
+          });
+        } else {
+          remindersList.innerHTML = "<div class='note-item'>No reminders</div>";
+        }
+      } catch (err) {
+        console.error("Error loading reminders:", err);
+      }
+    }
 
-      json = json.filter(r => String((r.Status || r.status || '')).toLowerCase() === "pending");
+    // ---------------- approvals list & modal ----------------
+    async function loadApprovals() {
+      try {
+        const res = await fetch(API_URL + "?type=requests");
+        let json = await res.json();
 
-      json.sort((a, b) => {
-        const da = extractRequestData(a).date;
-        const db = extractRequestData(b).date;
-        const ta = new Date(da || 0).getTime();
-        const tb = new Date(db || 0).getTime();
-        return ta - tb;
+        json = json.filter(r => String((r.Status || r.status || '')).toLowerCase() === "pending");
+
+        json.sort((a, b) => {
+          const da = extractRequestData(a).date;
+          const db = extractRequestData(b).date;
+          const ta = new Date(da || 0).getTime();
+          const tb = new Date(db || 0).getTime();
+          return ta - tb;
+        });
+
+        approvalList.innerHTML = "";
+
+        if (json.length > 0) {
+          json.forEach(r => {
+            const extracted = extractRequestData(r);
+            const displayName = extracted.name || (r[Object.keys(r)[1]] || 'Unknown');
+            const displayType = (extracted.type || (r[Object.keys(r)[2]] || 'Request')).toString();
+            const div = document.createElement("div");
+            div.className = "note-item";
+            // include formatted date for quick glance if available
+            const smallDate = extracted.date ? ` (${formatDateShort(extracted.date)})` : '';
+            div.textContent = `${displayName} - ${displayType}${smallDate}`;
+            div.onclick = () => openApprovalModal(r);
+            approvalList.appendChild(div);
+          });
+        } else {
+          approvalList.innerHTML = "<div class='note-item'>No pending requests</div>";
+        }
+      } catch (err) {
+        console.error("Error loading approvals:", err);
+      }
+    }
+
+    // short date for list: e.g., Sep 17
+    function formatDateShort(d) {
+      try {
+        const dt = new Date(d);
+        if (isNaN(dt)) return String(d).slice(0,10);
+        return dt.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      } catch { return String(d).slice(0,10); }
+    }
+
+    function openApprovalModal(request) {
+      currentRequest = request;
+      currentRequestExtract = extractRequestData(request);
+      const typeRaw = (currentRequestExtract.type || '').toString().toLowerCase();
+
+      let html = '';
+
+      // For both types we add editable Notes and, for Advances, editable Amount
+      if (typeRaw.includes('advance') || typeRaw.includes('cash')) {
+        html = `
+          <div class="approval-field"><span class="approval-label">Date:</span><span class="small-muted">${formatDateForDisplay(currentRequestExtract.date || request.Date || '')}</span></div>
+          <div class="approval-field"><span class="approval-label">Name:</span><span class="small-muted">${escapeHtml(currentRequestExtract.name || request.Name || '')}</span></div>
+          <div class="approval-field"><span class="approval-label">Purpose:</span><span class="small-muted">${escapeHtml(currentRequestExtract.purpose || request.Purpose || '')}</span></div>
+
+          <div class="approval-field">
+            <label class="approval-label" for="approvalAmount">Amount</label>
+            <input id="approvalAmount" type="number" step="0.01" value="${sanitizeNumber(currentRequestExtract.amount || request.Amount || '')}">
+          </div>
+
+          <div class="approval-field">
+            <label class="approval-label" for="approvalNotes">Notes</label>
+            <textarea id="approvalNotes">${escapeHtml(currentRequest.Notes || currentRequest.Notes === "" ? currentRequest.Notes : (request.Notes || ''))}</textarea>
+          </div>
+        `;
+      } else if (typeRaw.includes('leave')) {
+        html = `
+          <div class="approval-field"><span class="approval-label">Date:</span><span class="small-muted">${formatDateForDisplay(currentRequestExtract.date || request.Date || '')}</span></div>
+          <div class="approval-field"><span class="approval-label">Name:</span><span class="small-muted">${escapeHtml(currentRequestExtract.name || request.Name || '')}</span></div>
+          <div class="approval-field"><span class="approval-label">Reason:</span><span class="small-muted">${escapeHtml(currentRequestExtract.reason || request.Reason || '')}</span></div>
+          <div class="approval-field"><span class="approval-label">Date Covered:</span><span class="small-muted">${escapeHtml(currentRequestExtract.dateCovered || request.DateCovered || '')}</span></div>
+          <div class="approval-field"><span class="approval-label"># of Days:</span><span class="small-muted">${escapeHtml(currentRequestExtract.days || request.Days || '')}</span></div>
+
+          <div class="approval-field">
+            <label class="approval-label" for="approvalNotes">Notes</label>
+            <textarea id="approvalNotes">${escapeHtml(currentRequest.Notes || currentRequest.Notes === "" ? currentRequest.Notes : (request.Notes || ''))}</textarea>
+          </div>
+        `;
+      } else {
+        // generic fallback with editable notes
+        html = `
+          <div class="approval-field"><span class="approval-label">Date:</span><span class="small-muted">${formatDateForDisplay(currentRequestExtract.date || request.Date || '')}</span></div>
+          <div class="approval-field"><span class="approval-label">Name:</span><span class="small-muted">${escapeHtml(currentRequestExtract.name || request.Name || '')}</span></div>
+          <div class="approval-field"><span class="approval-label">Type:</span><span class="small-muted">${escapeHtml(currentRequestExtract.type || request.Type || '')}</span></div>
+          <div class="approval-field">
+            <label class="approval-label" for="approvalNotes">Notes</label>
+            <textarea id="approvalNotes">${escapeHtml(currentRequest.Notes || currentRequest.Notes === "" ? currentRequest.Notes : (request.Notes || ''))}</textarea>
+          </div>
+        `;
+      }
+
+      approvalDetails.innerHTML = html;
+      approvalModal.style.display = "flex";
+    }
+
+    function closeApprovalModal() {
+      approvalModal.style.display = "none";
+      currentRequest = null;
+      currentRequestExtract = null;
+    }
+
+    // ---------------- Approve/Reject -> send to Apps Script ----------------
+    async function handleApproval(action) {
+      if (!currentRequest) return;
+      try {
+        // collect editable fields
+        const notesEl = document.getElementById("approvalNotes");
+        const amountEl = document.getElementById("approvalAmount");
+        const notesVal = notesEl ? notesEl.value : (currentRequest.Notes || '');
+        const amountVal = amountEl ? amountEl.value : (currentRequest.Amount || currentRequest.amount || '');
+
+        // robust id detection
+        const idVal = (currentRequestExtract && currentRequestExtract.id) ? currentRequestExtract.id :
+                      (currentRequest.ID || currentRequest.Id || currentRequest.id || '');
+
+        // Build payload as FormData (Apps Script friendly)
+        const fd = new FormData();
+        fd.append('action', 'updateStatus'); // custom action flag for your script
+        fd.append('id', idVal);
+        fd.append('status', action);
+        fd.append('type', currentRequestExtract.type || currentRequest.Type || '');
+        fd.append('name', currentRequestExtract.name || currentRequest.Name || '');
+        fd.append('date', currentRequestExtract.date || currentRequest.Date || '');
+        fd.append('notes', notesVal);
+        if (amountVal !== undefined) fd.append('amount', amountVal);
+
+        const res = await fetch(API_URL, { method: 'POST', body: fd });
+        // some Apps Script deployments return JSON, some plain text — handle both
+        let result;
+        try { result = await res.json(); } catch (e) { result = { success: true }; }
+
+        if (result && (result.success === true || result.ok === true || result.updated === true)) {
+          // success
+          closeApprovalModal();
+          await loadApprovals(); // refresh
+        } else {
+          // if result falsey still try reload but inform user
+          console.warn('Unexpected response from API:', result);
+          alert('Update sent. If sheet did not change, check Apps Script logs.');
+          closeApprovalModal();
+          await loadApprovals();
+        }
+      } catch (err) {
+        console.error("Error updating request:", err);
+        alert("Failed to update request. Check console for details.");
+      }
+    }
+
+    // ---------------- Calendar render (fixed keys) ----------------
+    function renderCalendar() {
+      calendarGrid.innerHTML = "";
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      monthYear.textContent = currentDate.toLocaleString("default", { month: "long" }) + " " + year;
+
+      const isMobile = window.innerWidth <= 768;
+      const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      dayNames.forEach(d => {
+        const dn = document.createElement("div");
+        dn.className = "day-name";
+        dn.textContent = isMobile ? d.slice(0, 3) : d.toUpperCase(); // "Sun" or "SUNDAY"
+        calendarGrid.appendChild(dn);
       });
 
-      approvalList.innerHTML = "";
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
 
-      if (json.length > 0) {
-        json.forEach(r => {
-          const extracted = extractRequestData(r);
-          const displayName = extracted.name || (r[Object.keys(r)[1]] || 'Unknown');
-          const displayType = (extracted.type || (r[Object.keys(r)[2]] || 'Request')).toString();
-          const div = document.createElement("div");
-          div.className = "note-item";
-          // include formatted date for quick glance if available
-          const smallDate = extracted.date ? ` (${formatDateShort(extracted.date)})` : '';
-          div.textContent = `${displayName} - ${displayType}${smallDate}`;
-          div.onclick = () => openApprovalModal(r);
-          approvalList.appendChild(div);
-        });
-      } else {
-        approvalList.innerHTML = "<div class='note-item'>No pending requests</div>";
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "day faded";
+        dayDiv.innerHTML = `<div class="day-number">${daysInPrevMonth - i}</div>`;
+        calendarGrid.appendChild(dayDiv);
       }
-    } catch (err) {
-      console.error("Error loading approvals:", err);
-    }
-  }
 
-  // short date for list: e.g., Sep 17
-  function formatDateShort(d) {
-    try {
-      const dt = new Date(d);
-      if (isNaN(dt)) return String(d).slice(0,10);
-      return dt.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-    } catch { return String(d).slice(0,10); }
-  }
-
-  function openApprovalModal(request) {
-    currentRequest = request;
-    currentRequestExtract = extractRequestData(request);
-    const typeRaw = (currentRequestExtract.type || '').toString().toLowerCase();
-
-    let html = '';
-
-    // For both types we add editable Notes and, for Advances, editable Amount
-    if (typeRaw.includes('advance') || typeRaw.includes('cash')) {
-      html = `
-        <div class="approval-field"><span class="approval-label">Date:</span><span class="small-muted">${formatDateForDisplay(currentRequestExtract.date || request.Date || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Name:</span><span class="small-muted">${escapeHtml(currentRequestExtract.name || request.Name || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Purpose:</span><span class="small-muted">${escapeHtml(currentRequestExtract.purpose || request.Purpose || '')}</span></div>
-
-        <div class="approval-field">
-          <label class="approval-label" for="approvalAmount">Amount</label>
-          <input id="approvalAmount" type="number" step="0.01" value="${sanitizeNumber(currentRequestExtract.amount || request.Amount || '')}">
-        </div>
-
-        <div class="approval-field">
-          <label class="approval-label" for="approvalNotes">Notes</label>
-          <textarea id="approvalNotes">${escapeHtml(currentRequest.Notes || currentRequest.Notes === "" ? currentRequest.Notes : (request.Notes || ''))}</textarea>
-        </div>
-      `;
-    } else if (typeRaw.includes('leave')) {
-      html = `
-        <div class="approval-field"><span class="approval-label">Date:</span><span class="small-muted">${formatDateForDisplay(currentRequestExtract.date || request.Date || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Name:</span><span class="small-muted">${escapeHtml(currentRequestExtract.name || request.Name || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Reason:</span><span class="small-muted">${escapeHtml(currentRequestExtract.reason || request.Reason || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Date Covered:</span><span class="small-muted">${escapeHtml(currentRequestExtract.dateCovered || request.DateCovered || '')}</span></div>
-        <div class="approval-field"><span class="approval-label"># of Days:</span><span class="small-muted">${escapeHtml(currentRequestExtract.days || request.Days || '')}</span></div>
-
-        <div class="approval-field">
-          <label class="approval-label" for="approvalNotes">Notes</label>
-          <textarea id="approvalNotes">${escapeHtml(currentRequest.Notes || currentRequest.Notes === "" ? currentRequest.Notes : (request.Notes || ''))}</textarea>
-        </div>
-      `;
-    } else {
-      // generic fallback with editable notes
-      html = `
-        <div class="approval-field"><span class="approval-label">Date:</span><span class="small-muted">${formatDateForDisplay(currentRequestExtract.date || request.Date || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Name:</span><span class="small-muted">${escapeHtml(currentRequestExtract.name || request.Name || '')}</span></div>
-        <div class="approval-field"><span class="approval-label">Type:</span><span class="small-muted">${escapeHtml(currentRequestExtract.type || request.Type || '')}</span></div>
-        <div class="approval-field">
-          <label class="approval-label" for="approvalNotes">Notes</label>
-          <textarea id="approvalNotes">${escapeHtml(currentRequest.Notes || currentRequest.Notes === "" ? currentRequest.Notes : (request.Notes || ''))}</textarea>
-        </div>
-      `;
-    }
-
-    approvalDetails.innerHTML = html;
-    approvalModal.style.display = "flex";
-  }
-
-  function closeApprovalModal() {
-    approvalModal.style.display = "none";
-    currentRequest = null;
-    currentRequestExtract = null;
-  }
-
-  // ---------------- Approve/Reject -> send to Apps Script ----------------
-  async function handleApproval(action) {
-    if (!currentRequest) return;
-    try {
-      // collect editable fields
-      const notesEl = document.getElementById("approvalNotes");
-      const amountEl = document.getElementById("approvalAmount");
-      const notes = notesEl ? notesEl.value : (currentRequest.Notes || '');
-      const amount = amountEl ? amountEl.value : (currentRequest.Amount || currentRequest.amount || '');
-
-      // robust id detection
-      const idVal = (currentRequestExtract && currentRequestExtract.id) ? currentRequestExtract.id :
-                    (currentRequest.ID || currentRequest.Id || currentRequest.id || '');
-
-      // Build payload as FormData (Apps Script friendly)
-      const fd = new FormData();
-      fd.append('action', 'updateStatus'); // custom action flag for your script
-      fd.append('id', idVal);
-      fd.append('status', action);
-      fd.append('type', currentRequestExtract.type || currentRequest.Type || '');
-      fd.append('name', currentRequestExtract.name || currentRequest.Name || '');
-      fd.append('date', currentRequestExtract.date || currentRequest.Date || '');
-      fd.append('notes', notes);
-      if (amount !== undefined) fd.append('amount', amount);
-
-      const res = await fetch(API_URL, { method: 'POST', body: fd });
-      // some Apps Script deployments return JSON, some plain text — handle both
-      let result;
-      try { result = await res.json(); } catch (e) { result = { success: true }; }
-
-      if (result && (result.success === true || result.ok === true || result.updated === true)) {
-        // success
-        closeApprovalModal();
-        await loadApprovals(); // refresh
-      } else {
-        // if result falsey still try reload but inform user
-        console.warn('Unexpected response from API:', result);
-        alert('Update sent. If sheet did not change, check Apps Script logs.');
-        closeApprovalModal();
-        await loadApprovals();
+      const today = new Date();
+      for (let day = 1; day <= daysInMonth; day++) {
+        // ✅ always use padded YYYY-MM-DD so it matches notes keys
+        const dateKey = `${year}-${pad(month+1)}-${pad(day)}`;
+        const savedNote = notes[dateKey] || "";
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "day";
+        if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+          dayDiv.classList.add("today");
+        }
+        dayDiv.innerHTML = `
+          <div class="day-number">${day}</div>
+          ${savedNote ? `<div class="note">${savedNote}</div>` : ""}
+        `;
+        dayDiv.onclick = () => openModal(dateKey, savedNote);
+        calendarGrid.appendChild(dayDiv);
       }
-    } catch (err) {
-      console.error("Error updating request:", err);
-      alert("Failed to update request. Check console for details.");
-    }
-  }
 
-  // ---------------- Calendar render (unchanged) ----------------
-  function renderCalendar() {
-    calendarGrid.innerHTML = "";
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-
-    monthYear.textContent = currentDate.toLocaleString("default", { month: "long" }) + " " + year;
-
-    const isMobile = window.innerWidth <= 768;
-const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-dayNames.forEach(d => {
-  const dn = document.createElement("div");
-  dn.className = "day-name";
-  dn.textContent = isMobile ? d.slice(0, 3) : d.toUpperCase(); // "Sun" or "SUNDAY"
-  calendarGrid.appendChild(dn);
-});
-
-
-
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-    for (let i = firstDay - 1; i >= 0; i--) {
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "day faded";
-      dayDiv.innerHTML = `<div class="day-number">${daysInPrevMonth - i}</div>`;
-      calendarGrid.appendChild(dayDiv);
-    }
-
-    const today = new Date();
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateKey = `${year}-${month+1}-${day}`;
-      const savedNote = notes[dateKey] || "";
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "day";
-      if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-        dayDiv.classList.add("today");
+      const totalCells = firstDay + daysInMonth;
+      const nextDays = 42 - totalCells;
+      for (let i = 1; i <= nextDays; i++) {
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "day faded";
+        dayDiv.innerHTML = `<div class="day-number">${i}</div>`;
+        calendarGrid.appendChild(dayDiv);
       }
-      dayDiv.innerHTML = `
-        <div class="day-number">${day}</div>
-        ${savedNote ? `<div class="note">${savedNote}</div>` : ""}
-      `;
-      dayDiv.onclick = () => openModal(dateKey, savedNote);
-      calendarGrid.appendChild(dayDiv);
     }
 
-    const totalCells = firstDay + daysInMonth;
-    const nextDays = 42 - totalCells;
-    for (let i = 1; i <= nextDays; i++) {
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "day faded";
-      dayDiv.innerHTML = `<div class="day-number">${i}</div>`;
-      calendarGrid.appendChild(dayDiv);
+    // ---------------- Notes modal ----------------
+    function openModal(dateKey, savedNote) {
+      selectedDate = dateKey;
+      modalDate.textContent = "Notes for " + dateKey;
+      noteText.value = savedNote;
+      noteModal.style.display = "flex";
     }
-  }
-
-  // ---------------- Notes modal ----------------
-  function openModal(dateKey, savedNote) {
-    selectedDate = dateKey;
-    modalDate.textContent = "Notes for " + dateKey;
-    noteText.value = savedNote;
-    noteModal.style.display = "flex";
-  }
-  function closeModal() { noteModal.style.display = "none"; }
+    function closeModal() { noteModal.style.display = "none"; }
 
   async function saveNote() {
-    if (!selectedDate) return;
+  const noteInputEl = document.getElementById("noteText");
+  const spinner = document.getElementById("noteSpinner");
+  const saveBtn = document.querySelector("#noteModal .save-btn");
+  const closeBtn = document.querySelector("#noteModal .close-btn");
+
+  if (!noteInputEl) {
+    alert("Error: note textarea not found.");
+    return;
+  }
+
+  const date = selectedDate;
+  const note = (noteInputEl.value || "").trim();
+
+  if (!date) {
+    alert("Please select a date first.");
+    return;
+  }
+
+  const normalizedDate = normalizeToYMD(date);
+
+  try {
+    // ✅ Show spinner + disable buttons
+    spinner.style.display = "block";
+    saveBtn.disabled = true;
+    closeBtn.disabled = true;
+
     const fd = new FormData();
-    fd.append("type", "saveNote");
-    fd.append("date", selectedDate);
-    fd.append("note", noteText.value);
+    fd.append("type", "addNote");
+    fd.append("date", normalizedDate);
+    fd.append("note", note);
 
+    const response = await fetch(API_NOTES, {
+      method: "POST",
+      body: fd,
+    });
+
+    let result;
     try {
-      await fetch(API_URL, { method: "POST", body: fd });
-      notes[selectedDate] = noteText.value;
-      closeModal();
+      result = await response.json();
+    } catch {
+      result = { success: true };
+    }
+
+    if (result && (result.success || result.status === "success")) {
+      notes[normalizedDate] = note;
       renderCalendar();
-    } catch (err) {
-      console.error("Error saving note:", err);
+      alert("✅ Note saved!");
+      closeModal();
+    } else {
+      console.error("Save failed:", result);
+      alert("❌ Failed to save note.");
     }
+
+  } catch (err) {
+    console.error("Error saving note:", err);
+    alert("⚠️ Network error while saving note.");
+  } finally {
+    // ✅ Hide spinner + restore buttons
+    spinner.style.display = "none";
+    saveBtn.disabled = false;
+    closeBtn.disabled = false;
   }
-
-  function prevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); loadReminders(); }
-  function nextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); loadReminders(); }
-
-  // ---------------- util ----------------
-  function escapeHtml(s) {
-    if (s === undefined || s === null) return '';
-    return String(s)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'",'&#39;');
-  }
-  function sanitizeNumber(v) {
-    if (v === undefined || v === null) return '';
-    return String(v).replace(/[^0-9.\-]/g,'');
-  }
-
-  // ---------------- initial load ----------------
-  loadNotes();
-  loadReminders();
-  loadApprovals();
-  loadReceivables();
-  loadPayables();
+}
 
 
-  // close modal when clicking outside
-  window.addEventListener('click', (e) => {
-    if (e.target === approvalModal) closeApprovalModal();
-    if (e.target === noteModal) closeModal();
-  });
 
-  // --- Preserve URL parameters (like ?id=123) across reloads ---
-(function preserveParams() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.toString()) {
-    // Store params temporarily in sessionStorage
-    sessionStorage.setItem("savedParams", params.toString());
-  } else {
-    // Restore if missing
-    const saved = sessionStorage.getItem("savedParams");
-    if (saved) {
-      const newUrl = window.location.pathname + "?" + saved;
-      window.history.replaceState({}, "", newUrl);
+    function prevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); loadReminders(); }
+    function nextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); loadReminders(); }
+
+    // ---------------- util ----------------
+    function escapeHtml(s) {
+      if (s === undefined || s === null) return '';
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#39;');
     }
-  }
-})();
+    function sanitizeNumber(v) {
+      if (v === undefined || v === null) return '';
+      return String(v).replace(/[^0-9.\-]/g,'');
+    }
 
-// Attach event listeners for Note Modal buttons
-document.querySelector("#noteModal .close-btn").addEventListener("click", closeModal);
-document.querySelector("#noteModal .save-btn").addEventListener("click", saveNote);
+    // ---------------- initial load ----------------
+    loadNotes();
+    loadReminders();
+    loadApprovals();
+    loadReceivables();
+    loadPayables();
 
+    // close modal when clicking outside
+    window.addEventListener('click', (e) => {
+      if (e.target === approvalModal) closeApprovalModal();
+      if (e.target === noteModal) closeModal();
+    });
+
+    // --- Preserve URL parameters (like ?id=123) across reloads ---
+    (function preserveParams() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.toString()) {
+        // Store params temporarily in sessionStorage
+        sessionStorage.setItem("savedParams", params.toString());
+      } else {
+        // Restore if missing
+        const saved = sessionStorage.getItem("savedParams");
+        if (saved) {
+          const newUrl = window.location.pathname + "?" + saved;
+          window.history.replaceState({}, "", newUrl);
+        }
+      }
+    })();
+
+    // Attach event listeners for Note Modal buttons
+    document.querySelector("#noteModal .close-btn").addEventListener("click", closeModal);
+    document.querySelector("#noteModal .save-btn").addEventListener("click", saveNote);
 
   </script>
 </body>
