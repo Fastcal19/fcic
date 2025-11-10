@@ -243,7 +243,7 @@ function validateForm(){ return requiredIds.every(id=>document.getElementById(id
 function refreshSaveState(){ submitBtn.disabled=!validateForm(); }
 requiredIds.forEach(id=>document.getElementById(id).addEventListener('input',refreshSaveState));
 
-/* ✅ 1. NEW FUNCTION — LOAD CREDITS FROM EMPLOYEE SHEET USING EID */
+/* ✅ 1. LOAD CREDITS FROM EMPLOYEE SHEET USING EID */
 async function loadEmployeeCredits(){
   try{
     const res=await fetch(API_BASE+"?action=getEmployees");
@@ -267,7 +267,7 @@ async function loadEmployeeCredits(){
   }
 }
 
-/* ✅ 2. UPDATED LOAD LEAVES — used days only */
+/* ✅ 2. LOAD LEAVES — SORT + SAVE TO LOCAL STORAGE */
 async function loadLeaves(){
   const tbody=document.querySelector("tbody");
   tbody.innerHTML=`<tr><td colspan="6">Loading...</td></tr>`;
@@ -284,6 +284,12 @@ async function loadLeaves(){
     const usedDays=approved.reduce((sum,r)=>sum+(parseFloat(r["# of Days"]||0)||0),0);
 
     document.getElementById("leaveApplied").textContent=usedDays;
+
+    /* ✅ Sort by Date Filed (desc) */
+    myLeaves.sort((a, b) => new Date(b["Date Filed"]) - new Date(a["Date Filed"]));
+
+    /* ✅ SAVE LEAVE LIST TO LOCAL STORAGE */
+    localStorage.setItem("myLeaves", JSON.stringify(myLeaves));
 
     tbody.innerHTML=myLeaves.map((r,index)=>{
       const st=(r["Status"]||"").toLowerCase();
