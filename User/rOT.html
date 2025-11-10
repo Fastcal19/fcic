@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Employee Overtime Page</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: gray;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ✅ Main container for layout consistency */
+.main-container {
+  flex: 1;
+  background: linear-gradient(10deg, gold, orangered);
+  margin: 10px;
+  padding: 20px;
+  border-radius: 12px;
+  width: calc(100% - 20px);
+  min-height: calc(100vh - 20px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.cards {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  flex-wrap: nowrap;
+}
+
+.card {
+  flex: 1 1 0;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.card h2 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #555;
+}
+
+.card .value {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+button {
+  padding: 10px 20px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  align-self: flex-start;
+  width: auto;
+}
+
+button.new {
+  background: #007bff;
+  color: white;
+}
+
+button.edit {
+  background: #28a745;
+  color: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+th {
+  background: #e9ecef;
+  text-align: left;
+}
+
+.t-left { text-align: left; }
+.t-center { text-align: center; }
+
+.modal-bg {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 320px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.modal h3 { margin-top: 0; }
+
+.modal input, .modal textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.modal .actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Hide EID and Name fields by default */
+#eid, #name {
+  display: none;
+}
+
+.close-btn {
+  background: #dc3545;
+  color: #fff;
+}
+
+input[readonly] {
+  background: #f0f0f0;
+}
+
+#toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  color: white;
+  display: none;
+  z-index: 2000;
+  font-weight: 600;
+}
+
+#toast.success { background: #2e8b57; }
+#toast.error { background: #c0392b; }
+
+@media(max-width:480px){
+  .cards{gap:8px}
+  .card{padding:12px;}
+}
+
+@media(max-width:480px) and (orientation:portrait){
+  table th:nth-child(4), table th:nth-child(5),
+  table td:nth-child(4), table td:nth-child(5){display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="main-container">
+  <div class="cards"></div>
+
+  <button class="new" onclick="openModal()">Apply Overtime</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="t-center">No</th>
+        <th class="t-center">Date Filed</th>
+        <th class="t-center">Reason</th>
+        <th class="t-center">Date</th>
+        <th class="t-center">Time In</th>
+        <th class="t-center">Time Out</th>
+        <th class="t-center"># of Hour(s)</th>
+        <th class="t-center">Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Apply for Overtime</h3>
+    <input type="text" id="eid" readonly>
+    <input type="text" id="name" readonly>
+    <input type="text" id="dateFiled" placeholder="Date Filed" readonly>
+    <textarea id="reason" placeholder="Reason"></textarea>
+    <input type="date" id="otDate">
+    <input type="time" id="timeIn">
+    <input type="time" id="timeOut">
+    <input type="number" id="hours" min="1" placeholder="Number of hour(s)">
+    <div class="actions">
+      <button class="close-btn" onclick="closeModal()">Close</button>
+      <button id="cancelBtn" class="edit" onclick="cancelOvertime()" style="display:none;">Cancel</button>
+      <button id="submitBtn" class="new" onclick="submitOvertime()" disabled>Submit</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API_BASE = "https://script.google.com/macros/s/AKfycbxwNAs-dtkUGsv2Y7G0nMPC-uySpyLfrDhmgWhrvIsbeJICNawbXujtzv6uEwrGNEzH/exec";
+
+let applicantName = localStorage.getItem('full');
+let applicantEID = localStorage.getItem('eid');
+if(!applicantName){ applicantName = prompt("Enter your name:"); if(applicantName) localStorage.setItem('full', applicantName); }
+if(!applicantEID){ applicantEID = prompt("Enter your Employee ID:"); if(applicantEID) localStorage.setItem('eid', applicantEID); }
+
+const modalBg = document.getElementById('modalBg');
+const submitBtn = document.getElementById('submitBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const requiredIds = ['reason','otDate','timeIn','timeOut','hours'];
+let currentOID = null;
+let currentRow = null;
+
+function pad(n){return String(n).padStart(2,'0');}
+function formatDateOnly(v){const d=new Date(v);if(isNaN(d))return v;return `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()}`;}
+function formatDateTime(v){const d=new Date(v);if(isNaN(d))return v;let h=d.getHours(),ampm=h>=12?'PM':'AM';h=h%12||12;return `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()} ${pad(h)}:${pad(d.getMinutes())} ${ampm}`;}
+
+function openModal(){
+  currentOID=null; currentRow=null;
+  document.getElementById('modalTitle').textContent="Apply for Overtime";
+  submitBtn.textContent="Submit"; submitBtn.className="new";
+  document.getElementById('eid').value=applicantEID||"";
+  document.getElementById('name').value=applicantName||"";
+  document.getElementById('dateFiled').value=formatDateTime(new Date());
+  ['reason','otDate','timeIn','timeOut','hours'].forEach(id=>document.getElementById(id).value="");
+  cancelBtn.style.display="none";
+  refreshSaveState();
+  modalBg.style.display='flex';
+}
+
+function openEditModal(record,index){
+  currentOID = record.OID;
+  currentRow = document.querySelector(`tbody tr[data-index='${index}']`);
+  document.getElementById('modalTitle').textContent="Update Overtime";
+  submitBtn.textContent="Update"; submitBtn.className="edit";
+  document.getElementById('eid').value = record.EID || "";
+  document.getElementById('name').value = record.Name || "";
+  document.getElementById('dateFiled').value = formatDateTime(record["Date Filed"]);
+  document.getElementById('reason').value = record.Reason || "";
+  document.getElementById('otDate').value = record.Date || "";
+  document.getElementById('timeIn').value = record["Time In"] || "";
+  document.getElementById('timeOut').value = record["Time Out"] || "";
+  document.getElementById('hours').value = record["# of Hour(s)"] || "";
+  cancelBtn.style.display = (record.Status?.toLowerCase() === "pending") ? "inline-block" : "none";
+  refreshSaveState();
+  modalBg.style.display='flex';
+}
+
+function closeModal(){ modalBg.style.display='none'; }
+function validateForm(){ return requiredIds.every(id=>document.getElementById(id).value.trim()!==""); }
+function refreshSaveState(){ submitBtn.disabled = !validateForm(); }
+requiredIds.forEach(id=>document.getElementById(id)?.addEventListener('input',refreshSaveState));
+
+async function loadOvertime() {
+  const tbody = document.querySelector('tbody');
+  tbody.innerHTML = `<tr><td colspan="8" class="t-center">Loading...</td></tr>`; // 8 columns
+
+  try {
+    const res = await fetch(API_BASE + "?action=getOT");
+    if (!res.ok) throw new Error("Network response not OK");
+
+    const data = await res.json();
+    console.log("Fetched data from API:", data);
+
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="t-center">No records found</td></tr>`;
+      return;
+    }
+
+    // Normalize EID for numeric comparison
+    const myEID = (localStorage.getItem("eid") || "").trim();
+    const myEIDNum = Number(myEID);
+    console.log("Current EID:", myEID);
+
+    // Filter by EID
+    let myOT = data.filter(r => Number(r["EID"] || "") === myEIDNum);
+    console.log("Filtered OT records:", myOT);
+
+    if (myOT.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="t-center">No records found for your EID</td></tr>`;
+      return;
+    }
+
+    // Sort by latest Date Filed first
+    myOT.sort((a, b) => new Date(b["Date Filed"]) - new Date(a["Date Filed"]));
+
+    // Helper: format time only
+    function formatTime(value) {
+      if (!value) return "";
+      const d = new Date(value);
+      if (isNaN(d)) return value;
+      const h = String(d.getHours()).padStart(2,'0');
+      const m = String(d.getMinutes()).padStart(2,'0');
+      return `${h}:${m}`;
+    }
+
+    // Render rows
+    tbody.innerHTML = myOT.map((r, i) => {
+      const status = (r.Status || "").toLowerCase();
+      const color = status === "approved" ? "green" :
+                    status === "disapproved" ? "red" :
+                    status === "pending" ? "blue" :
+                    status === "cancelled" ? "orange" : "black";
+
+      const dateFiled = formatDateTime(r["Date Filed"]);
+      const otDate = formatDateOnly(r["Date"]);
+
+      return `<tr data-index="${i}" style="cursor:pointer">
+        <td class="t-center">${i + 1}</td> <!-- sequence -->
+        <td class="t-center">${dateFiled}</td>
+        <td class="t-left">${r.Reason || ""}</td>
+        <td class="t-center">${otDate}</td>
+        <td class="t-center">${formatTime(r["TimeIn"])}</td>
+        <td class="t-center">${formatTime(r["TimeOut"])}</td>
+        <td class="t-center">${r["# of Hour(s)"] || ""}</td>
+        <td class="t-center"><span style="color:${color};font-weight:700">${r.Status || ""}</span></td>
+      </tr>`;
+    }).join("");
+
+    // Add click event
+    document.querySelectorAll('tbody tr[data-index]').forEach(tr => {
+      tr.addEventListener('click', () => openEditModal(myOT[tr.dataset.index], tr.dataset.index));
+    });
+
+  } catch (err) {
+    console.error("Error loading overtime:", err);
+    tbody.innerHTML = `<tr><td colspan="8" class="t-center">Error loading data</td></tr>`;
+  }
+}
+
+
+async function submitOvertime(){
+  if(!validateForm())return;
+  submitBtn.disabled=true;
+  submitBtn.textContent=currentOID?"Updating...":"Submitting...";
+  const payload={
+    method: currentOID?"updateOT":"submitOT",
+    OID: currentOID,
+    eid: applicantEID,
+    name: applicantName,
+    dateFiled: document.getElementById('dateFiled').value,
+    reason: document.getElementById('reason').value,
+    otDate: document.getElementById('otDate').value,
+    timeIn: document.getElementById('timeIn').value,
+    timeOut: document.getElementById('timeOut').value,
+    otHours: document.getElementById('hours').value,
+    status: "Pending"
+  };
+  try{
+    const body='payload='+encodeURIComponent(JSON.stringify(payload));
+    const res=await fetch(API_BASE,{method:"POST",headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body});
+    const text=await res.text();
+    let data;try{data=JSON.parse(text);}catch{data={status:"error",message:"Invalid JSON"};}
+    if(res.ok&&(data.status==="success"||data.success)){
+      showToast(currentOID?"Overtime updated":"Overtime submitted","success");
+      closeModal();currentOID=null;await loadOvertime();
+    }else showToast("Failed: "+(data.message||"Unknown error"),"error");
+  }catch(err){console.error(err);showToast("Network error","error");}
+  finally{submitBtn.textContent=currentOID?"Update":"Submit";refreshSaveState();}
+}
+
+async function cancelOvertime(){
+  if(!currentOID||!currentRow)return;
+  cancelBtn.disabled=true;
+  const payload={method:"updateOT",OID:currentOID,status:"Cancelled"};
+  try{
+    const body='payload='+encodeURIComponent(JSON.stringify(payload));
+    const res=await fetch(API_BASE,{method:"POST",headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body});
+    const text=await res.text();
+    let data;try{data=JSON.parse(text);}catch{data={status:"error",message:"Invalid JSON"};}
+    if(res.ok&&(data.status==="success"||data.success)){
+      showToast("Overtime cancelled","success");
+      const stCell=currentRow.querySelector('td:last-child span');
+      stCell.textContent="Cancelled";stCell.style.color="orange";
+      cancelBtn.style.display="none";closeModal();currentOID=null;
+      await loadOvertime();
+    }else{showToast("Failed: "+(data.message||"Unknown error"),"error");cancelBtn.disabled=false;}
+  }catch(err){console.error(err);showToast("Network error","error");cancelBtn.disabled=false;}
+}
+
+function sendApprovalEmail(info) {
+  const approveUrl = `${WEBAPP_URL}?action=approveOT&oid=${encodeURIComponent(info.oid)}&status=Approved`;
+  const disapproveUrl = `${WEBAPP_URL}?action=approveOT&oid=${encodeURIComponent(info.oid)}&status=Disapproved`;
+
+  const htmlBody = `
+    <div style="font-family:Arial,sans-serif;">
+      <h3>Overtime Request for Approval</h3>
+      <p><strong>Employee:</strong> ${escapeHtml(info.name)} (${escapeHtml(info.eid)})</p>
+      <p><strong>Date Filed:</strong> ${escapeHtml(info.dateFiled)}</p>
+      <p><strong>Date:</strong> ${escapeHtml(info.otDate)}</p>
+      <p><strong>Time In:</strong> ${escapeHtml(info.timeIn || "")}</p>
+      <p><strong>Time Out:</strong> ${escapeHtml(info.timeOut || "")}</p>
+      <p><strong>Reason:</strong> ${escapeHtml(info.reason)}</p>
+      <p><strong>Hours:</strong> ${escapeHtml(info.otHours)}</p>
+      <br>
+      <a href="${approveUrl}" 
+         style="background:#28a745;color:white;padding:8px 12px;border-radius:6px;text-decoration:none;">Approve</a>
+      &nbsp;&nbsp;
+      <a href="${disapproveUrl}" 
+         style="background:#dc3545;color:white;padding:8px 12px;border-radius:6px;text-decoration:none;">Disapprove</a>
+    </div>
+  `;
+
+  GmailApp.sendEmail(APPROVER_EMAIL, `Overtime Request from ${info.name}`, "Open in HTML view", {
+    htmlBody: htmlBody
+  });
+}
+
+
+function handleEmailApproval(e) {
+  const oid = e.parameter?.oid;
+  const status = e.parameter?.status;
+
+  if (!oid || !status) {
+    return HtmlService.createHtmlOutput("<h3>❌ Missing parameters</h3>");
+  }
+
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(OT_SHEET_NAME);
+  if (!sheet) return HtmlService.createHtmlOutput("<h3>❌ OT sheet not found</h3>");
+
+  const headers = sheet.getDataRange().getValues()[0];
+  const oidIndex = headers.indexOf("OID");
+  const statusIndex = headers.indexOf("Status");
+
+  if (oidIndex === -1 || statusIndex === -1) {
+    return HtmlService.createHtmlOutput("<h3>❌ Sheet headers not configured (OID/Status)</h3>");
+  }
+
+  // Lock the script to prevent race conditions
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000); // wait up to 10 sec
+
+  let rowNumber = -1;
+  try {
+    const rows = sheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i][oidIndex] === oid) {
+        rowNumber = i + 1; // Sheet rows are 1-indexed
+        break;
+      }
+    }
+
+    if (rowNumber === -1) {
+      return HtmlService.createHtmlOutput("<h3>❌ Request not found</h3>");
+    }
+
+    const currentStatus = sheet.getRange(rowNumber, statusIndex + 1).getValue();
+
+    let messageHtml;
+    if (currentStatus !== "Pending") {
+      messageHtml = `
+        <div style="font-family:Arial,sans-serif;text-align:center;margin-top:40px;">
+          <h2>⚠️ This request has already been <span style="color:red;">${currentStatus}</span></h2>
+          <p>Request ID: <b>${oid}</b></p>
+        </div>
+      `;
+    } else {
+      // Update status
+      sheet.getRange(rowNumber, statusIndex + 1).setValue(status);
+      messageHtml = `
+        <div style="font-family:Arial,sans-serif;text-align:center;margin-top:40px;">
+          <h2>✅ Overtime request ${status}</h2>
+          <p>Request ID: <b>${oid}</b></p>
+          <p>You may now close this window.</p>
+        </div>
+      `;
+    }
+
+    return HtmlService.createHtmlOutput(messageHtml).setTitle("Overtime Approval");
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className=type;t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+
+loadOvertime();
+</script>
+
+</body>
+</html>
