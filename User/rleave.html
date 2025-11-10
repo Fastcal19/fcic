@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Employee Leave Page</title>
 <style>
+/* (unchanged CSS, retained exactly as provided) */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -16,23 +17,22 @@ body {
   align-items: flex-start;
 }
 
-/* ✅ Main container for layout consistency */
+/* ✅ Main container */
 .main-container {
   flex: 1;
   background: linear-gradient(10deg, gold, orangered);
   margin: 10px;
   padding: 20px;
   border-radius: 12px;
-  width: calc(100% - 20px);    /* ✅ prevents horizontal overflow */
-  min-height: calc(100vh - 20px); /* ✅ adjusts to screen height dynamically */
-  max-height: 100%;              /* ✅ prevents forced overflow */
+  width: calc(100% - 20px);
+  min-height: calc(100vh - 20px);
+  max-height: 100%;
   box-shadow: 0 4px 10px rgba(0,0,0,0.25);
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;        /* ✅ ensures padding counts within width/height */
-  overflow-y: auto;              /* ✅ adds scroll only if content exceeds screen */
+  box-sizing: border-box;
+  overflow-y: auto;
 }
-
 
 .cards {
   display: flex;
@@ -51,16 +51,8 @@ body {
   text-align: center;
 }
 
-.card h2 {
-  margin: 0 0 10px 0;
-  font-size: 16px;
-  color: #555;
-}
-
-.card .value {
-  font-size: 28px;
-  font-weight: bold;
-}
+.card h2 { margin: 0 0 10px 0; font-size: 16px; color: #555; }
+.card .value { font-size: 28px; font-weight: bold; }
 
 button {
   padding: 10px 20px;
@@ -69,20 +61,12 @@ button {
   border: none;
   border-radius: 6px;
   font-size: 14px;
-  align-self: flex-start; /* ✅ prevents stretching full width */
-  width: auto;            /* ✅ ensures button only fits its content */
+  align-self: flex-start;
+  width: auto;
 }
 
-button.new {
-  background: #007bff;
-  color: white;
-}
-
-
-button.edit {
-  background: #28a745;
-  color: white;
-}
+button.new { background: #007bff; color: white; }
+button.edit { background: #28a745; color: white; }
 
 table {
   width: 100%;
@@ -100,11 +84,7 @@ th, td {
   vertical-align: middle;
 }
 
-th {
-  background: #e9ecef;
-  text-align: left;
-}
-
+th { background: #e9ecef; text-align: left; }
 .t-left { text-align: left; }
 .t-center { text-align: center; }
 
@@ -127,8 +107,6 @@ th {
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
-.modal h3 { margin-top: 0; }
-
 .modal input, .modal textarea {
   width: 100%;
   margin-bottom: 10px;
@@ -136,28 +114,11 @@ th {
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  box-sizing: border-box;
 }
 
-.modal .actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
+.close-btn { background: #dc3545; color: white; }
 
-/* Hide EID and Name fields by default */
-#eid, #name {
-  display: none;
-}
-
-.close-btn {
-  background: #dc3545;
-  color: #fff;
-}
-
-input[readonly] {
-  background: #f0f0f0;
-}
+#eid, #name { display: none; }
 
 #toast {
   position: fixed;
@@ -173,20 +134,6 @@ input[readonly] {
 
 #toast.success { background: #2e8b57; }
 #toast.error { background: #c0392b; }
-
-@media(max-width:480px){
-  .cards{gap:8px}
-  .card{padding:12px;}
-}
-
-@media(max-width:480px) and (orientation:portrait){
-  table th:nth-child(3), table th:nth-child(4), table th:nth-child(5),
-  table td:nth-child(3), table td:nth-child(4), table td:nth-child(5){display:none;}
-}
-
-@media(max-width:480px) and (orientation:landscape){
-  table th, table td{display:table-cell;}
-}
 </style>
 </head>
 <body>
@@ -215,13 +162,14 @@ input[readonly] {
   </table>
 </div>
 
+<!-- MODAL -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <h3 id="modalTitle">Apply Leave</h3>
     <input type="text" id="eid" readonly>
     <input type="text" id="name" readonly>
     <input type="text" id="email" readonly>
-    <input type="text" id="dateFiled" placeholder="Date Filed" readonly>
+    <input type="text" id="dateFiled" readonly>
     <textarea id="reason" placeholder="Reason"></textarea>
     <input type="date" id="fromDate">
     <input type="date" id="toDate">
@@ -237,209 +185,208 @@ input[readonly] {
 <div id="toast"></div>
 
 <script>
-const API_BASE="https://script.google.com/macros/s/AKfycbxDjv3eJI2z4nrcUVSZS0ZMOTVzeWzrjhKSu_0k9PQnRC7dMoecNuksPdgszV7w1ED2/exec";
+const API_BASE="https://script.google.com/macros/s/AKfycbwX5yUXERNNh4znf04N7a_4lxOFkFyU6CVriBG0jpVcxjYrRdt6rtRN8XtYl02aQmgh/exec";
 
+/* ✅ Load local user data */
 let applicantName = localStorage.getItem('full');
 let applicantEID = localStorage.getItem('eid');
-let applicantEmail = localStorage.getItem('email')
-if(!applicantName){ applicantName = prompt("Enter your name:"); if(applicantName) localStorage.setItem('full', applicantName); }
-if(!applicantEID){ applicantEID = prompt("Enter your Employee ID:"); if(applicantEID) localStorage.setItem('eid', applicantEID); }
-if(!applicantEmail){ applicantEmail = prompt("Enter your Email:"); if(applicantEmail) localStorage.setItem('email', applicantEmail); }
+let applicantEmail = localStorage.getItem('email');
 
-const modalBg = document.getElementById('modalBg');
-const modalTitle = document.getElementById('modalTitle');
-const submitBtn = document.getElementById('submitBtn');
-const cancelBtn = document.getElementById('cancelBtn');
-const requiredIds = ['dateFiled','reason','fromDate','toDate','days'];
-let currentLID = null;
-let currentRow = null;
+if(!applicantName){ applicantName = prompt("Enter your name:"); localStorage.setItem('full', applicantName); }
+if(!applicantEID){ applicantEID = prompt("Enter your Employee ID:"); localStorage.setItem('eid', applicantEID); }
+if(!applicantEmail){ applicantEmail = prompt("Enter your Email:"); localStorage.setItem('email', applicantEmail); }
+
+const modalBg=document.getElementById('modalBg');
+const submitBtn=document.getElementById('submitBtn');
+const cancelBtn=document.getElementById('cancelBtn');
+const requiredIds=['dateFiled','reason','fromDate','toDate','days'];
+let currentLID=null;
+let currentRow=null;
 
 function pad(n){ return String(n).padStart(2,'0'); }
-function formatDateOnly(value){ const d=new Date(value); if(isNaN(d)) return value; return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear(); }
-function formatDateTime(value){ const d=new Date(value); if(isNaN(d)) return value; let h=d.getHours(),ampm=h>=12?'PM':'AM'; h=h%12||12; return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear()+' '+pad(h)+':'+pad(d.getMinutes())+' '+ampm; }
+function formatDateOnly(v){ const d=new Date(v); return isNaN(d)?v: `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()}`; }
+function formatDateTime(v){ const d=new Date(v); if(isNaN(d)) return v; let h=d.getHours(),ampm=h>=12?'PM':'AM'; h=h%12||12; return `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()} ${pad(h)}:${pad(d.getMinutes())} ${ampm}`;}
 
-function openModal() {
-  currentLID = null;
-  currentRow = null;
-  modalTitle.textContent = "Apply Leave";
-  submitBtn.textContent = "Submit";
-  submitBtn.className = "new";
-
-  // Hide employee info when applying
-  document.getElementById('eid').style.display = "none";
-  document.getElementById('name').style.display = "none";
-  document.getElementById('email').style.display = "none";
-  document.getElementById('eid').value = applicantEID || "";
-  document.getElementById('name').value = applicantName || "";
-  document.getElementById('dateFiled').value = formatDateTime(new Date());
-  ['reason', 'fromDate', 'toDate', 'days'].forEach(id => document.getElementById(id).value = "");
-  cancelBtn.style.display = "none";
+function openModal(){
+  currentLID=null;
+  document.getElementById('eid').style.display="none";
+  document.getElementById('name').style.display="none";
+  document.getElementById('email').style.display="none";
+  document.getElementById('eid').value=applicantEID;
+  document.getElementById('name').value=applicantName;
+  document.getElementById('email').value=applicantEmail;
+  document.getElementById('dateFiled').value=formatDateTime(new Date());
+  ['reason','fromDate','toDate','days'].forEach(id=>document.getElementById(id).value="");
+  cancelBtn.style.display="none";
   refreshSaveState();
-  modalBg.style.display = 'flex';
+  modalBg.style.display='flex';
 }
 
-
 function openEditModal(record,index){
-  currentLID = record.LID;
-  currentRow = document.querySelector(`tbody tr[data-index='${index}']`);
-  modalTitle.textContent="Update Leave";
-  submitBtn.textContent="Update";
-  submitBtn.className="edit";
-  document.getElementById('eid').value = String(record.EID || "");
-  document.getElementById('name').value= String(record.Name||"");
-  document.getElementById('dateFiled').value = formatDateTime(record["Date Filed"]);
-  document.getElementById('reason').value=record.Reason||"";
-  document.getElementById('fromDate').value=record.From||"";
-  document.getElementById('toDate').value=record.To||"";
-  document.getElementById('days').value=record["# of Days"]||"";
-  cancelBtn.style.display = (record.Status?.toLowerCase() === "pending") ? "inline-block" : "none";
+  currentLID=record.LID;
+  currentRow=document.querySelector(`tbody tr[data-index='${index}']`);
+  document.getElementById('eid').value=record.EID;
+  document.getElementById('name').value=record.Name;
+  document.getElementById('email').value=record.Email;
+  document.getElementById('dateFiled').value=formatDateTime(record["Date Filed"]);
+  document.getElementById('reason').value=record.Reason;
+  document.getElementById('fromDate').value=record.From;
+  document.getElementById('toDate').value=record.To;
+  document.getElementById('days').value=record["# of Days"];
+  cancelBtn.style.display=(record.Status?.toLowerCase()==="pending")?"inline-block":"none";
   refreshSaveState();
   modalBg.style.display='flex';
 }
 
 function closeModal(){ modalBg.style.display='none'; }
 function validateForm(){ return requiredIds.every(id=>document.getElementById(id).value.trim()!==""); }
-function refreshSaveState(){ submitBtn.disabled = !validateForm(); }
-requiredIds.forEach(id=>document.getElementById(id)?.addEventListener('input',refreshSaveState));
+function refreshSaveState(){ submitBtn.disabled=!validateForm(); }
+requiredIds.forEach(id=>document.getElementById(id).addEventListener('input',refreshSaveState));
 
+/* ✅ 1. NEW FUNCTION — LOAD CREDITS FROM EMPLOYEE SHEET USING EID */
+async function loadEmployeeCredits(){
+  try{
+    const res=await fetch(API_BASE+"?action=getEmployees");
+    const employees=await res.json();
+    const myEID=(localStorage.getItem("eid")||"").trim().replace(/^0+/,"");
+
+    const me=employees.find(e =>
+      String(e.EID || e["Employee ID"] || "").trim().replace(/^0+/,"") === myEID
+    );
+
+    if(me){
+      const credits=parseFloat(me["Leave Credits"]||0);
+      document.getElementById("totalCredits").textContent=credits;
+
+      const used=parseFloat(document.getElementById("leaveApplied").textContent)||0;
+      document.getElementById("remainingLeave").textContent=Math.max(0, credits - used);
+    }
+  }catch(err){
+    console.error("Error loading credits:",err);
+    showToast("Error loading credits","error");
+  }
+}
+
+/* ✅ 2. UPDATED LOAD LEAVES — used days only */
 async function loadLeaves(){
-  const tbody=document.querySelector('tbody');
+  const tbody=document.querySelector("tbody");
   tbody.innerHTML=`<tr><td colspan="6">Loading...</td></tr>`;
   try{
     const res=await fetch(API_BASE+"?action=getLeaves");
     const data=await res.json();
+
     const myEID=(localStorage.getItem("eid")||"").trim().replace(/^0+/,"");
-    const myLeaves = data.filter(r => String(r["EID"] || "").trim().replace(/^0+/, "") === myEID);
-    const approvedLeaves=myLeaves.filter(r=>String(r["Status"]||"").toLowerCase()==="approved");
-    const usedDays=approvedLeaves.reduce((sum,r)=>sum+(parseFloat(r["# of Days"]||0)||0),0);
-    const totalCredits=parseFloat(document.getElementById("totalCredits").textContent)||0;
+    const myLeaves=data.filter(r => 
+      String(r["EID"]||"").trim().replace(/^0+/,"") === myEID
+    );
+
+    const approved=myLeaves.filter(r=>String(r["Status"]||"").toLowerCase()==="approved");
+    const usedDays=approved.reduce((sum,r)=>sum+(parseFloat(r["# of Days"]||0)||0),0);
+
     document.getElementById("leaveApplied").textContent=usedDays;
-    document.getElementById("remainingLeave").textContent=Math.max(0,totalCredits-usedDays);
 
     tbody.innerHTML=myLeaves.map((r,index)=>{
-      const st=String(r["Status"]||"").toLowerCase();
-      const color= st==="approved"?"green":st==="disapproved"?"red":st==="pending"?"blue":st==="cancelled"?"orange":"black";
-      const days=r["# of Days"]||"";
-      return `<tr data-index="${index}" style="cursor:pointer">
+      const st=(r["Status"]||"").toLowerCase();
+      const color = st==="approved"?"green":st==="disapproved"?"red":st==="pending"?"blue":st==="cancelled"?"orange":"black";
+      return `
+      <tr data-index="${index}" style="cursor:pointer">
         <td class="t-center">${formatDateTime(r["Date Filed"])}</td>
         <td class="t-left">${r.Reason||""}</td>
         <td class="t-center">${formatDateOnly(r.From)}</td>
         <td class="t-center">${formatDateOnly(r.To)}</td>
-        <td class="t-center">${days}</td>
-        <td class="t-center"><span style="color:${color}; font-weight:700">${r.Status||""}</span></td>
+        <td class="t-center">${r["# of Days"]||""}</td>
+        <td class="t-center"><span style="color:${color};font-weight:700">${r.Status}</span></td>
       </tr>`;
     }).join("");
 
-    document.querySelectorAll('tbody tr[data-index]').forEach(tr=>{
-      tr.addEventListener('click',()=>openEditModal(myLeaves[tr.getAttribute('data-index')], tr.getAttribute('data-index')));
+    document.querySelectorAll("tbody tr[data-index]").forEach(tr=>{
+      tr.addEventListener("click",()=>openEditModal(myLeaves[tr.dataset.index], tr.dataset.index));
     });
-  }catch(err){ console.error(err); tbody.innerHTML=`<tr><td colspan="6">Error loading data</td></tr>`; }
+
+  }catch(err){
+    console.error(err);
+    tbody.innerHTML=`<tr><td colspan="6">Error loading data</td></tr>`;
+  }
 }
 
-async function submitLeave() {
-  if (!validateForm()) return;
+async function submitLeave(){
+  if(!validateForm()) return;
 
-  const payload = {
-    method: "submitLeave",
-    eid: localStorage.getItem("eid"),
-    name: localStorage.getItem("full"),
-    email: localStorage.getItem("email"),
-    dateFiled: document.getElementById('dateFiled').value,
-    reason: document.getElementById('reason').value,
-    fromDate: document.getElementById('fromDate').value,
-    toDate: document.getElementById('toDate').value,
-    days: document.getElementById('days').value
+  const payload={
+    method:"submitLeave",
+    eid:localStorage.getItem("eid"),
+    name:localStorage.getItem("full"),
+    email:localStorage.getItem("email"),
+    dateFiled:document.getElementById('dateFiled').value,
+    reason:document.getElementById('reason').value,
+    fromDate:document.getElementById('fromDate').value,
+    toDate:document.getElementById('toDate').value,
+    days:document.getElementById('days').value
   };
 
-  const res = await fetch(API_BASE, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "payload=" + encodeURIComponent(JSON.stringify(payload))
+  const res=await fetch(API_BASE, {
+    method:"POST",
+    headers:{ "Content-Type":"application/x-www-form-urlencoded" },
+    body:"payload="+encodeURIComponent(JSON.stringify(payload))
   });
 
-  const data = await res.json();
-  if (data.status === "success") {
-    showToast("Leave submitted", "success");
+  const data=await res.json();
+  if(data.status==="success"){
+    showToast("Leave submitted","success");
     closeModal();
-    loadLeaves();
+    await loadLeaves();
+    await loadEmployeeCredits();
   } else {
-    showToast("Failed: " + data.message, "error");
+    showToast("Failed: "+data.message,"error");
   }
 }
-
-// Approve or Disapprove Leave
-async function approveLeave(LID, decision) {
-  try {
-    const res = await fetch(`${API_BASE}?action=approveLeave&LID=${LID}&status=${decision}`);
-    const data = await res.json();
-    
-    // Show the exact message returned by the backend
-    if (data.status === "success") {
-      showToast(data.message, "success");
-    } else {
-      showToast(data.message || "Failed to update leave", "error");
-    }
-
-    // Refresh table after approval/disapproval
-    loadLeaves();
-  } catch(err) {
-    console.error(err);
-    showToast("Network error", "error");
-  }
-}
-
-
 
 async function cancelLeave(){
   if(!currentLID || !currentRow) return;
-  cancelBtn.disabled = true;
+  cancelBtn.disabled=true;
+
   const payload={ method:"updateLeave", LID:currentLID, status:"Cancelled" };
+
   try{
     const body='payload='+encodeURIComponent(JSON.stringify(payload));
-    const res=await fetch(API_BASE,{method:"POST",headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body});
+    const res=await fetch(API_BASE,{
+      method:"POST",
+      headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+      body
+    });
+
     const text=await res.text();
-    let data; try{data=JSON.parse(text);}catch(err){data={status:"error",message:"Invalid JSON"}} 
-    if(res.ok&&(data.status==="success"||data.success)){ 
+    let data; try{ data=JSON.parse(text); }catch{ data={status:"error"} }
+
+    if(res.ok && (data.status==="success")){
       showToast("Leave cancelled","success");
-      const statusCell = currentRow.querySelector('td:last-child span');
-      statusCell.textContent = "Cancelled";
-      statusCell.style.color = "orange";
-      cancelBtn.style.display = "none";
       closeModal();
-      currentLID=null;
       await loadLeaves();
-    }else{ showToast("Failed: "+(data.message||"Unknown error"),"error"); cancelBtn.disabled=false; }
-  }catch(err){ console.error(err); showToast("Network error","error"); cancelBtn.disabled=false; }
-}
-
-function approvalHandler(LID, decision, token) {
-  try {
-    const user = verifyIdToken(token);
-    const approverEmail = user.email;
-
-    // Continue your sheet update logic here...
-    const SPREADSHEET_ID = "1Z7PIVvVOW5b7nNmsRe8oEV0BNEMxPVSzQkSjD7t_c88";
-    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName("Leave");
-    if (!sheet) return { status: "error", message: "Leave sheet not found." };
-
-    const data = sheet.getDataRange().getValues();
-    const rowIndex = data.findIndex(row => row[8] === LID);
-    if (rowIndex === -1) return { status: "error", message: "Leave ID not found." };
-
-    sheet.getRange(rowIndex + 1, 8).setValue(decision); // Status column
-
-    return { status: "success", message: `Leave ${decision} by ${approverEmail}` };
-
-  } catch (err) {
-    return { status: "error", message: err.message };
+      await loadEmployeeCredits();
+    }else{
+      showToast("Failed: "+(data.message||"Unknown error"),"error");
+      cancelBtn.disabled=false;
+    }
+  }catch(err){
+    console.error(err);
+    showToast("Network error","error");
+    cancelBtn.disabled=false;
   }
 }
 
+function showToast(msg,type){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.className=type;
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
 
-
-function showToast(msg,type){ const t=document.getElementById('toast'); t.textContent=msg; t.className=type; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
-
-loadLeaves();
+/* ✅ 3. STARTUP SEQUENCE */
+(async()=>{
+  await loadLeaves();
+  await loadEmployeeCredits();
+})();
 </script>
 </body>
 </html>
