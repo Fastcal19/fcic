@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Employee Overtime Page</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: gray;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.main-container {
+  flex: 1;
+  background: linear-gradient(10deg, gold, orangered);
+  margin: 10px;
+  padding: 20px;
+  border-radius: 12px;
+  width: calc(100% - 20px);
+  min-height: calc(100vh - 20px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.cards { display: none; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+th {
+  background: #e9ecef;
+  text-align: left;
+}
+
+.t-left { text-align: left; }
+.t-center { text-align: center; }
+
+tbody tr {
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+  cursor: pointer;
+}
+
+tbody tr:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  background: #f9f9f9;
+}
+
+@media(max-width:480px){
+  table th:nth-child(6), table th:nth-child(7),
+  table td:nth-child(6), table td:nth-child(7){display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="main-container">
+
+  <!-- Filter -->
+  <div style="margin-bottom: 15px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <label>User: 
+      <select id="nameFilter">
+        <option value="">All Users</option>
+      </select>
+    </label>
+    <label>From: <input type="date" id="fromDate"></label>
+    <label>To: <input type="date" id="toDate"></label>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="t-center">No</th>
+        <th class="t-center">Date Filed</th>
+        <th class="t-center">Employee</th>        
+        <th class="t-center">Reason</th>
+        <th class="t-center">Date</th>
+        <th class="t-center">Time In</th>
+        <th class="t-center">Time Out</th>
+        <th class="t-center"># of Hour(s)</th>
+        <th class="t-center">Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API_BASE = "https://script.google.com/macros/s/AKfycbxwNAs-dtkUGsv2Y7G0nMPC-uySpyLfrDhmgWhrvIsbeJICNawbXujtzv6uEwrGNEzH/exec";
+let allData = [];
+
+function pad(n){return String(n).padStart(2,'0');}
+function formatDateOnly(v){const d=new Date(v);if(isNaN(d))return v;return `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()}`;}
+function formatDateTime(v){const d=new Date(v);if(isNaN(d))return v;let h=d.getHours(),ampm=h>=12?'PM':'AM';h=h%12||12;return `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()} ${pad(h)}:${pad(d.getMinutes())} ${ampm}`;}
+
+async function loadOvertime() {
+  const tbody = document.querySelector('tbody');
+  tbody.innerHTML = `<tr><td colspan="9" class="t-center">Loading...</td></tr>`;
+
+  try {
+    const res = await fetch(API_BASE + "?action=getOT");
+    if (!res.ok) throw new Error("Network response not OK");
+    allData = await res.json();
+
+    if (!Array.isArray(allData) || allData.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="t-center">No records found</td></tr>`;
+      return;
+    }
+
+    populateNameDropdown();
+    applyFilters();
+  } catch(err){
+    console.error("Error loading overtime:",err);
+    tbody.innerHTML = `<tr><td colspan="9" class="t-center">Error loading data</td></tr>`;
+  }
+}
+
+// Populate name dropdown dynamically
+function populateNameDropdown() {
+  const nameFilter = document.getElementById('nameFilter');
+  const names = Array.from(new Set(allData.map(r=>r.Name).filter(Boolean))).sort();
+  nameFilter.innerHTML = `<option value="">All Users</option>` + 
+    names.map(n=>`<option value="${n}">${n}</option>`).join("");
+
+  // Restore selected name from localStorage
+  const savedName = localStorage.getItem('selectedUser');
+  if(savedName) {
+    nameFilter.value = savedName;
+  }
+}
+
+// Apply filters in real-time
+function applyFilters() {
+  const tbody = document.querySelector('tbody');
+  const fromDateVal = document.getElementById('fromDate').value;
+  const toDateVal = document.getElementById('toDate').value;
+  const selectedName = document.getElementById('nameFilter').value;
+
+  localStorage.setItem('selectedUser', selectedName);
+
+  const fromDate = fromDateVal ? new Date(fromDateVal) : null;
+  const toDate = toDateVal ? new Date(toDateVal) : null;
+
+  let filteredData = allData.filter(r => {
+    const filedDate = new Date(r["Date Filed"]);
+    if (isNaN(filedDate)) return false;
+    if (fromDate && filedDate < fromDate) return false;
+    if (toDate && filedDate > toDate) return false;
+    if(selectedName && r.Name !== selectedName) return false;
+    return true;
+  });
+
+  if(filteredData.length === 0){
+    tbody.innerHTML = `<tr><td colspan="9" class="t-center">No records found for selected filter</td></tr>`;
+    return;
+  }
+
+  filteredData.sort((a,b)=>{
+    const statusA = (a.Status||"").toLowerCase();
+    const statusB = (b.Status||"").toLowerCase();
+    if(statusA==="pending" && statusB!=="pending") return -1;
+    if(statusA!=="pending" && statusB==="pending") return 1;
+    return new Date(b["Date Filed"]) - new Date(a["Date Filed"]);
+  });
+
+  function formatTime(value) {
+    if (!value) return "";
+    const d = new Date(value);
+    if (isNaN(d)) return value;
+    const h = String(d.getHours()).padStart(2,'0');
+    const m = String(d.getMinutes()).padStart(2,'0');
+    return `${h}:${m}`;
+  }
+
+  tbody.innerHTML = filteredData.map((r,i)=>{
+    const status = (r.Status||"").toLowerCase();
+    const color = status==="approved"?"green":status==="disapproved"?"red":status==="pending"?"blue":status==="cancelled"?"orange":"black";
+    return `<tr>
+      <td class="t-center">${i+1}</td>
+      <td class="t-center">${formatDateTime(r["Date Filed"])}</td>
+      <td class="t-left">${r.Name||""}</td>   
+      <td class="t-left">${r.Reason||""}</td>
+      <td class="t-center">${formatDateOnly(r["Date"])}</td>
+      <td class="t-center">${formatTime(r["TimeIn"])}</td>
+      <td class="t-center">${formatTime(r["TimeOut"])}</td>
+      <td class="t-center">${r["# of Hours"]||""}</td>
+      <td class="t-center"><span style="color:${color};font-weight:700">${r.Status||""}</span></td>
+    </tr>`;
+  }).join("");
+}
+
+// Event listeners for real-time filtering
+document.getElementById('nameFilter').addEventListener('change', applyFilters);
+document.getElementById('fromDate').addEventListener('change', applyFilters);
+document.getElementById('toDate').addEventListener('change', applyFilters);
+
+loadOvertime();
+</script>
+</body>
+</html>
