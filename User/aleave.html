@@ -227,6 +227,24 @@ async function loadLeaves(){
   try{
     const res=await fetch(API_BASE+"?action=getLeaves");
     allLeaves=await res.json();
+
+    // Sort so PENDING appears first
+allLeaves.sort((a, b) => {
+  const sa = (a.Status || "").toLowerCase();
+  const sb = (b.Status || "").toLowerCase();
+
+  // pending first
+  if (sa === "pending" && sb !== "pending") return -1;
+  if (sa !== "pending" && sb === "pending") return 1;
+
+  // then priority pending (optional)
+  if (sa === "priority pending" && sb !== "priority pending") return -1;
+  if (sa !== "priority pending" && sb === "priority pending") return 1;
+
+  // Otherwise sort by Date Filed (newest first)
+  return new Date(b["Date Filed"]) - new Date(a["Date Filed"]);
+});
+
     tbody.innerHTML=allLeaves.map(r=>{
       const st=(r.Status||"").toLowerCase();
       const color= st==="approved"?"green":st==="disapproved"?"red":st==="pending"?"blue":"black";
