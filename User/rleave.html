@@ -220,6 +220,7 @@ input[readonly] {
     <h3 id="modalTitle">Apply Leave</h3>
     <input type="text" id="eid" readonly>
     <input type="text" id="name" readonly>
+    <input type="text" id="email" readonly>
     <input type="text" id="dateFiled" placeholder="Date Filed" readonly>
     <textarea id="reason" placeholder="Reason"></textarea>
     <input type="date" id="fromDate">
@@ -236,12 +237,14 @@ input[readonly] {
 <div id="toast"></div>
 
 <script>
-const API_BASE="https://script.google.com/macros/s/AKfycbyANdoBRP3Kl_pdg7fuuPh9Bpac8_jTG5pX7Fu197GbmgYG-j13zbNYk6hHijdL45HG/exec";
+const API_BASE="https://script.google.com/macros/s/AKfycbyeHm4jmW23ribyFcJ7VUTL39X1H02-DjkY1F_WatS-k6T8gg3klOffxCpNODefyuWV/exec";
 
 let applicantName = localStorage.getItem('full');
 let applicantEID = localStorage.getItem('eid');
+let applicantEmail = localStorage.getItem('email')
 if(!applicantName){ applicantName = prompt("Enter your name:"); if(applicantName) localStorage.setItem('full', applicantName); }
 if(!applicantEID){ applicantEID = prompt("Enter your Employee ID:"); if(applicantEID) localStorage.setItem('eid', applicantEID); }
+if(!applicantEmail){ applicantEmail = prompt("Enter your Email:"); if(applicantEmail) localStorage.setItem('email', applicantEmail); }
 
 const modalBg = document.getElementById('modalBg');
 const modalTitle = document.getElementById('modalTitle');
@@ -265,7 +268,7 @@ function openModal() {
   // Hide employee info when applying
   document.getElementById('eid').style.display = "none";
   document.getElementById('name').style.display = "none";
-
+  document.getElementById('email').style.display = "none";
   document.getElementById('eid').value = applicantEID || "";
   document.getElementById('name').value = applicantName || "";
   document.getElementById('dateFiled').value = formatDateTime(new Date());
@@ -333,34 +336,59 @@ async function loadLeaves(){
   }catch(err){ console.error(err); tbody.innerHTML=`<tr><td colspan="6">Error loading data</td></tr>`; }
 }
 
-async function submitLeave(){
-  if(!validateForm()) return;
-  submitBtn.disabled=true;
-  submitBtn.textContent=currentLID?"Updating...":"Submitting...";
-  const payload={
-    method: currentLID?"updateLeave":"submitLeave",
-    LID: currentLID,
-    eid: localStorage.getItem('eid'),
-    name: localStorage.getItem('full'),
+async function submitLeave() {
+  if (!validateForm()) return;
+
+  const payload = {
+    method: "submitLeave",
+    eid: localStorage.getItem("eid"),
+    name: localStorage.getItem("full"),
+    email: localStorage.getItem("email"),
     dateFiled: document.getElementById('dateFiled').value,
     reason: document.getElementById('reason').value,
     fromDate: document.getElementById('fromDate').value,
     toDate: document.getElementById('toDate').value,
-    days: document.getElementById('days').value,
-    status: "Pending"
+    days: document.getElementById('days').value
   };
-  try{
-    const body='payload='+encodeURIComponent(JSON.stringify(payload));
-    const res=await fetch(API_BASE,{method:"POST",headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body});
-    const text=await res.text();
-    let data; try{data=JSON.parse(text);}catch(err){data={status:"error",message:"Invalid JSON"}} 
-    if(res.ok&&(data.status==="success"||data.success)){ 
-      showToast(currentLID?"Leave updated":"Leave submitted","success");
-      closeModal(); currentLID=null; await loadLeaves();
-    }else{ showToast("Failed: "+(data.message||"Unknown error"),"error"); }
-  }catch(err){ console.error(err); showToast("Network error","error");}
-  finally{ submitBtn.textContent=currentLID?"Update":"Submit"; refreshSaveState(); }
+
+  const res = await fetch(API_BASE, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "payload=" + encodeURIComponent(JSON.stringify(payload))
+  });
+
+  const data = await res.json();
+  if (data.status === "success") {
+    showToast("Leave submitted", "success");
+    closeModal();
+    loadLeaves();
+  } else {
+    showToast("Failed: " + data.message, "error");
+  }
 }
+
+// Approve or Disapprove Leave
+async function approveLeave(LID, decision) {
+  try {
+    const res = await fetch(`${API_BASE}?action=approveLeave&LID=${LID}&status=${decision}`);
+    const data = await res.json();
+    
+    // Show the exact message returned by the backend
+    if (data.status === "success") {
+      showToast(data.message, "success");
+    } else {
+      showToast(data.message || "Failed to update leave", "error");
+    }
+
+    // Refresh table after approval/disapproval
+    loadLeaves();
+  } catch(err) {
+    console.error(err);
+    showToast("Network error", "error");
+  }
+}
+
+
 
 async function cancelLeave(){
   if(!currentLID || !currentRow) return;
@@ -383,6 +411,31 @@ async function cancelLeave(){
     }else{ showToast("Failed: "+(data.message||"Unknown error"),"error"); cancelBtn.disabled=false; }
   }catch(err){ console.error(err); showToast("Network error","error"); cancelBtn.disabled=false; }
 }
+
+function approvalHandler(LID, decision, token) {
+  try {
+    const user = verifyIdToken(token);
+    const approverEmail = user.email;
+
+    // Continue your sheet update logic here...
+    const SPREADSHEET_ID = "1Z7PIVvVOW5b7nNmsRe8oEV0BNEMxPVSzQkSjD7t_c88";
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName("Leave");
+    if (!sheet) return { status: "error", message: "Leave sheet not found." };
+
+    const data = sheet.getDataRange().getValues();
+    const rowIndex = data.findIndex(row => row[8] === LID);
+    if (rowIndex === -1) return { status: "error", message: "Leave ID not found." };
+
+    sheet.getRange(rowIndex + 1, 8).setValue(decision); // Status column
+
+    return { status: "success", message: `Leave ${decision} by ${approverEmail}` };
+
+  } catch (err) {
+    return { status: "error", message: err.message };
+  }
+}
+
+
 
 function showToast(msg,type){ const t=document.getElementById('toast'); t.textContent=msg; t.className=type; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
 
