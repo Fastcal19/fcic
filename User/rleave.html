@@ -140,9 +140,9 @@ th { background: #e9ecef; text-align: left; }
 
 <div class="main-container">
   <div class="cards">
-    <div class="card"><h2>Credits</h2><div class="value" id="totalCredits">10</div></div>
-    <div class="card"><h2>Used</h2><div class="value" id="leaveApplied">0</div></div>
-    <div class="card"><h2>Remaining</h2><div class="value" id="remainingLeave">10</div></div>
+    <div class="card"><h2>Credits</h2><div class="value" id="totalCredits"></div></div>
+    <div class="card"><h2>Used</h2><div class="value" id="leaveApplied"></div></div>
+    <div class="card"><h2>Remaining</h2><div class="value" id="remainingLeave"></div></div>
   </div>
 
   <button class="new" onclick="openModal()">Apply</button>
@@ -178,6 +178,7 @@ th { background: #e9ecef; text-align: left; }
       <button class="close-btn" onclick="closeModal()">Close</button>
       <button id="cancelBtn" class="edit" onclick="cancelLeave()" style="display:none;">Cancel</button>
       <button id="submitBtn" class="new" onclick="submitLeave()" disabled>Submit</button>
+      <button id="updateBtn" class="edit" onclick="updateLeave()" style="display:none;">Update</button>
     </div>
   </div>
 </div>
@@ -185,9 +186,8 @@ th { background: #e9ecef; text-align: left; }
 <div id="toast"></div>
 
 <script>
-const API_BASE="https://script.google.com/macros/s/AKfycbwX5yUXERNNh4znf04N7a_4lxOFkFyU6CVriBG0jpVcxjYrRdt6rtRN8XtYl02aQmgh/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbymTOXCRDAbO_qpcvxVMlDXoq6Q2br1zXR0Dbj8gk_aVh9INc-feJ6CuE14Mr-OriF1/exec";
 
-/* ✅ Load local user data */
 let applicantName = localStorage.getItem('full');
 let applicantEID = localStorage.getItem('eid');
 let applicantEmail = localStorage.getItem('email');
@@ -196,12 +196,13 @@ if(!applicantName){ applicantName = prompt("Enter your name:"); localStorage.set
 if(!applicantEID){ applicantEID = prompt("Enter your Employee ID:"); localStorage.setItem('eid', applicantEID); }
 if(!applicantEmail){ applicantEmail = prompt("Enter your Email:"); localStorage.setItem('email', applicantEmail); }
 
-const modalBg=document.getElementById('modalBg');
-const submitBtn=document.getElementById('submitBtn');
-const cancelBtn=document.getElementById('cancelBtn');
-const requiredIds=['dateFiled','reason','fromDate','toDate','days'];
-let currentLID=null;
-let currentRow=null;
+const modalBg = document.getElementById('modalBg');
+const submitBtn = document.getElementById('submitBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const updateBtn = document.getElementById('updateBtn');
+const requiredIds = ['reason','fromDate','toDate','days'];
+let currentLID = null;
+let currentRow = null;
 
 function pad(n){ return String(n).padStart(2,'0'); }
 function formatDateOnly(v){ const d=new Date(v); return isNaN(d)?v: `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()}`; }
@@ -217,78 +218,278 @@ function openModal(){
   document.getElementById('email').value=applicantEmail;
   document.getElementById('dateFiled').value=formatDateTime(new Date());
   ['reason','fromDate','toDate','days'].forEach(id=>document.getElementById(id).value="");
+  
   cancelBtn.style.display="none";
+  updateBtn.style.display="none";
+  submitBtn.style.display="inline-block";
   refreshSaveState();
   modalBg.style.display='flex';
 }
 
+
 function openEditModal(record,index){
-  currentLID=record.LID;
-  currentRow=document.querySelector(`tbody tr[data-index='${index}']`);
-  document.getElementById('eid').value=record.EID;
-  document.getElementById('name').value=record.Name;
-  document.getElementById('email').value=record.Email;
-  document.getElementById('dateFiled').value=formatDateTime(record["Date Filed"]);
-  document.getElementById('reason').value=record.Reason;
-  document.getElementById('fromDate').value=record.From;
-  document.getElementById('toDate').value=record.To;
-  document.getElementById('days').value=record["# of Days"];
-  cancelBtn.style.display=(record.Status?.toLowerCase()==="pending")?"inline-block":"none";
+  currentLID = record.LID;
+  currentRow = document.querySelector(`tbody tr[data-index='${index}']`);
+  document.getElementById('eid').value = record.EID;
+  document.getElementById('name').value = record.Name;
+  document.getElementById('email').value = record.Email;
+  document.getElementById('dateFiled').value = formatDateTime(record["Date Filed"]);
+  document.getElementById('reason').value = record.Reason;
+  document.getElementById('fromDate').value = record.From;
+  document.getElementById('toDate').value = record.To;
+  document.getElementById('days').value = record["# of Days"];
+
+  const status = (record.Status || "").toLowerCase();
+
+  // ✅ If status is pending → show Update + Cancel
+  if(status === "pending"){
+    updateBtn.style.display = "inline-block";
+    cancelBtn.style.display = "inline-block";
+    submitBtn.style.display = "none";
+  } 
+  // ✅ If new application → show Submit
+  else if(!status){
+    submitBtn.style.display = "inline-block";
+    updateBtn.style.display = "none";
+    cancelBtn.style.display = "none";
+  }
+  // ✅ Otherwise → view-only (approved, disapproved, cancelled)
+  else {
+    submitBtn.style.display = "none";
+    updateBtn.style.display = "none";
+    cancelBtn.style.display = "none";
+  }
+
   refreshSaveState();
-  modalBg.style.display='flex';
+  modalBg.style.display = 'flex';
 }
+
+
 
 function closeModal(){ modalBg.style.display='none'; }
 function validateForm(){ return requiredIds.every(id=>document.getElementById(id).value.trim()!==""); }
 function refreshSaveState(){ submitBtn.disabled=!validateForm(); }
 requiredIds.forEach(id=>document.getElementById(id).addEventListener('input',refreshSaveState));
 
-/* ✅ 1. LOAD CREDITS FROM EMPLOYEE SHEET USING EID */
+
+/* ✅ Confirm before submitting */
+function toDate(d) {
+  if (!d) return null;
+  // Force consistent ISO-like parsing
+  const p = d.replace(/\./g, '/').replace(/-/g, '/').split('/');
+  if (p.length === 3) {
+    let y, m, day;
+    if (p[0].length === 4) { y = +p[0]; m = +p[1]; day = +p[2]; }
+    else if (p[2].length === 4 && +p[0] > 12) { y = +p[2]; m = +p[1]; day = +p[0]; }
+    else if (p[2].length === 4) { y = +p[2]; m = +p[0]; day = +p[1]; }
+    else return new Date(d);
+    return new Date(y, m - 1, day);
+  }
+  const t = new Date(d);
+  return isNaN(t) ? null : t;
+}
+
+async function submitLeave() {
+  const btn = document.getElementById("submitBtn");
+  if (!btn) return;
+
+  const fromVal = document.getElementById("fromDate").value.trim();
+  const toVal = document.getElementById("toDate").value.trim();
+  const reason = document.getElementById("reason").value.trim();
+  const dateFiled = document.getElementById("dateFiled").value.trim();
+  const days = document.getElementById("days").value.trim();
+
+  if (!fromVal || !toVal || !reason || !dateFiled) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  const newFrom = toDate(fromVal);
+  const newTo = toDate(toVal);
+  if (!newFrom || !newTo) {
+    alert("Invalid date format");
+    return;
+  }
+  if (newFrom > newTo) {
+    alert("'From' date cannot be after 'To' date");
+    return;
+  }
+
+  const records = JSON.parse(localStorage.getItem("myLeaves") || "[]");
+  const conflict = records.find(r => {
+    const s = (r.Status || "").trim().toLowerCase();
+    if (s === "cancelled" || s === "disapproved") return false;
+
+    const exFrom = toDate(r.From);
+    const exTo = toDate(r.To);
+    if (!exFrom || !exTo) return false;
+
+    // overlap or exact same day
+    return !(newTo < exFrom || newFrom > exTo);
+  });
+
+  if (conflict) {
+    alert(`Conflict with existing leave:\nFrom: ${conflict.From}\nTo: ${conflict.To}\nStatus: ${conflict.Status}`);
+    return;
+  }
+
+  if (!confirm("Submit this leave?")) return;
+
+  btn.disabled = true;
+  const payload = {
+    method: "submitLeave",
+    eid: localStorage.getItem("eid"),
+    name: localStorage.getItem("full"),
+    email: localStorage.getItem("email"),
+    dateFiled,
+    reason,
+    fromDate: fromVal,
+    toDate: toVal,
+    days
+  };
+
+  try {
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "payload=" + encodeURIComponent(JSON.stringify(payload))
+    });
+    const data = await res.json();
+
+    if (data.status === "success") {
+      alert("Leave submitted successfully");
+      closeModal();
+      await loadLeaves();
+      await loadEmployeeCredits();
+    } else {
+      alert("Failed: " + (data.message || "Unknown error"));
+    }
+  } catch (e) {
+    console.error(e);
+    alert("Network error");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function updateLeave(){
+  if(!currentLID) return;
+
+  const reason = document.getElementById("reason").value.trim();
+  const fromVal = document.getElementById("fromDate").value.trim();
+  const toVal = document.getElementById("toDate").value.trim();
+  const days = document.getElementById("days").value.trim();
+
+  if(!reason || !fromVal || !toVal || !days){
+    alert("Please fill all fields before updating.");
+    return;
+  }
+
+  if(!confirm("Update this leave application?")) return;
+
+  updateBtn.disabled = true;
+
+  const payload = {
+    method: "editLeave",   // 🔹 distinct method for editing
+    LID: currentLID,
+    reason,
+    fromDate: fromVal,
+    toDate: toVal,
+    days
+  };
+
+  try {
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "payload=" + encodeURIComponent(JSON.stringify(payload))
+    });
+    const data = await res.json();
+
+    if (data.status === "success") {
+      alert("Leave updated successfully.");
+      closeModal();
+      await loadLeaves();
+      await loadEmployeeCredits();
+    } else {
+      alert("Update failed: " + (data.message || "Unknown error"));
+    }
+  } catch (e) {
+    console.error(e);
+    alert("Network error while updating.");
+  } finally {
+    updateBtn.disabled = false;
+  }
+}
+
+
+async function cancelLeave(){
+  if(!currentLID || !currentRow) return;
+  if(!confirm("Are you sure you want to cancel this leave?")) return;
+
+  cancelBtn.disabled = true;
+  const payload = { 
+    method: "updateLeave",  // existing backend method for status updates
+    LID: currentLID, 
+    status: "Cancelled" 
+  };
+
+  try {
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+      body: 'payload=' + encodeURIComponent(JSON.stringify(payload))
+    });
+    const data = await res.json();
+
+    if(res.ok && data.status === "success"){
+      showToast("Leave cancelled", "success");
+      closeModal();
+      await loadLeaves();
+      await loadEmployeeCredits();
+    } else {
+      showToast("Failed: " + (data.message || "Unknown error"), "error");
+    }
+  } catch(err) {
+    showToast("Network error", "error");
+  } finally {
+    cancelBtn.disabled = false;
+  }
+}
+
+
+/* ✅ Other helper functions */
 async function loadEmployeeCredits(){
   try{
     const res=await fetch(API_BASE+"?action=getEmployees");
     const employees=await res.json();
     const myEID=(localStorage.getItem("eid")||"").trim().replace(/^0+/,"");
-
     const me=employees.find(e =>
       String(e.EID || e["Employee ID"] || "").trim().replace(/^0+/,"") === myEID
     );
-
     if(me){
       const credits=parseFloat(me["Leave Credits"]||0);
       document.getElementById("totalCredits").textContent=credits;
-
       const used=parseFloat(document.getElementById("leaveApplied").textContent)||0;
       document.getElementById("remainingLeave").textContent=Math.max(0, credits - used);
     }
-  }catch(err){
-    console.error("Error loading credits:",err);
-    showToast("Error loading credits","error");
-  }
+  }catch(err){ showToast("Error loading credits","error"); }
 }
 
-/* ✅ 2. LOAD LEAVES — SORT + SAVE TO LOCAL STORAGE */
 async function loadLeaves(){
   const tbody=document.querySelector("tbody");
   tbody.innerHTML=`<tr><td colspan="6">Loading...</td></tr>`;
   try{
     const res=await fetch(API_BASE+"?action=getLeaves");
     const data=await res.json();
-
     const myEID=(localStorage.getItem("eid")||"").trim().replace(/^0+/,"");
-    const myLeaves=data.filter(r => 
-      String(r["EID"]||"").trim().replace(/^0+/,"") === myEID
-    );
+    const myLeaves=data.filter(r => String(r["EID"]||"").trim().replace(/^0+/,"") === myEID);
 
     const approved=myLeaves.filter(r=>String(r["Status"]||"").toLowerCase()==="approved");
     const usedDays=approved.reduce((sum,r)=>sum+(parseFloat(r["# of Days"]||0)||0),0);
-
     document.getElementById("leaveApplied").textContent=usedDays;
 
-    /* ✅ Sort by Date Filed (desc) */
     myLeaves.sort((a, b) => new Date(b["Date Filed"]) - new Date(a["Date Filed"]));
-
-    /* ✅ SAVE LEAVE LIST TO LOCAL STORAGE */
     localStorage.setItem("myLeaves", JSON.stringify(myLeaves));
 
     tbody.innerHTML=myLeaves.map((r,index)=>{
@@ -308,74 +509,38 @@ async function loadLeaves(){
     document.querySelectorAll("tbody tr[data-index]").forEach(tr=>{
       tr.addEventListener("click",()=>openEditModal(myLeaves[tr.dataset.index], tr.dataset.index));
     });
-
   }catch(err){
     console.error(err);
     tbody.innerHTML=`<tr><td colspan="6">Error loading data</td></tr>`;
   }
 }
 
-async function submitLeave(){
-  if(!validateForm()) return;
-
-  const payload={
-    method:"submitLeave",
-    eid:localStorage.getItem("eid"),
-    name:localStorage.getItem("full"),
-    email:localStorage.getItem("email"),
-    dateFiled:document.getElementById('dateFiled').value,
-    reason:document.getElementById('reason').value,
-    fromDate:document.getElementById('fromDate').value,
-    toDate:document.getElementById('toDate').value,
-    days:document.getElementById('days').value
-  };
-
-  const res=await fetch(API_BASE, {
-    method:"POST",
-    headers:{ "Content-Type":"application/x-www-form-urlencoded" },
-    body:"payload="+encodeURIComponent(JSON.stringify(payload))
-  });
-
-  const data=await res.json();
-  if(data.status==="success"){
-    showToast("Leave submitted","success");
-    closeModal();
-    await loadLeaves();
-    await loadEmployeeCredits();
-  } else {
-    showToast("Failed: "+data.message,"error");
-  }
-}
-
 async function cancelLeave(){
   if(!currentLID || !currentRow) return;
-  cancelBtn.disabled=true;
+  const confirmCancel = confirm("Are you sure you want to cancel this leave?");
+  if(!confirmCancel) return;
 
+  cancelBtn.disabled=true;
   const payload={ method:"updateLeave", LID:currentLID, status:"Cancelled" };
 
   try{
-    const body='payload='+encodeURIComponent(JSON.stringify(payload));
     const res=await fetch(API_BASE,{
       method:"POST",
       headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
-      body
+      body:'payload='+encodeURIComponent(JSON.stringify(payload))
     });
-
-    const text=await res.text();
-    let data; try{ data=JSON.parse(text); }catch{ data={status:"error"} }
-
-    if(res.ok && (data.status==="success")){
+    const data=await res.json();
+    if(res.ok && data.status==="success"){
       showToast("Leave cancelled","success");
       closeModal();
       await loadLeaves();
       await loadEmployeeCredits();
-    }else{
+    } else {
       showToast("Failed: "+(data.message||"Unknown error"),"error");
-      cancelBtn.disabled=false;
     }
   }catch(err){
-    console.error(err);
     showToast("Network error","error");
+  } finally {
     cancelBtn.disabled=false;
   }
 }
@@ -388,11 +553,9 @@ function showToast(msg,type){
   setTimeout(()=>t.style.display='none',3000);
 }
 
-/* ✅ 3. STARTUP SEQUENCE */
+/* ✅ Startup */
 (async()=>{
   await loadLeaves();
   await loadEmployeeCredits();
 })();
 </script>
-</body>
-</html>
