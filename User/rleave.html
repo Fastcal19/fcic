@@ -329,9 +329,23 @@ async function submitLeave() {
   });
 
   if (conflict) {
-    alert(`Conflict with existing leave:\nFrom: ${conflict.From}\nTo: ${conflict.To}\nStatus: ${conflict.Status}`);
-    return;
-  }
+  // Format to "Month Day, Year" (e.g. November 1, 2025)
+  const fromDate = new Date(conflict.From).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const toDate = new Date(conflict.To).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  alert(`Conflict with existing leave:\nFrom: ${fromDate}\nTo: ${toDate}\nStatus: ${conflict.Status}`);
+  return;
+}
+
 
   if (!confirm("Submit this leave?")) return;
 
