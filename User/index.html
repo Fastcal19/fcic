@@ -208,7 +208,7 @@
       <a id="btnDashboard" onclick="showPage('dashboard')">Dashboard</a>
 
       <div id="btnHR">
-        <a class="expandable" onclick="toggleMenu('hrMenu')">Human Resources ▸</a>
+        <a class="expandable" onclick="toggleMenu('hrMenu')">Human Resources</a>
         <div class="submenu" id="hrMenu">
           <a onclick="showPage('employeelist')">List of Employees</a>
           <a onclick="showPage('attendance')">Attendance</a>
@@ -216,8 +216,18 @@
         </div>
       </div>
 
+      <div id="btnAcctg">
+        <a class="expandable" onclick="toggleMenu('acctgMenu')">Accounting</a>
+        <div class="submenu" id="acctgMenu">
+          <a onclick="showPage('COA')">List of Employees</a>
+          <a onclick="showPage('JE')">Attendance</a>
+          <a onclick="showPage('Voucher')">Payroll</a>
+          <a onclick="showPage('Sales')">Payroll</a>
+        </div>
+      </div>
+      
       <div id="btnReports">
-        <a class="expandable" onclick="toggleMenu('reportsMenu')">Reports ▸</a>
+        <a class="expandable" onclick="toggleMenu('reportsMenu')">Reports</a>
         <div class="submenu" id="reportsMenu">
           <a onclick="showPage('projects')">Projects</a>
           <a onclick="showPage('sales')">Sales</a>
@@ -231,7 +241,7 @@
       <a id="btnProjectCosting" onclick="showPage('projectCosting')">Project Costing</a>
 
       <div id="btnApplications">
-        <a class="expandable" onclick="toggleMenu('applicationsMenu')">Applications ▸</a>
+        <a class="expandable" onclick="toggleMenu('applicationsMenu')">Applications</a>
         <div class="submenu" id="applicationsMenu">
           <a onclick="showPage('aadvances')">Advances</a>
           <a onclick="showPage('aleave')">Leave</a>
@@ -240,7 +250,7 @@
       </div>
       
       <div id="btnRequests">
-        <a class="expandable" onclick="toggleMenu('requestsMenu')">Requests ▸</a>
+        <a class="expandable" onclick="toggleMenu('requestsMenu')">Requests</a>
         <div class="submenu" id="requestsMenu">
           <a onclick="showPage('radvances')">Advances</a>
           <a onclick="showPage('rleave')">Leave</a>
@@ -251,7 +261,7 @@
       <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
 
       <div id="btnInventory">
-        <a class="expandable" onclick="toggleMenu('invMenu')">Inventory ▸</a>
+        <a class="expandable" onclick="toggleMenu('invMenu')">Inventory</a>
         <div class="submenu" id="invMenu">
           <a onclick="showPage('inventoryGallery')">Gallery</a>
           <a onclick="showPage('inventoryList')">List</a>
@@ -378,6 +388,10 @@ function showPage(page) {
     employeelist: ["List of Employees", "Employee"],
     attendance: ["Attendance", "Updating.html"],
     payroll: ["Payroll", "Updating.html"],
+    coa: ["Chart of Accounts", "Updating.html"],
+    je: ["Journal Entries", "Updating.html"],
+    voucher: ["Vouchers", "Updating.html"],
+    sales: ["Sales", "Updating.html"],
     projects: ["Projects Report", "Updating.html"],
     sales: ["Sales Report", "Sales.html"],
     ar: ["Accounts Receivable", "Accounts Receivable.html"],
