@@ -35,29 +35,42 @@
     }
 
     .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      width: 220px;
-      background: linear-gradient(10deg, gold, orangered);
-      color: #000;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: #333 #FFB347;
-      transform: translateX(-100%);
-      transition: transform 0.3s ease-in-out;
-      z-index: 2000;
-    }
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 220px;
+  background: linear-gradient(10deg, gold, orangered);
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #333 #FFB347;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 2000;
+}
 
-    .sidebar.active { transform: translateX(0); }
+/* ✅ Desktop: slide from left */
+.sidebar.active {
+  transform: translateX(0);
+}
 
-    .sidebar::-webkit-scrollbar { width: 6px; }
-    .sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+/* ✅ Mobile override: slide from right */
+@media (max-width: 768px) {
+  .sidebar {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
+  }
+  .sidebar.active {
+    transform: translateX(0);
+  }
+}
+
 
     .userbox {
       text-align: center;
@@ -182,15 +195,49 @@
 
     .overlay.active { display: block; }
 
+    /* ✅ BOTTOM NAVIGATION FOR MOBILE */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(10deg, gold, orangered);
+      display: none;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
+      z-index: 3000;
+    }
+
+    .bottom-nav button {
+      background: none;
+      border: none;
+      color: #000;
+      font-size: 14px;
+      text-align: center;
+      flex: 1;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .bottom-nav button:hover {
+      background: rgba(255,255,255,0.3);
+      border-radius: 10px;
+    }
+
     @media (max-width: 768px) {
-      .sidebar { width: 70%; }
       header, footer { display: none; }
+      .menu-toggle { display: none; }
+      .bottom-nav { display: flex; }
+      .main { height: calc(100vh - 55px); }
     }
   </style>
 </head>
 <body>
   <header id="pageHeader">Fast Cal Industrial Corp</header>
 
+  <!-- Toggle stays for desktop -->
   <button class="menu-toggle" id="menuToggle">☰</button>
 
   <aside class="sidebar" id="sidebar">
@@ -204,7 +251,6 @@
         </div>
       </div>
 
-      <!-- MENU LINKS WITH IDS -->
       <a id="btnDashboard" onclick="showPage('dashboard')">Dashboard</a>
 
       <div id="btnHR">
@@ -270,16 +316,24 @@
 
       <a id="btnPortals" onclick="showPage('portals')">Portals</a>
     </div>
-
   </aside>
 
-   <div class="overlay" id="overlay"></div>
+  <div class="overlay" id="overlay"></div>
 
   <div class="main" id="mainContent">
     <iframe id="mainFrame"></iframe>
   </div>
 
   <footer>© 2025 Fast Cal Industrial Corp — All Rights Reserved</footer>
+
+  <!-- ✅ MOBILE BOTTOM NAVIGATION -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button onclick="showPage('dashboard')">🏠<br>Home</button>
+    <button id="leaveButton">🌴<br>Leave</button>
+    <button onclick="showPage('inventoryGallery')">📦<br>Inventory</button>
+    <button onclick="showPage('payslip')">💰<br>Payslip</button>
+    <button id="mobileMenuToggle">☰<br>Menu</button>
+  </nav>
 
   <script>
 if (!localStorage.getItem("username")) {
@@ -301,7 +355,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
   if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
-  // USER DROPDOWN
   const usernameDisplay = document.getElementById("usernameDisplay");
   const userDropdown = document.getElementById("userDropdown");
 
@@ -317,7 +370,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("logoutLink").addEventListener("click", logout);
 
-  // ✅ Role-Based Menu Visibility
   const visible = {
     Admin: ["btnDashboard", "btnHR", "btnReports", "btnApplications", "btnPortals"],
     Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
@@ -342,34 +394,12 @@ let autoHideTimer, isHoveringSidebar = false;
 menuToggle.addEventListener('click', () => {
   sidebar.classList.toggle('active');
   overlay.classList.toggle('active');
-  if (sidebar.classList.contains('active')) startAutoHide();
-  else clearTimeout(autoHideTimer);
 });
 
 overlay.addEventListener('click', () => {
   sidebar.classList.remove('active');
   overlay.classList.remove('active');
-  clearTimeout(autoHideTimer);
 });
-
-sidebar.addEventListener('mouseenter', () => {
-  isHoveringSidebar = true;
-  clearTimeout(autoHideTimer);
-});
-sidebar.addEventListener('mouseleave', () => {
-  isHoveringSidebar = false;
-  if (window.innerWidth > 768) startAutoHide();
-});
-
-function startAutoHide() {
-  clearTimeout(autoHideTimer);
-  autoHideTimer = setTimeout(() => {
-    if (!isHoveringSidebar && sidebar.classList.contains('active')) {
-      sidebar.classList.remove('active');
-      overlay.classList.remove('active');
-    }
-  }, 4000);
-}
 
 function toggleMenu(id) {
   const allSubmenus = document.querySelectorAll(".submenu");
@@ -435,10 +465,34 @@ function showPage(page) {
   }
 }
 
+// ✅ Adjust Leave button behavior depending on user role
+  document.addEventListener("DOMContentLoaded", function () {
+    const leaveBtn = document.getElementById("leaveButton");
+    
+    if (leaveBtn) {
+      leaveBtn.addEventListener("click", function () {
+        if (window.userRole === "Admin") {
+          // Admin → Leave Request
+          showPage("aleave");
+        } else {
+          // Staff → Leave Application
+          showPage("rleave");
+        }
+      });
+    }
+  });
+
 function logout() {
   localStorage.clear();
   window.location.href = "/";
 }
+
+// ✅ Mobile bottom nav toggle
+const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+mobileMenuToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
+});
   </script>
 </body>
 </html>
