@@ -372,13 +372,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("logoutLink").addEventListener("click", logout);
 
   const visible = {
-    Admin: ["btnDashboard", "btnHR", "btnReports", "btnApplications", "btnPortals"],
+    Admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications", "btnPortals"],
     Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
     Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests", "btnPayslip", "btnInventory"],
     "System Admin": ["btnDashboard", "btnHR", "btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btnInventory", "btnPortals"]
   };
 
-  const allIds = ["btnDashboard","btnHR","btnReports","btnProjectCosting","btnApplications","btnRequests","btnPayslip","btnInventory","btnPortals"];
+  const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btnProjectCosting","btnApplications","btnRequests","btnPayslip","btnInventory","btnPortals"];
   allIds.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
