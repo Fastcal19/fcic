@@ -1,14 +1,16 @@
 const CACHE_NAME = 'app-cache-v2';
 const ASSETS = [
-  '/',              // root
+  '/',               // root
   '/index.html',
   '/manifest.json',
-  '/fcic.png',      // optional: your main icon
-  '/fcic logo.png', // optional: add more static files
+  '/fcic.png',       // optional
+  '/fcic logo.png',  // optional
   '/Updating.html'
 ];
 
+// INSTALL
 self.addEventListener('install', e => {
+  self.skipWaiting(); // ✅ fixed typo (was 'seld')
   console.log('[ServiceWorker] Install event started');
   e.waitUntil(
     caches.open(CACHE_NAME)
@@ -20,17 +22,24 @@ self.addEventListener('install', e => {
   );
 });
 
+// ACTIVATE
 self.addEventListener('activate', e => {
   console.log('[ServiceWorker] Activate event');
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+        keys
+          .filter(k => k !== CACHE_NAME)
+          .map(k => caches.delete(k))
       )
-    )
+    ).then(() => {
+      console.log('[ServiceWorker] Old caches cleared');
+      return self.clients.claim(); // ✅ moved inside .then
+    })
   );
 });
 
+// FETCH
 self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request)
