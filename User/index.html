@@ -467,21 +467,23 @@ function showPage(page) {
 }
 
 // ✅ Adjust Leave button behavior depending on user role
-  document.addEventListener("DOMContentLoaded", function () {
-    const leaveBtn = document.getElementById("leaveButton");
-    
-    if (leaveBtn) {
-      leaveBtn.addEventListener("click", function () {
-        if (window.role === "Admin") {
-          // Admin → Leave Request
-          showPage("aleave");
-        } else {
-          // Staff → Leave Application
-          showPage("rleave");
-        }
-      });
-    }
-  });
+document.addEventListener("DOMContentLoaded", function () {
+  const leaveBtn = document.getElementById("leaveButton");
+
+  if (leaveBtn) {
+    leaveBtn.addEventListener("click", function () {
+      const role = localStorage.getItem("role") || "";
+
+      // both Admin and System Admin open same leave page
+      if (role === "Admin" || role === "System Admin") {
+        showPage("aleave");  // Admin Leave Page
+      } else {
+        showPage("rleave");  // Staff Leave Page
+      }
+    });
+  }
+});
+
 
 function logout() {
   localStorage.clear();
