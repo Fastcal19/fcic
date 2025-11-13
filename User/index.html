@@ -472,7 +472,7 @@ function showPage(page) {
     
     if (leaveBtn) {
       leaveBtn.addEventListener("click", function () {
-        if (window.userRole === "Admin") {
+        if (window.role === "Admin") {
           // Admin → Leave Request
           showPage("aleave");
         } else {
