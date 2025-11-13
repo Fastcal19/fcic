@@ -484,6 +484,29 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+// ✅ Replace Payslip with Advances on Mobile for Admins
+document.addEventListener("DOMContentLoaded", function () {
+  const role = localStorage.getItem("role") || "";
+  const isMobile = window.innerWidth <= 768;
+
+  if (isMobile && (role === "Admin" || role === "System Admin")) {
+    const bottomNav = document.getElementById("bottomNav");
+
+    // Find the existing Payslip button
+    const payslipBtn = Array.from(bottomNav.querySelectorAll("button")).find(
+      (btn) => btn.innerHTML.includes("Payslip")
+    );
+
+    if (payslipBtn) {
+      // Replace with Advances button
+      payslipBtn.innerHTML = "💵<br>Advances";
+      payslipBtn.onclick = function () {
+        showPage("aadvances");
+      };
+    }
+  }
+});
+
 
 function logout() {
   localStorage.clear();
