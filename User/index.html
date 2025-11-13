@@ -352,6 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const fullName = localStorage.getItem("full");
   const photo = localStorage.getItem("photo");
+  const email = localStorage.getItem("email");
   if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
   if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
