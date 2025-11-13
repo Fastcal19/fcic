@@ -1,197 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fast Cal Industrial Corp</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fast Cal Industrial Corp</title>
 
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- ✅ PWA Manifest + Theme -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ff9800">
 
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+  <!-- ✅ iOS PWA Support -->
+  <link rel="apple-touch-icon" href="/Logo.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-html, body {
-  height: 100%;
-}
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #222;
-  background-color: gray;
-  display: flex;
-  flex-direction: column;
-}
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-/* HEADER */
-header {
-  background: linear-gradient(90deg, orange, white, orange);
-  color: white;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-.logo-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
+    html, body { height: 100%; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #222;
+      background-color: gray;
+      display: flex;
+      flex-direction: column;
+    }
 
-.logo-section img {
-  height: 55px;
-  display: block;
-}
+    /* HEADER */
+    header {
+      background: linear-gradient(90deg, orange, white, orange);
+      color: white;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
 
-main { flex: 1; }
+    .logo-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
 
-.hero {
-  position: relative;
-  height: 70vh;
-  background: linear-gradient(1deg, gray, lightgray, gray);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  color: white;
-  padding: 2rem;
-}
+    .logo-section img {
+      height: 55px;
+      display: block;
+    }
 
-.hero h3 {
-  font-size: 1.2rem;
-  text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
-  animation: flicker 2s infinite;
-}
+    main { flex: 1; }
 
-@keyframes flicker {
-  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
-  20%, 24%, 55% { opacity: 0.6; }
-}
+    .hero {
+      position: relative;
+      height: 70vh;
+      background: linear-gradient(1deg, gray, lightgray, gray);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 2rem;
+    }
 
-.hero p {
-  font-size: 1.2rem;
-  margin-top: 1rem;
-  max-width: 600px;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-}
+    .hero h3 {
+      font-size: 1.2rem;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+      animation: flicker 2s infinite;
+    }
 
-.hero button {
-  margin-top: 2rem;
-  padding: 0.8rem 2rem;
-  border: none;
-  background: #ff9800;
-  color: white;
-  font-size: 1rem;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-}
-.hero button:hover { background: #e68900; transform: scale(1.05); }
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 24%, 55% { opacity: 0.6; }
+    }
 
-footer {
-  background: #222;
-  color: #ccc;
-  text-align: center;
-  padding: 1rem;
-  font-size: 0.9rem;
-}
-footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
-footer a:hover { color: #fff; }
+    .hero p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      max-width: 600px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
 
-.login-box {
-  display: inline-block;
-  background: linear-gradient(90deg, orange, white, orange);
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  margin-top: 20px;
-}
+    .hero button {
+      margin-top: 2rem;
+      padding: 0.8rem 2rem;
+      border: none;
+      background: #ff9800;
+      color: white;
+      font-size: 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .hero button:hover { background: #e68900; transform: scale(1.05); }
 
-.login-box input {
-  width: 80%;
-  padding: 10px;
-  margin: 8px 0;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
+    footer {
+      background: #222;
+      color: #ccc;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+    footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
+    footer a:hover { color: #fff; }
 
-.manual-btn, .gmail-btn {
-  width: 85%;
-  padding: 10px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
+    .login-box {
+      display: inline-block;
+      background: linear-gradient(90deg, orange, white, orange);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
 
-.manual-btn {
-  background: #4CAF50;
-  color: white;
-}
+    .login-box input {
+      width: 80%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
 
-.gmail-btn {
-  background: #DB4437;
-  color: white;
-}
+    .manual-btn, .gmail-btn {
+      width: 85%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
 
-.gmail-btn i { margin-right: 6px; }
+    .manual-btn {
+      background: #4CAF50;
+      color: white;
+    }
 
-/* LOGIN MODAL */
-#loginModal {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-#loginBox {
-  background: white;
-  padding: 2rem;
-  border-radius: 10px;
-  width: 300px;
-  text-align: center;
-  position: relative;
-}
-#loginBox input {
-  margin-top: 10px;
-  width: 100%;
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-#loginBox button {
-  margin-top: 10px;
-  width: 100%;
-  padding: 8px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-#loginBox .manual-btn { background: orangered; color: white; }
-#loginBox .gmail-btn { background: #4285F4; color: white; }
-#closeModal {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: #888;
-}
-#loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
+    .gmail-btn {
+      background: #DB4437;
+      color: white;
+    }
 
-@media (max-width: 768px) {
-  .hero h1 { font-size: 2.2rem; }
-  .hero p { font-size: 1rem; }
-  header { flex-direction: column; align-items: flex-start; }
-  nav { margin-top: 1rem; }
-}
-</style>
+    .gmail-btn i { margin-right: 6px; }
+
+    /* LOGIN MODAL */
+    #loginModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    #loginBox {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+      position: relative;
+    }
+    #loginBox input {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #loginBox button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #loginBox .manual-btn { background: orangered; color: white; }
+    #loginBox .gmail-btn { background: #4285F4; color: white; }
+    #closeModal {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #888;
+    }
+    #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
+
+    /* ✅ Install Button Styling */
+    #installBtn {
+      margin-top: 15px;
+      padding: 10px 25px;
+      font-size: 1rem;
+      background: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: none;
+    }
+    #installBtn:hover { background: #e68900; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero p { font-size: 1rem; }
+      header { flex-direction: column; align-items: flex-start; }
+      nav { margin-top: 1rem; }
+    }
+  </style>
 </head>
 <body>
 
@@ -217,6 +239,9 @@ footer a:hover { color: #fff; }
       </button>
       <p id="loginStatus"></p>
     </div>
+
+    <!-- ✅ Manual Install Button -->
+    <button id="installBtn">📲 Install App</button>
   </section>
 </main>
 
@@ -254,14 +279,9 @@ window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
 window.addEventListener("DOMContentLoaded", () => {
   const role = localStorage.getItem("role");
   const username = localStorage.getItem("username");
-  
   if (role && username) {
     console.log("User already logged in as:", username);
-    if (role.toLowerCase() === "admin") {
-      window.location.href = "/User/";
-    } else {
-      window.location.href = "/User/";
-    }
+    window.location.href = "/User/";
   }
 });
 
@@ -269,16 +289,13 @@ async function manualLogin() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
   const status = document.getElementById('loginStatus');
-
   if (!username || !password) {
     status.style.color = "red";
     status.textContent = "⚠️ Please enter both username and password.";
     return;
   }
-
   status.style.color = "black";
   status.textContent = "⏳ Checking...";
-
   try {
     const res = await fetch(webAppUrl, {
       method: "POST",
@@ -339,15 +356,7 @@ function handleLoginResponse(response) {
     localStorage.setItem("photo", response.photo);
     status.style.color = "green";
     status.textContent = "✅ Welcome, " + response.name;
-    
-    setTimeout(() => {
-      if (response.role.toLowerCase() === "admin") {
-        location.href = "/User/";
-      } else {
-        location.href = "/User/";
-      }
-    }, 1000);
-
+    setTimeout(() => { location.href = "/User/"; }, 1000);
   } else {
     status.style.color = "red";
     status.textContent = response.message || "❌ Invalid login.";
@@ -357,10 +366,29 @@ function handleLoginResponse(response) {
 function parseJwt(token) {
   return JSON.parse(atob(token.split('.')[1]));
 }
+
+/* ✅ Manual Install Prompt */
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block';
+});
+
+installBtn.addEventListener('click', async () => {
+  installBtn.style.display = 'none';
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log(`User response: ${outcome}`);
+  deferredPrompt = null;
+});
 </script>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-  
+
+<!-- ✅ Service Worker -->
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -370,6 +398,5 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-
 </body>
 </html>
