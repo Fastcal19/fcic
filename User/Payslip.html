@@ -128,6 +128,30 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 
 @media (max-width:900px) { .card { grid-column: span 6; } .grid { grid-template-columns: repeat(6,1fr); } }
 @media (max-width:600px) { header { flex-direction: column; align-items: flex-start; } .card { grid-column: span 6; } .payslip { grid-template-columns:1fr; } }
+@media (max-width:600px) {
+  #box-wrapper {
+    flex-direction: column;
+  }
+
+  #box-left,
+  #box-right {
+    width: 100%;
+  }
+}
+
+/* MOBILE: enable scrolling inside modal */
+@media (max-width: 600px) {
+  .modal {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Prevent background from scrolling while modal is open */
+  body.modal-open {
+    overflow: hidden;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -186,7 +210,7 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 <div id="modalBackdrop" class="modal-backdrop">
   <div class="modal">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <h2 id="modalTitle">Payslip</h2>
+      <h2 id="modalTitle"></h2>
       <div style="display:flex;gap:8px">
         <button class="btn" id="modalPrint"></button>
         <button class="btn" id="modalClose">Close</button>
@@ -257,7 +281,6 @@ if (!empId) {
 
 
   function openModal(data) {
-  modalTitle.textContent = `Payslip — ${data.pay_date || data.pay_period}`;
   payslipContent.innerHTML = '';
 
   const d = data.details || {};
@@ -266,8 +289,11 @@ if (!empId) {
   const boxEmployee = document.createElement('div');
   boxEmployee.className = 'box';
   boxEmployee.innerHTML = `
-    <div style="font-weight:700;margin-top:6px">${data.name}</div>
-    <div class="small">${data.designation}</div>
+    <div style="font-weight:700;margin-top:6px; text-align:center;">PAYSLIP</div>
+    <div style="font-weight:700;margin-top:6px; text-align:center;">
+  ${formatPrettyDate(data.pay_date || data.pay_period)}
+</div>
+
   `;
 
   // Wrapper for Box 2 & Box 3
@@ -332,8 +358,10 @@ if (!empId) {
   payslipContent.appendChild(boxEmployee);
   payslipContent.appendChild(wrapper);
 
+  document.body.classList.add("modal-open");
   modalBackdrop.style.display = 'flex';
 }
+
 
   document.getElementById('modalClose').addEventListener('click',()=>modalBackdrop.style.display='none');
   document.getElementById('modalPrint').addEventListener('click',()=>window.print());
@@ -354,10 +382,24 @@ if (!empId) {
       a.download=`${empId}_${year}_payslips.csv`;
       a.click();
     } catch(e){ console.error(e); alert('Failed to export CSV'); }
+  
   });
+
+  
+  function formatPrettyDate(d) {
+  if (!d) return "";
+  const date = new Date(d);
+  if (isNaN(date)) return d; // fallback if string is not a valid date
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+}
 
   loadPayslips();
 });
+
 </script>
 </body>
 </html>
