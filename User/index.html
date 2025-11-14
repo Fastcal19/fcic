@@ -4,399 +4,521 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fast Cal Industrial Corp</title>
-
-  <!-- ✅ PWA Manifest + Theme -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#ff9800">
-
-  <!-- ✅ iOS PWA Support -->
-  <link rel="apple-touch-icon" href="/Logo.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html, body { height: 100%; }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #222;
-      background-color: gray;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      background: orangered;
     }
 
-    /* HEADER */
     header {
-      background: linear-gradient(90deg, orange, white, orange);
-      color: white;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem 2rem;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .logo-section {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .logo-section img {
-      height: 55px;
-      display: block;
-    }
-
-    main { flex: 1; }
-
-    .hero {
-      position: relative;
-      height: 70vh;
-      background: linear-gradient(1deg, gray, lightgray, gray);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      background: orangered;
+      color: #000;
+      padding: 10px 20px;
       text-align: center;
-      color: white;
-      padding: 2rem;
+      font-weight: bold;
+      font-size: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
-
-    .hero h3 {
-      font-size: 1.2rem;
-      text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
-      animation: flicker 2s infinite;
-    }
-
-    @keyframes flicker {
-      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
-      20%, 24%, 55% { opacity: 0.6; }
-    }
-
-    .hero p {
-      font-size: 1.2rem;
-      margin-top: 1rem;
-      max-width: 600px;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-    }
-
-    .hero button {
-      margin-top: 2rem;
-      padding: 0.8rem 2rem;
-      border: none;
-      background: #ff9800;
-      color: white;
-      font-size: 1rem;
-      border-radius: 30px;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-    }
-    .hero button:hover { background: #e68900; transform: scale(1.05); }
 
     footer {
-      background: #222;
-      color: #ccc;
+      background: darkgray;
+      color: #fff;
       text-align: center;
-      padding: 1rem;
-      font-size: 0.9rem;
-    }
-    footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
-    footer a:hover { color: #fff; }
-
-    .login-box {
-      display: inline-block;
-      background: linear-gradient(90deg, orange, white, orange);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      margin-top: 20px;
-    }
-
-    .login-box input {
-      width: 80%;
       padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      font-size: 14px;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
     }
 
-    .manual-btn, .gmail-btn {
-      width: 85%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+    .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 220px;
+  background: linear-gradient(10deg, gold, orangered);
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #333 #FFB347;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 2000;
+}
 
-    .manual-btn {
-      background: #4CAF50;
-      color: white;
-    }
+/* ✅ Desktop: slide from left */
+.sidebar.active {
+  transform: translateX(0);
+}
 
-    .gmail-btn {
-      background: #DB4437;
-      color: white;
-    }
+/* ✅ Mobile override: slide from right */
+@media (max-width: 768px) {
+  .sidebar {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
+  }
+  .sidebar.active {
+    transform: translateX(0);
+  }
+}
 
-    .gmail-btn i { margin-right: 6px; }
 
-    /* LOGIN MODAL */
-    #loginModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-    #loginBox {
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      width: 300px;
+    .userbox {
       text-align: center;
+      padding: 10px 0;
       position: relative;
     }
-    #loginBox input {
-      margin-top: 10px;
-      width: 100%;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    #loginBox button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #loginBox .manual-btn { background: orangered; color: white; }
-    #loginBox .gmail-btn { background: #4285F4; color: white; }
-    #closeModal {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      cursor: pointer;
-      font-size: 1.2rem;
-      color: #888;
-    }
-    #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
 
-    /* ✅ Install Button Styling */
-    #installBtn {
-      margin-top: 15px;
-      padding: 10px 25px;
-      font-size: 1rem;
-      background: #ff9800;
+    .userbox img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      background: #fff;
+    }
+
+    .username {
+      font-weight: bold;
+      font-size: 16px;
+      color: #000;
+      margin-top: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .user-dropdown {
+      position: absolute;
+      top: 180px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      min-width: 140px;
+      overflow: hidden;
+      z-index: 3000;
+    }
+
+    .user-dropdown a {
+      color: #000;
+      padding: 10px;
+      text-decoration: none;
+      display: block;
+      font-weight: bold;
+    }
+
+    .user-dropdown a:hover { background: #FFD580; }
+
+    .sidebar a {
+      color: #000;
+      text-decoration: none;
+      padding: 10px;
+      display: block;
+      border-radius: 6px;
+      font-weight: bold;
+      margin: 2px 0;
+      cursor: pointer;
+    }
+
+    .sidebar a:hover { background: #FFD580; }
+
+    .logout-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .main {
+      flex: 1;
+      background: #ccc;
+      display: flex;
+      flex-direction: column;
+      transition: margin-left 0.3s ease-in-out;
+      overflow: hidden;
+      height: calc(100vh - 80px);
+    }
+
+    @media (min-width: 769px) {
+      .sidebar.active ~ .main { margin-left: 220px; }
+    }
+
+    iframe {
+      flex: 1;
+      border: none;
+      background: linear-gradient(180deg, gold, orangered);
+    }
+
+    .submenu { display: none; margin-left: 15px; }
+    .submenu.show { display: block; }
+
+    .menu-toggle {
+      position: fixed;
+      top: 12px;
+      left: 10px;
+      background: #333;
       color: white;
       border: none;
-      border-radius: 25px;
+      font-size: 18px;
+      padding: 6px 10px;
+      border-radius: 4px;
       cursor: pointer;
-      transition: background 0.3s;
+      z-index: 2500;
+    }
+
+    .menu-toggle:hover { background: #555; }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 1500;
       display: none;
     }
-    #installBtn:hover { background: #e68900; }
+
+    .overlay.active { display: block; }
+
+    /* ✅ BOTTOM NAVIGATION FOR MOBILE */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(10deg, gold, orangered);
+      display: none;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
+      z-index: 3000;
+    }
+
+    .bottom-nav button {
+      background: none;
+      border: none;
+      color: #000;
+      font-size: 14px;
+      text-align: center;
+      flex: 1;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .bottom-nav button:hover {
+      background: rgba(255,255,255,0.3);
+      border-radius: 10px;
+    }
 
     @media (max-width: 768px) {
-      .hero h1 { font-size: 2.2rem; }
-      .hero p { font-size: 1rem; }
-      header { flex-direction: column; align-items: flex-start; }
-      nav { margin-top: 1rem; }
+      header, footer { display: none; }
+      .menu-toggle { display: none; }
+      .bottom-nav { display: flex; }
+      .main { height: calc(100vh - 55px); }
     }
   </style>
 </head>
 <body>
+  <header id="pageHeader">Fast Cal Industrial Corp</header>
 
-<!-- HEADER -->
-<header>
-  <div class="logo-section">
-    <img src="fcic logo.png" alt="FCIC Logo">
-  </div>
-</header>
+  <!-- Toggle stays for desktop -->
+  <button class="menu-toggle" id="menuToggle">☰</button>
 
-<!-- MAIN CONTENT -->
-<main>
-  <section class="hero">
-    <h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
-    <div id="loginBox" class="login-box">
-      <h3>Login</h3>
-      <input id="username" placeholder="Username"><br>
-      <input id="password" type="password" placeholder="Password"><br>
-      <button class="manual-btn" onclick="manualLogin()">Login</button>
-      <hr>
-      <button class="gmail-btn" onclick="gmailLogin()">
-        <i class="fab fa-google"></i> Sign in with Google
-      </button>
-      <p id="loginStatus"></p>
+  <aside class="sidebar" id="sidebar">
+    <div>
+      <div class="userbox">
+        <img id="userPhoto" src="fcic logo.png" alt="User Photo">
+        <div class="username" id="usernameDisplay">User</div>
+        <div class="user-dropdown" id="userDropdown">
+          <a id="profileLink">User Profile</a>
+          <a id="logoutLink">Logout</a>
+        </div>
+      </div>
+
+      <a id="btnDashboard" onclick="showPage('dashboard')">Dashboard</a>
+
+      <div id="btnHR">
+        <a class="expandable" onclick="toggleMenu('hrMenu')">Human Resources</a>
+        <div class="submenu" id="hrMenu">
+          <a onclick="showPage('employeelist')">List of Employees</a>
+          <a onclick="showPage('attendance')">Attendance</a>
+          <a onclick="showPage('payroll')">Payroll</a>
+        </div>
+      </div>
+
+      <div id="btnAcctg">
+        <a class="expandable" onclick="toggleMenu('acctgMenu')">Accounting</a>
+        <div class="submenu" id="acctgMenu">
+          <a onclick="showPage('coa')">Chart of Accounts</a>
+          <a onclick="showPage('je')">Journal Entries</a>
+          <a onclick="showPage('voucher')">Voucher</a>
+          <a onclick="showPage('salesdata')">Sales</a>
+        </div>
+      </div>
+      
+      <div id="btnReports">
+        <a class="expandable" onclick="toggleMenu('reportsMenu')">Reports</a>
+        <div class="submenu" id="reportsMenu">
+          <a onclick="showPage('projects')">Projects</a>
+          <a onclick="showPage('salesreport')">Sales</a>
+          <a onclick="showPage('ar')">Receivables</a>
+          <a onclick="showPage('ap')">Payables</a>
+          <a onclick="showPage('pc')">Costing</a>
+          <a onclick="showPage('is')">Income Statement</a>
+        </div>
+      </div>
+
+      <a id="btnProjectCosting" onclick="showPage('projectCosting')">Project Costing</a>
+
+      <div id="btnApplications">
+        <a class="expandable" onclick="toggleMenu('applicationsMenu')">Requests</a>
+        <div class="submenu" id="applicationsMenu">
+          <a onclick="showPage('aadvances')">Advances</a>
+          <a onclick="showPage('aleave')">Leave</a>
+          <a onclick="showPage('aovertime')">Overtime</a>
+        </div>
+      </div>
+      
+      <div id="btnRequests">
+        <a class="expandable" onclick="toggleMenu('requestsMenu')">Applications</a>
+        <div class="submenu" id="requestsMenu">
+          <a onclick="showPage('radvances')">Advances</a>
+          <a onclick="showPage('rleave')">Leave</a>
+          <a onclick="showPage('rovertime')">Overtime</a>
+        </div>
+      </div>
+
+      <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
+
+      <div id="btnInventory">
+        <a class="expandable" onclick="toggleMenu('invMenu')">Inventory</a>
+        <div class="submenu" id="invMenu">
+          <a onclick="showPage('inventoryGallery')">Gallery</a>
+          <a onclick="showPage('inventoryList')">List</a>
+        </div>
+      </div>
+
+      <a id="btnPortals" onclick="showPage('portals')">Portals</a>
     </div>
+  </aside>
 
-    <!-- ✅ Manual Install Button -->
-    <button id="installBtn">📲 Install App</button>
-  </section>
-</main>
+  <div class="overlay" id="overlay"></div>
 
-<!-- FOOTER -->
-<footer>
-  &copy; 2025 Fast Cal Industrial Corp. All rights reserved.<br>
-  <a href="/privacy-policy/">Privacy Policy</a> |
-  <a href="/terms/">Terms & Conditions</a>
-</footer>
-
-<!-- LOGIN MODAL -->
-<div id="loginModal">
-  <div id="loginBoxModal">
-    <span id="closeModal">&times;</span>
-    <h3>Login</h3>
-    <input id="usernameModal" placeholder="Username"><br>
-    <input id="passwordModal" type="password" placeholder="Password"><br>
-    <button class="manual-btn" onclick="manualLogin()">Login</button>
-    <hr>
-    <button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
-    <p id="loginStatus"></p>
+  <div class="main" id="mainContent">
+    <iframe id="mainFrame"></iframe>
   </div>
-</div>
 
-<!-- SCRIPT -->
-<script>
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxcbv-Pn3_miFI9y2Pehx6tWD1NeYy4iMcusTJW-sXK34b4EGO76_fVu8uuAwIgLs4OHg/exec";
+  <footer>© 2025 Fast Cal Industrial Corp — All Rights Reserved</footer>
 
-const modal = document.getElementById('loginModal');
-const closeModal = document.getElementById('closeModal');
-if (closeModal) closeModal.onclick = () => modal.style.display = 'none';
-window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
+  <!-- ✅ MOBILE BOTTOM NAVIGATION -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button onclick="showPage('dashboard')">🏠<br>Home</button>
+    <button id="leaveButton">🗓️<br>Leave</button>
+    <button onclick="showPage('inventoryGallery')">📦<br>Inventory</button>
+    <button onclick="showPage('payslip')">💰<br>Payslip</button>
+    <button id="mobileMenuToggle">☰<br>Menu</button>
+  </nav>
 
-// ✅ AUTO SKIP LOGIN IF ALREADY LOGGED IN
-window.addEventListener("DOMContentLoaded", () => {
+  <script>
+if (!localStorage.getItem("username")) {
+  window.location.href = "/";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const iframe = document.getElementById("mainFrame");
   const role = localStorage.getItem("role");
-  const username = localStorage.getItem("username");
-  if (role && username) {
-    console.log("User already logged in as:", username);
-    window.location.href = "/User/";
+
+  if (role === "System Admin" || role === "Admin") {
+    iframe.src = "Admin Dashboard.html";
+  } else {
+    iframe.src = "dashboard.html";
   }
+
+  const fullName = localStorage.getItem("full");
+  const photo = localStorage.getItem("photo");
+  const email = localStorage.getItem("email");
+  if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+  if(photo) document.getElementById("userPhoto").src = "./" + photo;
+
+  const usernameDisplay = document.getElementById("usernameDisplay");
+  const userDropdown = document.getElementById("userDropdown");
+
+  usernameDisplay.addEventListener("click", (e) => {
+    e.stopPropagation();
+    userDropdown.style.display = userDropdown.style.display === "flex" ? "none" : "flex";
+  });
+  document.addEventListener("click", () => userDropdown.style.display = "none");
+  document.getElementById("profileLink").addEventListener("click", (e) => {
+    e.stopPropagation();
+    showPage("employee");
+    userDropdown.style.display = "none";
+  });
+  document.getElementById("logoutLink").addEventListener("click", logout);
+
+  const visible = {
+    Admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications", "btnPortals"],
+    Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
+    Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests", "btnPayslip", "btnInventory"],
+    "System Admin": ["btnDashboard", "btnHR", "btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btnInventory", "btnPortals"]
+  };
+
+  const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btnProjectCosting","btnApplications","btnRequests","btnPayslip","btnInventory","btnPortals"];
+  allIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = visible[role]?.includes(id) ? "block" : "none";
+  });
 });
 
-async function manualLogin() {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value.trim();
-  const status = document.getElementById('loginStatus');
-  if (!username || !password) {
-    status.style.color = "red";
-    status.textContent = "⚠️ Please enter both username and password.";
+// Sidebar logic
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+const menuToggle = document.getElementById('menuToggle');
+let autoHideTimer, isHoveringSidebar = false;
+
+menuToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
+});
+
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('active');
+  overlay.classList.remove('active');
+});
+
+function toggleMenu(id) {
+  const allSubmenus = document.querySelectorAll(".submenu");
+  const menu = document.getElementById(id);
+  allSubmenus.forEach(sub => { if (sub !== menu) sub.classList.remove("show"); });
+  menu.classList.toggle("show");
+}
+
+function showPage(page) {
+  const iframe = document.getElementById("mainFrame");
+  const header = document.getElementById("pageHeader");
+  const role = localStorage.getItem("role") || "";
+
+  const pages = {
+    employee: ["Employee Profile", "Employee Profile.html"],
+    employeelist: ["List of Employees", "Employee"],
+    attendance: ["Attendance", "Updating.html"],
+    payroll: ["Payroll", "Updating.html"],
+    coa: ["Chart of Accounts", "Updating.html"],
+    je: ["Journal Entries", "Updating.html"],
+    voucher: ["Vouchers", "Updating.html"],
+    salesdata: ["Sales", "Updating.html"],
+    projects: ["Projects Report", "Updating.html"],
+    salesreport: ["Sales Report", "Sales.html"],
+    ar: ["Accounts Receivable", "Accounts Receivable.html"],
+    ap: ["Accounts Payable", "AP.html"],
+    pc: ["Costing Report", "Updating.html"],
+    is: ["Income Statement", "Updating.html"],
+    inventoryGallery: ["Inventory Gallery", "inventory.html"],
+    inventoryList: ["Inventory List", "Inventory List.html"],
+    projectCosting: ["Project Costing", "Updating.html"],
+    aleave: ["Leave Application", "aleave.html"],
+    aadvances: ["Cash Advance Application", "Updating.html"],
+    aovertime: ["Overtime Application", "aOT.html"],
+    rleave: ["Leave Request", "rleave.html"],
+    radvances: ["Advances Request", "rAdvances.html"],
+    rovertime: ["Overtime Request", "rOT.html"],
+    payslip: ["Pay Slips", "Updating.html"],
+    portals: ["Portals", "Portals.html"]
+  };
+
+  if (page === "dashboard") {
+    if (role === "System Admin" || role === "Admin") {
+      iframe.src = "Admin Dashboard.html";
+      header.textContent = "Fast Cal Industrial Corp";
+    } else if (role === "HR") {
+      iframe.src = "HR Dashboard.html";
+      header.textContent = "Fast Cal Industrial Corp";
+    } else {
+      iframe.src = "dashboard.html";
+      header.textContent = "Fast Cal Industrial Corp";
+    }
     return;
   }
-  status.style.color = "black";
-  status.textContent = "⏳ Checking...";
-  try {
-    const res = await fetch(webAppUrl, {
-      method: "POST",
-      body: JSON.stringify({ method: "manual", username, password })
-    });
-    const data = await res.json();
-    handleLoginResponse(data);
-  } catch {
-    status.style.color = "red";
-    status.textContent = "❌ Network error.";
-  }
-}
 
-let googleReady = false;
-window.onload = () => {
-  if (window.google && window.google.accounts) initGoogleSignIn();
-  else {
-    const wait = setInterval(() => {
-      if (window.google && window.google.accounts) {
-        initGoogleSignIn();
-        clearInterval(wait);
-      }
-    }, 300);
-  }
-};
-
-function initGoogleSignIn() {
-  googleReady = true;
-  google.accounts.id.initialize({
-    client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
-    callback: handleCredentialResponse
-  });
-}
-
-function gmailLogin() {
-  if (googleReady) google.accounts.id.prompt();
-  else alert("Google Sign-In not ready yet. Please wait a moment and try again.");
-}
-
-async function handleCredentialResponse(response) {
-  const userInfo = parseJwt(response.credential);
-  const res = await fetch(webAppUrl, {
-    method: "POST",
-    body: JSON.stringify({ method: "gmail", email: userInfo.email })
-  });
-  const data = await res.json();
-  handleLoginResponse(data);
-}
-
-function handleLoginResponse(response) {
-  const status = document.getElementById('loginStatus');
-  if (response.success) {
-    localStorage.setItem("role", response.role);
-    localStorage.setItem("username", response.name);
-    localStorage.setItem("email", response.email);
-    localStorage.setItem("eid", response.eid);
-    localStorage.setItem("full", response.full);
-    localStorage.setItem("photo", response.photo);
-    status.style.color = "green";
-    status.textContent = "✅ Welcome, " + response.name;
-    setTimeout(() => { location.href = "/User/"; }, 1000);
+  if (pages[page]) {
+    const [label, url] = pages[page];
+    iframe.src = url;
+    header.textContent = label;
   } else {
-    status.style.color = "red";
-    status.textContent = response.message || "❌ Invalid login.";
+    iframe.src = "dashboard.html";
+    header.textContent = "Dashboard";
   }
 }
 
-function parseJwt(token) {
-  return JSON.parse(atob(token.split('.')[1]));
-}
+// ✅ Adjust Leave button behavior depending on user role
+document.addEventListener("DOMContentLoaded", function () {
+  const leaveBtn = document.getElementById("leaveButton");
 
-/* ✅ Manual Install Prompt */
-let deferredPrompt;
-const installBtn = document.getElementById('installBtn');
+  if (leaveBtn) {
+    leaveBtn.addEventListener("click", function () {
+      const role = localStorage.getItem("role") || "";
 
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = 'block';
+      // both Admin and System Admin open same leave page
+      if (role === "Admin" || role === "System Admin") {
+        showPage("aleave");  // Admin Leave Page
+      } else {
+        showPage("rleave");  // Staff Leave Page
+      }
+    });
+  }
 });
 
-installBtn.addEventListener('click', async () => {
-  installBtn.style.display = 'none';
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  console.log(`User response: ${outcome}`);
-  deferredPrompt = null;
+// ✅ Replace Payslip with Advances on Mobile for Admins
+document.addEventListener("DOMContentLoaded", function () {
+  const role = localStorage.getItem("role") || "";
+  const isMobile = window.innerWidth <= 768;
+
+  if (isMobile && (role === "Admin" || role === "System Admin")) {
+    const bottomNav = document.getElementById("bottomNav");
+
+    // Find the existing Payslip button
+    const payslipBtn = Array.from(bottomNav.querySelectorAll("button")).find(
+      (btn) => btn.innerHTML.includes("Payslip")
+    );
+
+    if (payslipBtn) {
+      // Replace with Advances button
+      payslipBtn.innerHTML = "💵<br>Advances";
+      payslipBtn.onclick = function () {
+        showPage("aadvances");
+      };
+    }
+  }
 });
-</script>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 
-<!-- ✅ Service Worker -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('✅ Service Worker registered', reg))
-      .catch(err => console.error('❌ SW registration failed:', err));
-  });
+function logout() {
+  localStorage.clear();
+  window.location.href = "/";
 }
-</script>
+
+// ✅ Mobile bottom nav toggle
+const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+mobileMenuToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
+});
+  </script>
 </body>
 </html>
