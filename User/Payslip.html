@@ -33,7 +33,7 @@ html, body {
   margin: 10px 0;
   width: 100%;
   max-width: 1200px;
-  padding: 20px;
+  padding-bottom: 90px;
 }
 
 header {
@@ -131,11 +131,10 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 }
 
 /* MOBILE: enable scrolling inside modal and bottom spacing */
-@media (max-width: 600px) {
+@media (max-width: 500px) {
   .modal {
-    max-height: 60vh;
+    max-height: 80vh;
     overflow-y: auto;
-    padding-bottom: 90px; /* space for bottom nav */
     -webkit-overflow-scrolling: touch; /* smooth scrolling iOS */
   }
 
