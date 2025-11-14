@@ -114,46 +114,37 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   width: 50%;
 }
 
-#exportCsv {
+#exportCsv, #printAll, #modalPrint {
   visibility: hidden;
 }
 
-#printAll {
-  visibility: hidden;
+@media (max-width:900px) { 
+  .card { grid-column: span 6; } 
+  .grid { grid-template-columns: repeat(6,1fr); } 
+}
+@media (max-width:600px) { 
+  header { flex-direction: column; align-items: flex-start; } 
+  .card { grid-column: span 6; } 
+  .payslip { grid-template-columns:1fr; } 
+  #box-wrapper { flex-direction: column; }
+  #box-left, #box-right { width: 100%; }
 }
 
-#modalPrint {
-  visibility: hidden;
-}
-
-@media (max-width:900px) { .card { grid-column: span 6; } .grid { grid-template-columns: repeat(6,1fr); } }
-@media (max-width:600px) { header { flex-direction: column; align-items: flex-start; } .card { grid-column: span 6; } .payslip { grid-template-columns:1fr; } }
-@media (max-width:600px) {
-  #box-wrapper {
-    flex-direction: column;
-  }
-
-  #box-left,
-  #box-right {
-    width: 100%;
-  }
-}
-
-/* MOBILE: enable scrolling inside modal */
+/* MOBILE: enable scrolling inside modal and bottom spacing */
 @media (max-width: 600px) {
   .modal {
     max-height: 80vh;
     overflow-y: auto;
-    padding-bottom: 80px; 
+    padding-bottom: 90px; /* space for bottom nav */
+    -webkit-overflow-scrolling: touch; /* smooth scrolling iOS */
   }
 
-  /* Prevent background from scrolling while modal is open */
   body.modal-open {
     overflow: hidden;
+    position: fixed;
+    width: 100%;
   }
 }
-
-
 </style>
 </head>
 <body>
@@ -224,13 +215,11 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Get employee ID from localStorage
-const empId = localStorage.getItem("eid");
-
-if (!empId) {
-  alert("Employee ID not found. Please log in again.");
-  window.location.href = "login.html"; // optional redirect
-}
+  const empId = localStorage.getItem("eid");
+  if (!empId) {
+    alert("Employee ID not found. Please log in again.");
+    window.location.href = "login.html";
+  }
 
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlYH879_FHNYurfbCLoN7HFpzKhLRZp3rNsrBFWUVvU-B9GbiuQwJTlMU2fl9nfdNksw/exec";
 
@@ -238,7 +227,6 @@ if (!empId) {
   const tbody = document.getElementById('tbody');
   const modalBackdrop = document.getElementById('modalBackdrop');
   const payslipContent = document.getElementById('payslipContent');
-  const modalTitle = document.getElementById('modalTitle');
 
   const currentYear = new Date().getFullYear();
   for(let y=currentYear; y>=currentYear-5; y--){
@@ -250,128 +238,117 @@ if (!empId) {
   const money = n => new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'}).format(n);
 
   async function loadPayslips(){
-  tbody.innerHTML='';
-  try {
-    const year = yearSelect.value;
-    const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
-    const list = await resp.json();
-    if(list.error) return alert(list.error);
+    tbody.innerHTML='';
+    try {
+      const year = yearSelect.value;
+      const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
+      const list = await resp.json();
+      if(list.error) return alert(list.error);
 
-    // Sort by pay_date descending (latest first)
-    list.sort((a,b) => new Date(b.pay_date) - new Date(a.pay_date));
+      list.sort((a,b) => new Date(b.pay_date) - new Date(a.pay_date));
 
-    let gross=0,ded=0,net=0,th13=0;
-    list.forEach(r=>{
-      gross+=r.gross; ded+=r.total_deductions; net+=r.net; th13+=r.thirteenth_pay;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${r.pay_date||r.pay_period}</td>
-                      <td>${money(r.gross)}</td>
-                      <td>${money(r.total_deductions)}</td>
-                      <td>${money(r.net)}</td>
-                      <td>${money(r.thirteenth_pay)}</td>`;
-      tr.addEventListener('click',()=>openModal(r));
-      tbody.appendChild(tr);
-    });
+      let gross=0,ded=0,net=0,th13=0;
+      list.forEach(r=>{
+        gross+=r.gross; ded+=r.total_deductions; net+=r.net; th13+=r.thirteenth_pay;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.pay_date||r.pay_period}</td>
+                        <td>${money(r.gross)}</td>
+                        <td>${money(r.total_deductions)}</td>
+                        <td>${money(r.net)}</td>
+                        <td>${money(r.thirteenth_pay)}</td>`;
+        tr.addEventListener('click',()=>openModal(r));
+        tbody.appendChild(tr);
+      });
 
-    document.getElementById('totalGross').textContent = money(gross);
-    document.getElementById('totalDeduction').textContent = money(ded);
-    document.getElementById('totalNet').textContent = money(net);
-    document.getElementById('total13thMonth').textContent = money(th13);
-
-  } catch(e){ console.error(e); alert('Failed to fetch payslips'); }
-}
-
+      document.getElementById('totalGross').textContent = money(gross);
+      document.getElementById('totalDeduction').textContent = money(ded);
+      document.getElementById('totalNet').textContent = money(net);
+      document.getElementById('total13thMonth').textContent = money(th13);
+    } catch(e){ console.error(e); alert('Failed to fetch payslips'); }
+  }
 
   function openModal(data) {
-  payslipContent.innerHTML = '';
+    payslipContent.innerHTML = '';
+    const d = data.details || {};
 
-  const d = data.details || {};
+    // Box 1 (top)
+    const boxEmployee = document.createElement('div');
+    boxEmployee.className = 'box';
+    boxEmployee.innerHTML = `
+      <div style="font-weight:700;margin-top:6px; text-align:center;">PAYSLIP</div>
+      <div style="font-weight:700;margin-top:6px; text-align:center;">${formatPrettyDate(data.pay_date || data.pay_period)}</div>
+    `;
 
-  // ---------------------- BOX 1 (TOP) ----------------------
-  const boxEmployee = document.createElement('div');
-  boxEmployee.className = 'box';
-  boxEmployee.innerHTML = `
-    <div style="font-weight:700;margin-top:6px; text-align:center;">PAYSLIP</div>
-    <div style="font-weight:700;margin-top:6px; text-align:center;">
-  ${formatPrettyDate(data.pay_date || data.pay_period)}
-</div>
+    // Boxes 2 & 3 wrapper
+    const wrapper = document.createElement('div');
+    wrapper.id = "box-wrapper";
 
-  `;
+    // Earnings
+    const boxEarnings = document.createElement('div');
+    boxEarnings.className = 'box';
+    boxEarnings.id = "box-left";
+    boxEarnings.innerHTML = `
+      <div class="small">Earnings</div>
+      <div class="row"><div>Salary for the Period</div><div>${money(d.salary)}</div></div>
+      <div class="row"><div>Holiday Pay</div><div>${money(d.holiday_pay)}</div></div>
+      <div class="row"><div>Regular OT</div><div>${money(d.regular_overtime)}</div></div>
+      <div class="row"><div>Rest Day OT</div><div>${money(d.rest_day_overtime)}</div></div>
+      <div class="row"><div>Holiday OT</div><div>${money(d.holiday_overtime)}</div></div>
+      <div class="row"><div>Night Differential</div><div>${money(d.night_diff)}</div></div>
+      <hr>
+      <div class="row" style="font-weight:700"><div>Gross Pay</div><div>${money(data.gross)}</div></div>
+    `;
 
-  // Wrapper for Box 2 & Box 3
-  const wrapper = document.createElement('div');
-  wrapper.id = "box-wrapper";
+    // Deductions
+    const boxDeductions = document.createElement('div');
+    boxDeductions.className = 'box';
+    boxDeductions.id = "box-right";
+    boxDeductions.innerHTML = `
+      <div class="small">Deductions</div>
+      <div class="row"><div>SSS</div><div>${money(d.sss)}</div></div>
+      <div class="row"><div>PhilHealth</div><div>${money(d.philhealth)}</div></div>
+      <div class="row"><div>Pag-IBIG</div><div>${money(d.pagibig)}</div></div>
+      <div class="row"><div>Withholding Tax</div><div>${money(d.withholdingTax)}</div></div>
+      <div class="row"><div>SSS Loan</div><div>${money(d.sssLoan)}</div></div>
+      <div class="row"><div>Pag-IBIG Loan</div><div>${money(d.pagibigLoan)}</div></div>
+      <div class="row"><div>Cash Advances</div><div>${money(d.cashAdvances)}</div></div>
+      <hr>
+      <div class="small">Attendance</div>
+      <div class="row"><div>Absences</div><div>${money(d.absences)}</div></div>
+      <div class="row"><div>Tardiness</div><div>${money(d.tardiness)}</div></div>
+      <div class="row"><div>Undertime</div><div>${money(d.undertime)}</div></div>
+      <hr>
+      <div class="row" style="font-weight:700"><div>Total Deductions</div><div>${money(data.total_deductions)}</div></div>
+      <hr>
+      <div class="row" style="font-weight:700"><div>Net Pay</div><div>${money(data.net)}</div></div>
+    `;
 
-  // ---------------------- BOX 2 (LEFT) — EARNINGS ----------------------
-  const boxEarnings = document.createElement('div');
-  boxEarnings.className = 'box';
-  boxEarnings.id = "box-left";
-  boxEarnings.innerHTML = `
-    <div class="small">Earnings</div>
+    wrapper.appendChild(boxEarnings);
+    wrapper.appendChild(boxDeductions);
+    payslipContent.appendChild(boxEmployee);
+    payslipContent.appendChild(wrapper);
 
-    
-    <div class="row"><div>Salary for the Period</div><div>${money(d.salary)}</div></div>
-    <div class="row"><div>Holiday Pay</div><div>${money(d.holiday_pay)}</div></div>
-    <div class="row"><div>Regular OT</div><div>${money(d.regular_overtime)}</div></div>
-    <div class="row"><div>Rest Day OT</div><div>${money(d.rest_day_overtime)}</div></div>
-    <div class="row"><div>Holiday OT</div><div>${money(d.holiday_overtime)}</div></div>
-    <div class="row"><div>Night Differential</div><div>${money(d.night_diff)}</div></div>
+    // Show modal
+    modalBackdrop.style.display = 'flex';
+    document.body.classList.add("modal-open");
 
-    <hr>
-    <div class="row" style="font-weight:700"><div>Gross Pay</div><div>${money(data.gross)}</div></div>
-  `;
+    // Close modal
+    document.getElementById('modalClose').onclick = () => {
+      modalBackdrop.style.display = 'none';
+      document.body.classList.remove("modal-open");
+    };
+    document.getElementById('modalPrint').onclick = () => window.print();
+  }
 
-  // ---------------------- BOX 3 (RIGHT) — DEDUCTIONS ----------------------
-  const boxDeductions = document.createElement('div');
-  boxDeductions.className = 'box';
-  boxDeductions.id = "box-right";
-  boxDeductions.innerHTML = `
-    <div class="small">Deductions</div>
+  function formatPrettyDate(d) {
+    if (!d) return "";
+    const date = new Date(d);
+    if (isNaN(date)) return d;
+    return date.toLocaleDateString("en-US", {year:"numeric",month:"long",day:"numeric"});
+  }
 
-    <div class="row"><div>SSS</div><div>${money(d.sss)}</div></div>
-    <div class="row"><div>PhilHealth</div><div>${money(d.philhealth)}</div></div>
-    <div class="row"><div>Pag-IBIG</div><div>${money(d.pagibig)}</div></div>
-    <div class="row"><div>Withholding Tax</div><div>${money(d.withholdingTax)}</div></div>
-
-    <div class="row"><div>SSS Loan</div><div>${money(d.sssLoan)}</div></div>
-    <div class="row"><div>Pag-IBIG Loan</div><div>${money(d.pagibigLoan)}</div></div>
-    <div class="row"><div>Cash Advances</div><div>${money(d.cashAdvances)}</div></div>
-
-    <hr>
-
-    <div class="small">Attendance</div>
-    <div class="row"><div>Absences</div><div>${money(d.absences)}</div></div>
-    <div class="row"><div>Tardiness</div><div>${money(d.tardiness)}</div></div>
-    <div class="row"><div>Undertime</div><div>${money(d.undertime)}</div></div>
-
-    <hr>
-
-    <div class="row" style="font-weight:700"><div>Total Deductions</div><div>${money(data.total_deductions)}</div></div>
-    <hr>
-    <div class="row" style="font-weight:700"><div>Net Pay</div><div>${money(data.net)}</div></div>
-    
-  `;
-
-  // Add box 2 & 3 to wrapper
-  wrapper.appendChild(boxEarnings);
-  wrapper.appendChild(boxDeductions);
-
-  // Add all to modal
-  payslipContent.appendChild(boxEmployee);
-  payslipContent.appendChild(wrapper);
-
-  document.body.classList.add("modal-open");
-  document.getElementById('modalClose').addEventListener('click', () => {
-  document.body.classList.remove("modal-open");
-  modalBackdrop.style.display = 'flex';
-});
-
-
-  document.getElementById('modalClose').addEventListener('click',()=>modalBackdrop.style.display='none');
-  document.getElementById('modalPrint').addEventListener('click',()=>window.print());
   yearSelect.addEventListener('change', loadPayslips);
   document.getElementById('printAll').addEventListener('click',()=>window.print());
-
   document.getElementById('exportCsv').addEventListener('click', async ()=>{
     try {
       const year = yearSelect.value;
@@ -386,24 +363,10 @@ if (!empId) {
       a.download=`${empId}_${year}_payslips.csv`;
       a.click();
     } catch(e){ console.error(e); alert('Failed to export CSV'); }
-  
   });
-
-  
-  function formatPrettyDate(d) {
-  if (!d) return "";
-  const date = new Date(d);
-  if (isNaN(date)) return d; // fallback if string is not a valid date
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
-}
 
   loadPayslips();
 });
-
 </script>
 </body>
 </html>
