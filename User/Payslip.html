@@ -361,6 +361,8 @@ if (!empId) {
   payslipContent.appendChild(wrapper);
 
   document.body.classList.add("modal-open");
+  document.getElementById('modalClose').addEventListener('click', () => {
+  document.body.classList.remove("modal-open");
   modalBackdrop.style.display = 'flex';
 }
 
