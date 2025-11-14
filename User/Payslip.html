@@ -30,11 +30,13 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  margin: 10px 0;
   width: 100%;
-  max-width: 1200px;
   padding-bottom: 90px;
+  margin: 10px auto;   /* centers + prevents stretching to edges */
+  padding: 0 30px;      /* adds breathing space on sides */
+  max-width: 1200px;     /* <-- change this to your preferred width */
 }
+
 
 header {
   display: flex;
@@ -131,7 +133,7 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 }
 
 /* MOBILE: enable scrolling inside modal and bottom spacing */
-@media (max-width: 500px) {
+@media (max-width: 600px) {
   .modal {
     max-height: 80vh;
     overflow-y: auto;
@@ -141,7 +143,7 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   body.modal-open {
     overflow: hidden;
     position: fixed;
-    width: 90%;
+    width: 100%;
   }
 }
 </style>
@@ -236,35 +238,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const money = n => new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'}).format(n);
 
-  async function loadPayslips(){
-    tbody.innerHTML='';
+  async function loadPayslips() {
+  tbody.innerHTML = '';
+  const year = yearSelect.value;
+
+  // Check if data exists in localStorage first
+  let list = JSON.parse(localStorage.getItem(`payslips_${empId}_${year}`));
+  
+  if (!list) { // if not in localStorage, fetch from server
     try {
-      const year = yearSelect.value;
       const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
-      const list = await resp.json();
-      if(list.error) return alert(list.error);
+      list = await resp.json();
+      if (list.error) return alert(list.error);
 
-      list.sort((a,b) => new Date(b.pay_date) - new Date(a.pay_date));
-
-      let gross=0,ded=0,net=0,th13=0;
-      list.forEach(r=>{
-        gross+=r.gross; ded+=r.total_deductions; net+=r.net; th13+=r.thirteenth_pay;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${r.pay_date||r.pay_period}</td>
-                        <td>${money(r.gross)}</td>
-                        <td>${money(r.total_deductions)}</td>
-                        <td>${money(r.net)}</td>
-                        <td>${money(r.thirteenth_pay)}</td>`;
-        tr.addEventListener('click',()=>openModal(r));
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('totalGross').textContent = money(gross);
-      document.getElementById('totalDeduction').textContent = money(ded);
-      document.getElementById('totalNet').textContent = money(net);
-      document.getElementById('total13thMonth').textContent = money(th13);
-    } catch(e){ console.error(e); alert('Failed to fetch payslips'); }
+      // Save fetched data to localStorage
+      localStorage.setItem(`payslips_${empId}_${year}`, JSON.stringify(list));
+    } catch(e) {
+      console.error(e);
+      return alert('Failed to fetch payslips');
+    }
   }
+
+  list.sort((a,b) => new Date(b.pay_date) - new Date(a.pay_date));
+
+  let gross = 0, ded = 0, net = 0, th13 = 0;
+  list.forEach(r => {
+    gross += r.gross; 
+    ded += r.total_deductions; 
+    net += r.net; 
+    th13 += r.thirteenth_pay;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.pay_date || r.pay_period}</td>
+                    <td>${money(r.gross)}</td>
+                    <td>${money(r.total_deductions)}</td>
+                    <td>${money(r.net)}</td>
+                    <td>${money(r.thirteenth_pay)}</td>`;
+    tr.addEventListener('click', () => openModal(r));
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('totalGross').textContent = money(gross);
+  document.getElementById('totalDeduction').textContent = money(ded);
+  document.getElementById('totalNet').textContent = money(net);
+  document.getElementById('total13thMonth').textContent = money(th13);
+}
+
 
   function openModal(data) {
     payslipContent.innerHTML = '';
