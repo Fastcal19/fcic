@@ -92,6 +92,40 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .row { display:flex; justify-content:space-between; padding:6px 0; }
 .small { font-size:13px; color:#64748b; }
 
+#payslipContent {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.box {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+#box-wrapper {
+  display: flex;
+  gap: 15px;
+}
+
+#box-left, #box-right {
+  width: 50%;
+}
+
+#exportCsv {
+  visibility: hidden;
+}
+
+#printAll {
+  visibility: hidden;
+}
+
+#modalPrint {
+  visibility: hidden;
+}
+
 @media (max-width:900px) { .card { grid-column: span 6; } .grid { grid-template-columns: repeat(6,1fr); } }
 @media (max-width:600px) { header { flex-direction: column; align-items: flex-start; } .card { grid-column: span 6; } .payslip { grid-template-columns:1fr; } }
 </style>
@@ -104,9 +138,9 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
       <p class="lead">View and print payslips for the entire year. Click a month to view details.</p>
     </div>
     <div class="controls">
-      <select id="yearSelect" aria-label="Choose year"></select>
       <button class="btn" id="exportCsv">Export CSV</button>
       <button class="btn" id="printAll">Print</button>
+      <select id="yearSelect" aria-label="Choose year"></select>
     </div>
   </header>
 
@@ -154,7 +188,7 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <h2 id="modalTitle">Payslip</h2>
       <div style="display:flex;gap:8px">
-        <button class="btn" id="modalPrint">Print</button>
+        <button class="btn" id="modalPrint"></button>
         <button class="btn" id="modalClose">Close</button>
       </div>
     </div>
@@ -222,32 +256,84 @@ if (!empId) {
 }
 
 
-  function openModal(data){
-    modalTitle.textContent=`Payslip — ${data.pay_date||data.pay_period}`;
-    payslipContent.innerHTML='';
+  function openModal(data) {
+  modalTitle.textContent = `Payslip — ${data.pay_date || data.pay_period}`;
+  payslipContent.innerHTML = '';
 
-    const left = document.createElement('div');
-    left.className='box';
-    left.innerHTML = `<div class="small">Employee</div>
-      <div style="font-weight:700;margin-top:6px">${data.name}
-        <div class="small">${data.en} — ${data.designation}</div>
-      </div>
-      <hr>
-      <div class="small">Earnings</div>
-      <div class="row"><div>Gross</div><div>${money(data.gross)}</div></div>`;
+  const d = data.details || {};
 
-    const right = document.createElement('div');
-    right.className='box';
-    right.innerHTML = `<div class="small">Deductions</div>
-      <div class="row"><div>Total</div><div>${money(data.total_deductions)}</div></div>
-      <hr>
-      <div class="row" style="font-weight:700"><div>Net Pay</div><div>${money(data.net)}</div></div>
-      <div class="row" style="font-weight:700"><div>13th Month Pay</div><div>${money(data.thirteenth_pay)}</div></div>`;
+  // ---------------------- BOX 1 (TOP) ----------------------
+  const boxEmployee = document.createElement('div');
+  boxEmployee.className = 'box';
+  boxEmployee.innerHTML = `
+    <div style="font-weight:700;margin-top:6px">${data.name}</div>
+    <div class="small">${data.designation}</div>
+  `;
 
-    payslipContent.appendChild(left);
-    payslipContent.appendChild(right);
-    modalBackdrop.style.display='flex';
-  }
+  // Wrapper for Box 2 & Box 3
+  const wrapper = document.createElement('div');
+  wrapper.id = "box-wrapper";
+
+  // ---------------------- BOX 2 (LEFT) — EARNINGS ----------------------
+  const boxEarnings = document.createElement('div');
+  boxEarnings.className = 'box';
+  boxEarnings.id = "box-left";
+  boxEarnings.innerHTML = `
+    <div class="small">Earnings</div>
+
+    
+    <div class="row"><div>Salary for the Period</div><div>${money(d.salary)}</div></div>
+    <div class="row"><div>Holiday Pay</div><div>${money(d.holiday_pay)}</div></div>
+    <div class="row"><div>Regular OT</div><div>${money(d.regular_overtime)}</div></div>
+    <div class="row"><div>Rest Day OT</div><div>${money(d.rest_day_overtime)}</div></div>
+    <div class="row"><div>Holiday OT</div><div>${money(d.holiday_overtime)}</div></div>
+    <div class="row"><div>Night Differential</div><div>${money(d.night_diff)}</div></div>
+
+    <hr>
+    <div class="row" style="font-weight:700"><div>Gross Pay</div><div>${money(data.gross)}</div></div>
+  `;
+
+  // ---------------------- BOX 3 (RIGHT) — DEDUCTIONS ----------------------
+  const boxDeductions = document.createElement('div');
+  boxDeductions.className = 'box';
+  boxDeductions.id = "box-right";
+  boxDeductions.innerHTML = `
+    <div class="small">Deductions</div>
+
+    <div class="row"><div>SSS</div><div>${money(d.sss)}</div></div>
+    <div class="row"><div>PhilHealth</div><div>${money(d.philhealth)}</div></div>
+    <div class="row"><div>Pag-IBIG</div><div>${money(d.pagibig)}</div></div>
+    <div class="row"><div>Withholding Tax</div><div>${money(d.withholdingTax)}</div></div>
+
+    <div class="row"><div>SSS Loan</div><div>${money(d.sssLoan)}</div></div>
+    <div class="row"><div>Pag-IBIG Loan</div><div>${money(d.pagibigLoan)}</div></div>
+    <div class="row"><div>Cash Advances</div><div>${money(d.cashAdvances)}</div></div>
+
+    <hr>
+
+    <div class="small">Attendance</div>
+    <div class="row"><div>Absences</div><div>${money(d.absences)}</div></div>
+    <div class="row"><div>Tardiness</div><div>${money(d.tardiness)}</div></div>
+    <div class="row"><div>Undertime</div><div>${money(d.undertime)}</div></div>
+
+    <hr>
+
+    <div class="row" style="font-weight:700"><div>Total Deductions</div><div>${money(data.total_deductions)}</div></div>
+    <hr>
+    <div class="row" style="font-weight:700"><div>Net Pay</div><div>${money(data.net)}</div></div>
+    
+  `;
+
+  // Add box 2 & 3 to wrapper
+  wrapper.appendChild(boxEarnings);
+  wrapper.appendChild(boxDeductions);
+
+  // Add all to modal
+  payslipContent.appendChild(boxEmployee);
+  payslipContent.appendChild(wrapper);
+
+  modalBackdrop.style.display = 'flex';
+}
 
   document.getElementById('modalClose').addEventListener('click',()=>modalBackdrop.style.display='none');
   document.getElementById('modalPrint').addEventListener('click',()=>window.print());
