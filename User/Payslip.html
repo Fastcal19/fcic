@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Employee Payslip — Yearly Summary</title>
+<style>
+:root {
+  --bg1: #ff7a00;
+  --muted: black;
+  --accent: #06b6d4;
+  --glass: rgba(255, 255, 255, 0.05);
+}
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+  background: linear-gradient(180deg, gray);
+  color: black;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.main-container {
+  background: linear-gradient(180deg, gold, orangered);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  margin: 10px 0;
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.brand h1 { margin: 0; font-size: 20px; }
+p.lead { margin: 4px 0 0 0; color: var(--muted); font-size: 13px; }
+
+.controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn {
+  background: linear-gradient(90deg, var(--accent), #7c3aed);
+  border: none; padding: 8px 12px; border-radius: 8px;
+  color: #fff; font-weight: 600; cursor: pointer;
+}
+.btn:hover { opacity: 0.85; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+}
+.card {
+  grid-column: span 3;
+  background: #fff; padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.card h3 { margin: 0; font-size: 13px; color: var(--muted); }
+.big { font-size: 20px; font-weight: 700; margin-top: 8px; }
+
+.table-wrap {
+  grid-column: 1 / -1;
+  background: var(--glass);
+  padding: 14px; border-radius: 12px; overflow-x:auto;
+}
+table { width: 100%; border-collapse: collapse; color: inherit; }
+thead th { text-align: left; padding: 8px; font-size: 12px; color: var(--muted); border-bottom: 1px dashed rgba(255,255,255,0.1);}
+tbody tr:hover { background: rgba(255,255,255,0.06); cursor: pointer; }
+tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(2,6,23,0.6);
+  display: none; align-items: center; justify-content: center; z-index: 50;
+}
+.modal {
+  width: 760px; max-width: 100%; background: #fff; color: #111827;
+  padding: 18px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+.modal h2 { margin: 0 0 8px 0; }
+.payslip { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.payslip .box { background:#f9fafb; padding:12px; border-radius:8px; border:1px solid #e2e8f0; }
+.row { display:flex; justify-content:space-between; padding:6px 0; }
+.small { font-size:13px; color:#64748b; }
+
+@media (max-width:900px) { .card { grid-column: span 6; } .grid { grid-template-columns: repeat(6,1fr); } }
+@media (max-width:600px) { header { flex-direction: column; align-items: flex-start; } .card { grid-column: span 6; } .payslip { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="main-container">
+  <header>
+    <div class="brand">
+      <h1>Payslip Summary</h1>
+      <p class="lead">View and print payslips for the entire year. Click a month to view details.</p>
+    </div>
+    <div class="controls">
+      <select id="yearSelect" aria-label="Choose year"></select>
+      <button class="btn" id="exportCsv">Export CSV</button>
+      <button class="btn" id="printAll">Print</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Total Gross Pay</h3>
+      <div class="big" id="totalGross">—</div>
+      <div class="small">Year-to-date gross salary</div>
+    </div>
+    <div class="card">
+      <h3>Total Deductions</h3>
+      <div class="big" id="totalDeduction">—</div>
+      <div class="small">Taxes, SSS, PhilHealth, Pag-IBIG</div>
+    </div>
+    <div class="card">
+      <h3>Total Net Pay</h3>
+      <div class="big" id="totalNet">—</div>
+      <div class="small">Amount paid out</div>
+    </div>
+    <div class="card">
+      <h3>Total 13th Month Pay</h3>
+      <div class="big" id="total13thMonth">—</div>
+      <div class="small">Total for the year</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Pay Date</th>
+            <th>Gross Pay</th>
+            <th>Deductions</th>
+            <th>Net Pay</th>
+            <th>13th Month Pay</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="modalBackdrop" class="modal-backdrop">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <h2 id="modalTitle">Payslip</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="modalPrint">Print</button>
+        <button class="btn" id="modalClose">Close</button>
+      </div>
+    </div>
+    <div class="payslip" id="payslipContent"></div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const empId = "008"; 
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlYH879_FHNYurfbCLoN7HFpzKhLRZp3rNsrBFWUVvU-B9GbiuQwJTlMU2fl9nfdNksw/exec";
+
+  const yearSelect = document.getElementById('yearSelect');
+  const tbody = document.getElementById('tbody');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const payslipContent = document.getElementById('payslipContent');
+  const modalTitle = document.getElementById('modalTitle');
+
+  const currentYear = new Date().getFullYear();
+  for(let y=currentYear; y>=currentYear-5; y--){
+    const o=document.createElement('option'); o.value=y; o.textContent=y;
+    yearSelect.appendChild(o);
+  }
+  yearSelect.value = currentYear;
+
+  const money = n => new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'}).format(n);
+
+  async function loadPayslips(){
+    tbody.innerHTML='';
+    try {
+      const year = yearSelect.value;
+      const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
+      const list = await resp.json();
+      if(list.error) return alert(list.error);
+
+      let gross=0,ded=0,net=0,th13=0;
+      list.forEach(r=>{
+        gross+=r.gross; ded+=r.total_deductions; net+=r.net; th13+=r.thirteenth_pay;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.pay_date||r.pay_period}</td>
+                        <td>${money(r.gross)}</td>
+                        <td>${money(r.total_deductions)}</td>
+                        <td>${money(r.net)}</td>
+                        <td>${money(r.thirteenth_pay)}</td>`;
+        tr.addEventListener('click',()=>openModal(r));
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('totalGross').textContent = money(gross);
+      document.getElementById('totalDeduction').textContent = money(ded);
+      document.getElementById('totalNet').textContent = money(net);
+      document.getElementById('total13thMonth').textContent = money(th13);
+
+    } catch(e){ console.error(e); alert('Failed to fetch payslips'); }
+  }
+
+  function openModal(data){
+    modalTitle.textContent=`Payslip — ${data.pay_date||data.pay_period}`;
+    payslipContent.innerHTML='';
+
+    const left = document.createElement('div');
+    left.className='box';
+    left.innerHTML = `<div class="small">Employee</div>
+      <div style="font-weight:700;margin-top:6px">${data.name}
+        <div class="small">${data.en} — ${data.designation}</div>
+      </div>
+      <hr>
+      <div class="small">Earnings</div>
+      <div class="row"><div>Gross</div><div>${money(data.gross)}</div></div>`;
+
+    const right = document.createElement('div');
+    right.className='box';
+    right.innerHTML = `<div class="small">Deductions</div>
+      <div class="row"><div>Total</div><div>${money(data.total_deductions)}</div></div>
+      <hr>
+      <div class="row" style="font-weight:700"><div>Net Pay</div><div>${money(data.net)}</div></div>
+      <div class="row" style="font-weight:700"><div>13th Month Pay</div><div>${money(data.thirteenth_pay)}</div></div>`;
+
+    payslipContent.appendChild(left);
+    payslipContent.appendChild(right);
+    modalBackdrop.style.display='flex';
+  }
+
+  document.getElementById('modalClose').addEventListener('click',()=>modalBackdrop.style.display='none');
+  document.getElementById('modalPrint').addEventListener('click',()=>window.print());
+  yearSelect.addEventListener('change', loadPayslips);
+  document.getElementById('printAll').addEventListener('click',()=>window.print());
+
+  document.getElementById('exportCsv').addEventListener('click', async ()=>{
+    try {
+      const year = yearSelect.value;
+      const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
+      const list = await resp.json();
+      const cols=['Pay Date','Gross','Deductions','Net','13th Month Pay'];
+      const rows=list.map(r=>[r.pay_date||r.pay_period,r.gross,r.total_deductions,r.net,r.thirteenth_pay]);
+      const csv = cols.join(',') + '\n' + rows.map(r=>r.join(',')).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const a = document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=`${empId}_${year}_payslips.csv`;
+      a.click();
+    } catch(e){ console.error(e); alert('Failed to export CSV'); }
+  });
+
+  loadPayslips();
+});
+</script>
+</body>
+</html>
