@@ -1,277 +1,402 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Employee Payslip — Yearly Summary</title>
-<style>
-:root {
-  --bg1: #ff7a00;
-  --muted: black;
-  --accent: #06b6d4;
-  --glass: rgba(255, 255, 255, 0.05);
-}
-* { box-sizing: border-box; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fast Cal Industrial Corp</title>
 
-html, body {
-  height: 95%;
-  margin: 0;
-  font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
-  background: linear-gradient(180deg, gray);
-  color: black;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
+  <!-- ✅ PWA Manifest + Theme -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ff9800">
 
-.main-container {
-  background: linear-gradient(180deg, gold, orangered);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  margin: 10px 0;
-  width: 100%;
-  max-width: 1200px;
-  padding: 20px;
-}
+  <!-- ✅ iOS PWA Support -->
+  <link rel="apple-touch-icon" href="/Logo.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-header {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-.brand h1 { margin: 0; font-size: 20px; }
-p.lead { margin: 4px 0 0 0; color: var(--muted); font-size: 13px; }
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-.controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.btn {
-  background: linear-gradient(90deg, var(--accent), #7c3aed);
-  border: none; padding: 8px 12px; border-radius: 8px;
-  color: #fff; font-weight: 600; cursor: pointer;
-}
-.btn:hover { opacity: 0.85; }
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 14px;
-}
-.card {
-  grid-column: span 3;
-  background: #fff; padding: 14px;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
-.card h3 { margin: 0; font-size: 13px; color: var(--muted); }
-.big { font-size: 20px; font-weight: 700; margin-top: 8px; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #222;
+      background-color: gray;
+      display: flex;
+      flex-direction: column;
+    }
 
-.table-wrap {
-  grid-column: 1 / -1;
-  background: var(--glass);
-  padding: 14px; border-radius: 12px; overflow-x:auto;
-}
-table { width: 100%; border-collapse: collapse; color: inherit; }
-thead th { text-align: left; padding: 8px; font-size: 12px; color: var(--muted); border-bottom: 1px dashed rgba(255,255,255,0.1);}
-tbody tr:hover { background: rgba(255,255,255,0.06); cursor: pointer; }
-tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    /* HEADER */
+    header {
+      background: linear-gradient(90deg, orange, white, orange);
+      color: white;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
 
-.modal-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(2,6,23,0.6);
-  display: none; align-items: center; justify-content: center; z-index: 50;
-}
-.modal {
-  width: 760px; max-width: 100%; background: #fff; color: #111827;
-  padding: 18px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-.modal h2 { margin: 0 0 8px 0; }
-.payslip { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.payslip .box { background:#f9fafb; padding:12px; border-radius:8px; border:1px solid #e2e8f0; }
-.row { display:flex; justify-content:space-between; padding:6px 0; }
-.small { font-size:13px; color:#64748b; }
+    .logo-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
 
-@media (max-width:900px) { .card { grid-column: span 6; } .grid { grid-template-columns: repeat(6,1fr); } }
-@media (max-width:600px) { header { flex-direction: column; align-items: flex-start; } .card { grid-column: span 6; } .payslip { grid-template-columns:1fr; } }
-</style>
+    .logo-section img {
+      height: 55px;
+      display: block;
+    }
+
+    main { flex: 1; }
+
+    .hero {
+      position: relative;
+      height: 70vh;
+      background: linear-gradient(1deg, gray, lightgray, gray);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 2rem;
+    }
+
+    .hero h3 {
+      font-size: 1.2rem;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+      animation: flicker 2s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 24%, 55% { opacity: 0.6; }
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      max-width: 600px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
+
+    .hero button {
+      margin-top: 2rem;
+      padding: 0.8rem 2rem;
+      border: none;
+      background: #ff9800;
+      color: white;
+      font-size: 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .hero button:hover { background: #e68900; transform: scale(1.05); }
+
+    footer {
+      background: #222;
+      color: #ccc;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+    footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
+    footer a:hover { color: #fff; }
+
+    .login-box {
+      display: inline-block;
+      background: linear-gradient(90deg, orange, white, orange);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+
+    .login-box input {
+      width: 80%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .manual-btn, .gmail-btn {
+      width: 85%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .manual-btn {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .gmail-btn {
+      background: #DB4437;
+      color: white;
+    }
+
+    .gmail-btn i { margin-right: 6px; }
+
+    /* LOGIN MODAL */
+    #loginModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    #loginBox {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+      position: relative;
+    }
+    #loginBox input {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #loginBox button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #loginBox .manual-btn { background: orangered; color: white; }
+    #loginBox .gmail-btn { background: #4285F4; color: white; }
+    #closeModal {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #888;
+    }
+    #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
+
+    /* ✅ Install Button Styling */
+    #installBtn {
+      margin-top: 15px;
+      padding: 10px 25px;
+      font-size: 1rem;
+      background: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: none;
+    }
+    #installBtn:hover { background: #e68900; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero p { font-size: 1rem; }
+      header { flex-direction: column; align-items: flex-start; }
+      nav { margin-top: 1rem; }
+    }
+  </style>
 </head>
 <body>
-<div class="main-container">
-  <header>
-    <div class="brand">
-      <h1>Payslip Summary</h1>
-      <p class="lead">View and print payslips for the entire year. Click a month to view details.</p>
-    </div>
-    <div class="controls">
-      <select id="yearSelect" aria-label="Choose year"></select>
-      <button class="btn" id="exportCsv">Export CSV</button>
-      <button class="btn" id="printAll">Print</button>
-    </div>
-  </header>
 
-  <div class="grid">
-    <div class="card">
-      <h3>Total Gross Pay</h3>
-      <div class="big" id="totalGross">—</div>
-      <div class="small">Year-to-date gross salary</div>
-    </div>
-    <div class="card">
-      <h3>Total Deductions</h3>
-      <div class="big" id="totalDeduction">—</div>
-      <div class="small">Taxes, SSS, PhilHealth, Pag-IBIG</div>
-    </div>
-    <div class="card">
-      <h3>Total Net Pay</h3>
-      <div class="big" id="totalNet">—</div>
-      <div class="small">Amount paid out</div>
-    </div>
-    <div class="card">
-      <h3>Total 13th Month Pay</h3>
-      <div class="big" id="total13thMonth">—</div>
-      <div class="small">Total for the year</div>
+<!-- HEADER -->
+<header>
+  <div class="logo-section">
+    <img src="fcic logo.png" alt="FCIC Logo">
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main>
+  <section class="hero">
+    <h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
+    <div id="loginBox" class="login-box">
+      <h3>Login</h3>
+      <input id="username" placeholder="Username"><br>
+      <input id="password" type="password" placeholder="Password"><br>
+      <button class="manual-btn" onclick="manualLogin()">Login</button>
+      <hr>
+      <button class="gmail-btn" onclick="gmailLogin()">
+        <i class="fab fa-google"></i> Sign in with Google
+      </button>
+      <p id="loginStatus"></p>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Pay Date</th>
-            <th>Gross Pay</th>
-            <th>Deductions</th>
-            <th>Net Pay</th>
-            <th>13th Month Pay</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
+    <!-- ✅ Manual Install Button -->
+    <button id="installBtn">📲 Install App</button>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  &copy; 2025 Fast Cal Industrial Corp. All rights reserved.<br>
+  <a href="/privacy-policy/">Privacy Policy</a> |
+  <a href="/terms/">Terms & Conditions</a>
+</footer>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal">
+  <div id="loginBoxModal">
+    <span id="closeModal">&times;</span>
+    <h3>Login</h3>
+    <input id="usernameModal" placeholder="Username"><br>
+    <input id="passwordModal" type="password" placeholder="Password"><br>
+    <button class="manual-btn" onclick="manualLogin()">Login</button>
+    <hr>
+    <button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
+    <p id="loginStatus"></p>
   </div>
 </div>
 
-<div id="modalBackdrop" class="modal-backdrop">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <h2 id="modalTitle">Payslip</h2>
-      <div style="display:flex;gap:8px">
-        <button class="btn" id="modalPrint">Print</button>
-        <button class="btn" id="modalClose">Close</button>
-      </div>
-    </div>
-    <div class="payslip" id="payslipContent"></div>
-  </div>
-</div>
-
+<!-- SCRIPT -->
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  // Get employee ID from localStorage
-const empId = localStorage.getItem("eid");
+const webAppUrl = "https://script.google.com/macros/s/AKfycbxcbv-Pn3_miFI9y2Pehx6tWD1NeYy4iMcusTJW-sXK34b4EGO76_fVu8uuAwIgLs4OHg/exec";
 
-if (!empId) {
-  alert("Employee ID not found. Please log in again.");
-  window.location.href = "login.html"; // optional redirect
-}
+const modal = document.getElementById('loginModal');
+const closeModal = document.getElementById('closeModal');
+if (closeModal) closeModal.onclick = () => modal.style.display = 'none';
+window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlYH879_FHNYurfbCLoN7HFpzKhLRZp3rNsrBFWUVvU-B9GbiuQwJTlMU2fl9nfdNksw/exec";
-
-  const yearSelect = document.getElementById('yearSelect');
-  const tbody = document.getElementById('tbody');
-  const modalBackdrop = document.getElementById('modalBackdrop');
-  const payslipContent = document.getElementById('payslipContent');
-  const modalTitle = document.getElementById('modalTitle');
-
-  const currentYear = new Date().getFullYear();
-  for(let y=currentYear; y>=currentYear-5; y--){
-    const o=document.createElement('option'); o.value=y; o.textContent=y;
-    yearSelect.appendChild(o);
+// ✅ AUTO SKIP LOGIN IF ALREADY LOGGED IN
+window.addEventListener("DOMContentLoaded", () => {
+  const role = localStorage.getItem("role");
+  const username = localStorage.getItem("username");
+  if (role && username) {
+    console.log("User already logged in as:", username);
+    window.location.href = "/User/";
   }
-  yearSelect.value = currentYear;
-
-  const money = n => new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'}).format(n);
-
-  async function loadPayslips(){
-  tbody.innerHTML='';
-  try {
-    const year = yearSelect.value;
-    const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
-    const list = await resp.json();
-    if(list.error) return alert(list.error);
-
-    // Sort by pay_date descending (latest first)
-    list.sort((a,b) => new Date(b.pay_date) - new Date(a.pay_date));
-
-    let gross=0,ded=0,net=0,th13=0;
-    list.forEach(r=>{
-      gross+=r.gross; ded+=r.total_deductions; net+=r.net; th13+=r.thirteenth_pay;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${r.pay_date||r.pay_period}</td>
-                      <td>${money(r.gross)}</td>
-                      <td>${money(r.total_deductions)}</td>
-                      <td>${money(r.net)}</td>
-                      <td>${money(r.thirteenth_pay)}</td>`;
-      tr.addEventListener('click',()=>openModal(r));
-      tbody.appendChild(tr);
-    });
-
-    document.getElementById('totalGross').textContent = money(gross);
-    document.getElementById('totalDeduction').textContent = money(ded);
-    document.getElementById('totalNet').textContent = money(net);
-    document.getElementById('total13thMonth').textContent = money(th13);
-
-  } catch(e){ console.error(e); alert('Failed to fetch payslips'); }
-}
-
-
-  function openModal(data){
-    modalTitle.textContent=`Payslip — ${data.pay_date||data.pay_period}`;
-    payslipContent.innerHTML='';
-
-    const left = document.createElement('div');
-    left.className='box';
-    left.innerHTML = `<div class="small">Employee</div>
-      <div style="font-weight:700;margin-top:6px">${data.name}
-        <div class="small">${data.en} — ${data.designation}</div>
-      </div>
-      <hr>
-      <div class="small">Earnings</div>
-      <div class="row"><div>Gross</div><div>${money(data.gross)}</div></div>`;
-
-    const right = document.createElement('div');
-    right.className='box';
-    right.innerHTML = `<div class="small">Deductions</div>
-      <div class="row"><div>Total</div><div>${money(data.total_deductions)}</div></div>
-      <hr>
-      <div class="row" style="font-weight:700"><div>Net Pay</div><div>${money(data.net)}</div></div>
-      <div class="row" style="font-weight:700"><div>13th Month Pay</div><div>${money(data.thirteenth_pay)}</div></div>`;
-
-    payslipContent.appendChild(left);
-    payslipContent.appendChild(right);
-    modalBackdrop.style.display='flex';
-  }
-
-  document.getElementById('modalClose').addEventListener('click',()=>modalBackdrop.style.display='none');
-  document.getElementById('modalPrint').addEventListener('click',()=>window.print());
-  yearSelect.addEventListener('change', loadPayslips);
-  document.getElementById('printAll').addEventListener('click',()=>window.print());
-
-  document.getElementById('exportCsv').addEventListener('click', async ()=>{
-    try {
-      const year = yearSelect.value;
-      const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
-      const list = await resp.json();
-      const cols=['Pay Date','Gross','Deductions','Net','13th Month Pay'];
-      const rows=list.map(r=>[r.pay_date||r.pay_period,r.gross,r.total_deductions,r.net,r.thirteenth_pay]);
-      const csv = cols.join(',') + '\n' + rows.map(r=>r.join(',')).join('\n');
-      const blob = new Blob([csv],{type:'text/csv'});
-      const a = document.createElement('a');
-      a.href=URL.createObjectURL(blob);
-      a.download=`${empId}_${year}_payslips.csv`;
-      a.click();
-    } catch(e){ console.error(e); alert('Failed to export CSV'); }
-  });
-
-  loadPayslips();
 });
+
+async function manualLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const status = document.getElementById('loginStatus');
+  if (!username || !password) {
+    status.style.color = "red";
+    status.textContent = "⚠️ Please enter both username and password.";
+    return;
+  }
+  status.style.color = "black";
+  status.textContent = "⏳ Checking...";
+  try {
+    const res = await fetch(webAppUrl, {
+      method: "POST",
+      body: JSON.stringify({ method: "manual", username, password })
+    });
+    const data = await res.json();
+    handleLoginResponse(data);
+  } catch {
+    status.style.color = "red";
+    status.textContent = "❌ Network error.";
+  }
+}
+
+let googleReady = false;
+window.onload = () => {
+  if (window.google && window.google.accounts) initGoogleSignIn();
+  else {
+    const wait = setInterval(() => {
+      if (window.google && window.google.accounts) {
+        initGoogleSignIn();
+        clearInterval(wait);
+      }
+    }, 300);
+  }
+};
+
+function initGoogleSignIn() {
+  googleReady = true;
+  google.accounts.id.initialize({
+    client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
+    callback: handleCredentialResponse
+  });
+}
+
+function gmailLogin() {
+  if (googleReady) google.accounts.id.prompt();
+  else alert("Google Sign-In not ready yet. Please wait a moment and try again.");
+}
+
+async function handleCredentialResponse(response) {
+  const userInfo = parseJwt(response.credential);
+  const res = await fetch(webAppUrl, {
+    method: "POST",
+    body: JSON.stringify({ method: "gmail", email: userInfo.email })
+  });
+  const data = await res.json();
+  handleLoginResponse(data);
+}
+
+function handleLoginResponse(response) {
+  const status = document.getElementById('loginStatus');
+  if (response.success) {
+    localStorage.setItem("role", response.role);
+    localStorage.setItem("username", response.name);
+    localStorage.setItem("email", response.email);
+    localStorage.setItem("eid", response.eid);
+    localStorage.setItem("full", response.full);
+    localStorage.setItem("photo", response.photo);
+    status.style.color = "green";
+    status.textContent = "✅ Welcome, " + response.name;
+    setTimeout(() => { location.href = "/User/"; }, 1000);
+  } else {
+    status.style.color = "red";
+    status.textContent = response.message || "❌ Invalid login.";
+  }
+}
+
+function parseJwt(token) {
+  return JSON.parse(atob(token.split('.')[1]));
+}
+
+/* ✅ Manual Install Prompt */
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block';
+});
+
+installBtn.addEventListener('click', async () => {
+  installBtn.style.display = 'none';
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log(`User response: ${outcome}`);
+  deferredPrompt = null;
+});
+</script>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<!-- ✅ Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('✅ Service Worker registered', reg))
+      .catch(err => console.error('❌ SW registration failed:', err));
+  });
+}
 </script>
 </body>
 </html>
