@@ -18,7 +18,7 @@
       align-items: center;
       justify-content: center;
       background: gray;
-      padding: 20px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -26,9 +26,9 @@
     }
 
     .calendar-container {
-      width: 95%;
-      min-height: 95%;
-      padding: 20px;
+      width: 100%;
+      min-height: 100%;
+      padding: 10px;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -37,7 +37,7 @@
 
    .calendar {
   flex: 1;
-  background: rgba(251, 146, 60, 0.85); /* softer orange */
+  background: linear-gradient(180deg, orangered, gold); /* softer orange */
   padding: 15px;
   display: flex;
   flex-direction: column;
@@ -146,7 +146,7 @@
     @media (max-width: 600px) {
       body {
         display: flex;
-        height: 100%;
+        height: 95%;
       }
 
       .main {
@@ -162,7 +162,7 @@
   display: flex;
   flex-direction: column;
 
-  border-radius: 20px;
+  border-radius: 35px;
   backdrop-filter: blur(8px);
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
   overflow: hidden;
