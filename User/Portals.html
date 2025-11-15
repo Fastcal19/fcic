@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
   <title>Portals | Fast Cal Industrial Corp</title>
+
   <style>
     /* === Global Styles === */
     html, body {
@@ -15,8 +17,9 @@
       color: black;
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* keeps footer at bottom */
-      overflow: auto;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     /* === Main Container === */
@@ -26,45 +29,43 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       width: 95%;
       max-width: 95%;
-      margin: 40px auto;
-      padding: 30px;
+      margin: 20px auto;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      flex-grow: 1; /* pushes footer down */
+      flex-grow: 1;
     }
 
-    /* === Portals Section === */
+    /* === Portals Grid === */
     #portalsPage {
       width: 100%;
     }
 
     #portalsPage h2 {
-      margin-bottom: 25px;
-      font-size: 26px;
+      margin-bottom: 20px;
+      font-size: 24px;
       font-weight: bold;
       color: black;
       text-align: center;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
     }
 
     .portals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 2fr));
-      gap: 30px;
-      justify-items: center;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      width: 100%;
     }
 
     .portal-card {
       background: #fff;
-      border-radius: 16px;
-      padding: 20px;
+      border-radius: 14px;
+      padding: 15px;
       text-align: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
       height: 150px;
-      width: 220px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -72,29 +73,69 @@
     }
 
     .portal-card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-4px);
       box-shadow: 0 6px 14px rgba(0,0,0,0.25);
     }
 
     .portal-card img {
-      max-width: 170px;
-      max-height: 120px;
+      max-width: 120px;
+      max-height: 90px;
       object-fit: contain;
-      margin-top: 10px;
     }
 
     .portal-card p {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
-      margin: 15px 0 0 0;
-      text-align: center;
       color: #333;
+      margin: 5px 0 0;
+    }
+
+    /* === Mobile Styles === */
+    @media (max-width: 600px) {
+      .main-container {
+        margin: 10px auto;
+        padding: 15px;
+        border-radius: 12px;
+      }
+
+      .portals-grid {
+        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+
+      .portal-card {
+        height: 140px;
+        padding: 12px;
+      }
+
+      .portal-card img {
+        max-width: 100px;
+        max-height: 75px;
+      }
+
+      .portal-card p {
+        font-size: 15px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .portals-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .portal-card {
+        width: 90%;
+        height: 150px;
+        margin: 0 auto;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="main-container">
     <div id="portalsPage">
+      <h2>Portals</h2>
       <div class="portals-grid" id="portalsGrid"></div>
     </div>
   </div>
@@ -119,6 +160,7 @@
             <img src="${imgSrc}" alt="${p.name}">
             <p>${p.name}</p>
           `;
+
           grid.appendChild(card);
         });
       } catch (err) {
@@ -128,7 +170,6 @@
       }
     }
 
-    // Load on start
     loadPortals();
   </script>
 </body>
