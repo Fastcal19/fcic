@@ -20,6 +20,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      padding-bottom: 30px;
     }
 
     .calendar-container {
@@ -134,24 +135,23 @@
     }
 
     /* 📱 Mobile */
-    @media (max-width: 768px) {
+    @media (max-width: 600px) {
       body {
-        padding-bottom: 95px;
-        display: block;
+        display: flex;
         height: 95%;
       }
 
       .main {
         padding: 0;
-        height: 90vh;
+        height: 100vh;
       }
 
       .calendar {
-        width: 95%;
-        height: 88%;
+        width: 96%;
+        height: 95%;
         border-radius: 0;
         padding: 10px;
-        padding-bottom: env(safe-area-inset-bottom, 95px);
+        padding-bottom: 30px;
       }
 
       .day-names div {
