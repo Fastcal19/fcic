@@ -5,144 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Employee Details</title>
 <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #808080;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-  }
-
-  .wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin: 20px;
-    justify-content: center;
-    width: 100%;
-    max-width: 1100px;
-  }
-
-  .main-container, .login-container {
-    background: #fff;
-    padding: 25px 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
-
-  .main-container {
-    flex: 1;
-    min-width: 250px;
-    max-width: 650px;
-  }
-
-  .login-container {
-    width: 250px;
-    align-self: flex-start;
-    position: sticky;
-    top: 20px;
-  }
-
-  h1 {
-    text-align: center;
-    color: #0056A6;
-    font-size: 22px;
-    margin-bottom: 25px;
-  }
-
-  h2 {
-    color: #0056A6;
-    font-size: 16px;
-    border-bottom: 2px solid #0056A6;
-    padding-bottom: 5px;
-    margin-top: 25px;
-    text-transform: uppercase;
-  }
-
-  .row {
-    display: flex;
-    margin-bottom: 8px;
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .label {
-    font-weight: bold;
-    width: 180px;
-    flex-shrink: 0;
-    color: #333;
-  }
-
-  .value {
-    flex: 1;
-    word-wrap: break-word;
-    color: #555;
-  }
-
-  input.editable, select.editable {
-    width: 95%;
-    padding: 6px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-  }
-
-  .button-group {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 15px;
-  }
-
-  button {
-    padding: 10px 18px;
-    background-color: #0056A6;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    transition: 0.3s;
-  }
-
-  button:hover {
-    background-color: #0070d1;
-  }
-
-  /* ===== LOGIN FORM ===== */
-  .login-container h2 {
-    text-align: center;
-    font-size: 18px;
-    border: none;
-    text-transform: none;
-  }
-
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #808080; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+  .wrapper { display: flex; flex-wrap: wrap; gap: 20px; margin: 20px; justify-content: center; width: 100%; max-width: 1100px; }
+  .main-container, .login-container { background: #fff; padding: 25px 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .main-container { flex: 1; min-width: 250px; max-width: 650px; }
+  .login-container { width: 250px; align-self: flex-start; position: sticky; top: 20px; }
+  h1 { text-align: center; color: #0056A6; font-size: 22px; margin-bottom: 25px; }
+  h2 { color: #0056A6; font-size: 16px; border-bottom: 2px solid #0056A6; padding-bottom: 5px; margin-top: 25px; text-transform: uppercase; }
+  .row { display: flex; margin-bottom: 8px; align-items: flex-start; flex-wrap: wrap; }
+  .label { font-weight: bold; width: 180px; flex-shrink: 0; color: #333; }
+  .value { flex: 1; word-wrap: break-word; color: #555; }
+  input.editable, select.editable { width: 95%; padding: 6px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+  .button-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+  button { padding: 10px 18px; background-color: #0056A6; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s; }
+  button:hover { background-color: #0070d1; }
+  .login-container h2 { text-align: center; font-size: 18px; border: none; text-transform: none; }
   .form-group { margin-bottom: 15px; }
+  label { display: block; font-weight: bold; color: #333; margin-bottom: 5px; font-size: 14px; }
+  input[type="text"], input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+  textarea.editable {
+  width: 95%;
+  min-height: 70px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  resize: vertical; /* allow adjustable height */
+}
 
-  label {
-    display: block;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-    font-size: 14px;
-  }
-
-  input[type="text"], input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-  }
-
+  @media (max-width: 600px) { .label { width: 100%; } .row { flex-direction: column; } }
   @media (max-width: 600px) {
-    .label { width: 100%; }
-    .row { flex-direction: column; }
-  }
+  textarea.editable {
+    min-height: 120px;
+    font-size: 16px;    /* larger typing size */
+    width: 100%;        /* truly full width on mobile */
 </style>
 </head>
 <body>
@@ -217,265 +113,134 @@
       </div>
       <button type="submit">Save Changes</button>
     </form>
+    <div id="message" style="margin-top:10px; display:none;"></div>
   </div>
 </div>
 
 <script>
 const EMPLOYEE_ID = localStorage.getItem("eid");
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyhO6krcG7bdyKYkvZ592GdhKqEZAwy-FNIcG2QG8TSLtDYpwgQiyOrbsRdnYzVvMNIg/exec";
+const EMPLOYEE_API = "https://script.google.com/macros/s/AKfycbzyhO6krcG7bdyKYkvZ592GdhKqEZAwy-FNIcG2QG8TSLtDYpwgQiyOrbsRdnYzVvMNIg/exec";
+const CREDENTIALS_API = "https://script.google.com/macros/s/AKfycbz9xpA2dLd57Djrw_I-iApj146RIq77radN8grFw-zwZ8cM_SAKhF9Tt9GDjAvGalliqQ/exec";
 let employeeData = {};
 
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  return `${mm}-${dd}-${yyyy}`;
-}
-
-function formatSalary(salary) {
-  const num = parseFloat(salary.toString().replace(/[^0-9.]/g, ""));
-  if (isNaN(num)) return salary;
-  return "Php " + num.toLocaleString("en-PH", { minimumFractionDigits: 2 });
-}
-
+function formatDate(dateStr){if(!dateStr)return"";const d=new Date(dateStr);if(isNaN(d))return dateStr;const mm=String(d.getMonth()+1).padStart(2,'0');const dd=String(d.getDate()).padStart(2,'0');const yyyy=d.getFullYear();return`${mm}-${dd}-${yyyy}`;}
+function formatSalary(s){const num=parseFloat(s.toString().replace(/[^0-9.]/g,""));if(isNaN(num))return s;return"Php "+num.toLocaleString("en-PH",{minimumFractionDigits:2});}
 function calculateServiceLength(dateHired, dateResigned) {
   if (!dateHired) return "";
 
-  // Try to handle Google Sheets date format (e.g., "12/10/2021" or "2021-12-10")
-  const parseDate = (str) => {
+  function parseDate(str) {
     if (!str) return null;
-    const parts = str.split(/[-/]/);
-    if (parts.length === 3) {
-      // Detect format: YYYY-MM-DD or MM-DD-YYYY
-      if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
-      else return new Date(parts[2], parts[0] - 1, parts[1]);
-    }
     const d = new Date(str);
     return isNaN(d) ? null : d;
-  };
+  }
 
   const start = parseDate(dateHired);
   const end = parseDate(dateResigned) || new Date();
 
-  if (!start) return "Invalid start date";
-  if (isNaN(start) || isNaN(end)) return "";
+  if (!start || !end) return "Invalid date";
+
+  if (end < start) return "Invalid dates";
 
   let years = end.getFullYear() - start.getFullYear();
   let months = end.getMonth() - start.getMonth();
+  let days = end.getDate() - start.getDate();
+
+  if (days < 0) {
+    months--;
+    // Previous month's last day
+    const prevMonthLastDay = new Date(end.getFullYear(), end.getMonth(), 0).getDate();
+    days += prevMonthLastDay;
+  }
+
   if (months < 0) {
     years--;
     months += 12;
   }
 
-  if (years < 0) return "Invalid dates";
-  if (years === 0 && months === 0) return "Less than a month";
-  if (years === 0) return `${months} month${months > 1 ? "s" : ""}`;
-  return `${years} year${years > 1 ? "s" : ""}, ${months} month${months > 1 ? "s" : ""}`;
-}
+  // Build output text
+  let output = [];
 
-
-async function loadEmployeeData() {
-  try {
-    const res = await fetch(`${SCRIPT_URL}?id=${EMPLOYEE_ID}`);
-    const data = await res.json();
-    if (data.error) return alert(data.error);
-    employeeData = data;
-
-    const map = {
-      "Employee No:": data["EN"],
-      "Last Name:": data["LAST NAME"],
-      "First Name:": data["FIRST NAME"],
-      "Middle Name:": data["MIDDLE NAME"],
-      "Marital Status:": data["MARITAL STATUS"],
-      "Birthdate:": formatDate(data["BIRTHDATE"]),
-      "Age:": data["AGE"],
-      "Address:": data["ADDRESS"],
-      "Gender:": data["GENDER"],
-      "Contact:": data["CONTACT NUMBER"],
-      "Email:": data["EMAIL ADDRESS"],
-      "TIN:": data["TIN"],
-      "SSS:": data["SSS"],
-      "PhilHealth:": data["PHILHEALTH"],
-      "Pag-IBIG:": data["PAG-IBIG"],
-      "Name:": data["E.CONTACT NAME"],
-      "Relationship:": data["RELATIONSHIP"],
-      "Contact No:": data["E.CONTACT NUMBER"],
-      "Contact Address:": data["CONTACT ADDRESS"],
-      "Date Hired:": formatDate(data["DATE HIRED"]),
-      "Date Resigned:": formatDate(data["DATE RESIGNED"]),
-      "Length of Service:": calculateServiceLength(data["DATE HIRED"], data["DATE RESIGNED"]),
-      "Designation:": data["DESIGNATION"],
-      "Salary:": formatSalary(data["SALARY"]),
-      "Employment Status:": data["EMPLOYMENT STATUS"]
-    };
-
-    document.querySelectorAll('.row').forEach(row => {
-      const label = row.querySelector('.label').textContent.trim();
-      const valueSpan = row.querySelector('.value');
-      valueSpan.textContent = map[label] || "";
-    });
-
-    toggleDateResignedRow(map["Employment Status:"]);
-
-  } catch (err) {
-    alert("Failed to load employee data.");
+  if (years > 0) {
+    output.push(years + (years === 1 ? " year" : " years"));
   }
+  if (months > 0) {
+    output.push(months + (months === 1 ? " month" : " months"));
+  }
+  if (years === 0 && months === 0) {
+    output.push(days === 0 ? "Less than a day" : days + (days === 1 ? " day" : " days"));
+  }
+
+  return output.join(", ");
 }
 
-function toggleDateResignedRow(status) {
-  document.getElementById("dateResignedRow").style.display = (status === "Resigned") ? "flex" : "none";
-}
+function getLengthOfService(d){if(!d)return'';const h=new Date(d);if(isNaN(h))return'';const t=new Date();let y=t.getFullYear()-h.getFullYear(),m=t.getMonth()-h.getMonth(),dd=t.getDate()-h.getDate();if(dd<0){m--;dd+=new Date(t.getFullYear(),t.getMonth(),0).getDate();}if(m<0){y--;m+=12;}let s='';if(y>0)s+=y+(y===1?' year':' years');if(m>0)s+=(s?', ':'')+m+(m===1?' month':' months');return s||'Less than a month';}
+async function loadEmployeeData(){try{const res=await fetch(`${EMPLOYEE_API}?id=${EMPLOYEE_ID}`);const data=await res.json();if(data.error)return alert(data.error);employeeData=data;const map={"Employee No:":data["EN"],"Last Name:":data["LAST NAME"],"First Name:":data["FIRST NAME"],"Middle Name:":data["MIDDLE NAME"],"Marital Status:":data["MARITAL STATUS"],"Birthdate:":formatDate(data["BIRTHDATE"]),"Age:":data["AGE"],"Address:":data["ADDRESS"],"Gender:":data["GENDER"],"Contact:":data["CONTACT NUMBER"],"Email:":data["EMAIL ADDRESS"],"TIN:":data["TIN"],"SSS:":data["SSS"],"PhilHealth:":data["PHILHEALTH"],"Pag-IBIG:":data["PAG-IBIG"],"Name:":data["E.CONTACT NAME"],"Relationship:":data["RELATIONSHIP"],"Contact No:":data["E.CONTACT NUMBER"],"Contact Address:":data["CONTACT ADDRESS"],"Date Hired:":formatDate(data["DATE HIRED"]),"Date Resigned:":formatDate(data["DATE RESIGNED"]),"Length of Service:":calculateServiceLength(data["DATE HIRED"],data["DATE RESIGNED"]),"Designation:":data["DESIGNATION"],"Salary:":formatSalary(data["SALARY"]),"Employment Status:":data["EMPLOYMENT STATUS"]};document.querySelectorAll('.row').forEach(r=>{const l=r.querySelector('.label').textContent.trim();const v=r.querySelector('.value');v.textContent=map[l]||"";});toggleDateResignedRow(map["Employment Status:"]);}catch(err){alert("Failed to load employee data.");}}
 
-// ====== LOGIN CREDENTIALS UPDATE ======
-document.getElementById("updateCredentialsForm").addEventListener("submit", async (e) => {
+function toggleDateResignedRow(status){document.getElementById("dateResignedRow").style.display=(status==="Resigned")?"flex":"none";}
+
+// EDIT
+document.getElementById("editBtn").addEventListener("click",()=>{
+  document.getElementById("editBtn").style.display="none";
+  document.getElementById("saveBtn").style.display="inline-block";
+  const labels=["Marital Status:","Birthdate:","Address:","Gender:","Contact:","Email:","TIN:","SSS:","PhilHealth:","Pag-IBIG:","Name:","Relationship:","Contact No:","Contact Address:"];
+  const maritalOptions=["Single","Married","Divorced","Widowed","Separated"],genderOptions=["Male","Female"],relationOptions=["Parent","Sibling","Spouse","Son","Daughter","Friend","Relative"];
+  document.querySelectorAll('.row').forEach(r=>{const l=r.querySelector('.label').textContent.trim();const v=r.querySelector('.value');const val=v.textContent.trim();if(labels.includes(l)){if(l==="Marital Status:")v.innerHTML=createDropdown(maritalOptions,val);else if(l==="Gender:")v.innerHTML=createDropdown(genderOptions,val);else if (l === "Address:" || l === "Contact Address:") {
+    v.innerHTML = `<textarea class="editable" required>${val}</textarea>`;
+}else if(l==="Relationship:")v.innerHTML=createDropdown(relationOptions,val);else{const t=l.includes("Birthdate")?"date":"text";v.innerHTML = `<input class="editable" type="text" value="${val}" required oninput="formatPHNumber(this)">`;
+}}});
+});
+
+function createDropdown(opts,sel){let html=`<select class="editable">`;opts.forEach(o=>{html+=`<option value="${o}" ${o===sel?"selected":""}>${o}</option>`;});html+="</select>";return html;}
+
+// SAVE EMPLOYEE
+document.getElementById("saveBtn").addEventListener("click",async()=>{
+  const updates={};let isValid=true;let msg="";
+  document.querySelectorAll('.row').forEach(r=>{const l=r.querySelector('.label').textContent.trim();const i=r.querySelector('input,select');if(i){const val=i.value.trim();if(!val){isValid=false;msg="All fields are required!";}if(l==="Contact:"||l==="Contact No:"){const ph = /^(09\d{2}-?\d{3}-?\d{4})$/;if(!ph.test(val)){isValid=false;msg="Invalid contact number format. Use 0930-648-4698."}}if(l==="Email:"){const em=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;if(!em.test(val)){isValid=false;msg="Invalid email address!"}}updates[l]=val;}});
+  if(!isValid){alert(msg);return;}
+  try{const res=await fetch(EMPLOYEE_API,{method:"POST",body:JSON.stringify({action:"updateEmployee",id:EMPLOYEE_ID,updates})});const result=await res.json();alert(result.message||"Saved successfully!");document.getElementById("saveBtn").style.display="none";document.getElementById("editBtn").style.display="inline-block";loadEmployeeData();}catch(err){alert("Failed to save updates.");}
+});
+
+// UPDATE CREDENTIALS
+document.getElementById("updateCredentialsForm").addEventListener("submit",async(e)=>{
   e.preventDefault();
-
-  const username = document.getElementById("username").value.trim();
-  const oldPassword = document.getElementById("oldPassword").value.trim();
-  const newPassword = document.getElementById("newPassword").value.trim();
-  const confirmPassword = document.getElementById("confirmPassword").value.trim();
-
-  if (!oldPassword || !newPassword || !confirmPassword) {
-    alert("Please fill in all password fields.");
-    return;
-  }
-
-  if (newPassword !== confirmPassword) {
-    alert("New password and confirmation do not match!");
-    return;
-  }
-
-  try {
-    const res = await fetch(SCRIPT_URL, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    action: "updateCredentials",
-    employeeNo: EMPLOYEE_ID,
-    oldPassword,
-    newPassword,
-    username
-  }),
+  const username=document.getElementById("username").value.trim();
+  const oldPassword=document.getElementById("oldPassword").value.trim();
+  const newPassword=document.getElementById("newPassword").value.trim();
+  const confirmPassword=document.getElementById("confirmPassword").value.trim();
+  if(!oldPassword||!newPassword||!confirmPassword){alert("Please fill in all password fields.");return;}
+  if(newPassword!==confirmPassword){alert("New password and confirmation do not match!");return;}
+  try{
+    const res=await fetch(CREDENTIALS_API,{method:"POST",headers:{"Content-Type":"application/json"},body: JSON.stringify({
+  action: "updateCredentials",
+  employeeNo: EMPLOYEE_ID,
+  oldPassword,
+  newPassword,
+  username
+})
+});
+    const result=await res.json();
+    if(result.success){alert(result.message||"Credentials updated successfully!");document.getElementById("updateCredentialsForm").reset();}
+    else{alert(result.message||"Failed to update credentials.");}
+  }catch(err){alert("Error connecting to the server. Please try again.");}
 });
 
+function formatPHNumber(input) {
+    let numbers = input.value.replace(/\D/g, ""); // keep digits only
 
-    const result = await res.json();
-    if (result.success) {
-      alert(result.message || "Credentials updated successfully!");
-      document.getElementById("updateCredentialsForm").reset();
-    } else {
-      alert(result.message || "Failed to update credentials.");
-    }
-  } catch (err) {
-    alert("Error connecting to the server. Please try again.");
-  }
-});
+    // Limit to 11 digits (PH mobile requirement)
+    if (numbers.length > 11) numbers = numbers.slice(0, 11);
 
-// Edit Mode
-document.getElementById("editBtn").addEventListener("click", () => {
-  document.getElementById("editBtn").style.display = "none";
-  document.getElementById("saveBtn").style.display = "inline-block";
+    // Build formatted string
+    let formatted = "";
+    if (numbers.length > 0) formatted = numbers.substring(0, 4);
+    if (numbers.length >= 5) formatted += "-" + numbers.substring(4, 7);
+    if (numbers.length >= 8) formatted += "-" + numbers.substring(7, 11);
 
-  const editableLabels = [
-    "Marital Status:", "Birthdate:", "Address:", "Gender:", "Contact:", "Email:",
-    "TIN:", "SSS:", "PhilHealth:", "Pag-IBIG:",
-    "Name:", "Relationship:", "Contact No:", "Contact Address:"
-  ];
-
-  const maritalOptions = ["Single", "Married", "Divorced", "Widowed", "Separated"];
-  const genderOptions = ["Male", "Female"];
-  const relationOptions = ["Parent", "Sibling","Spouse", "Son", "Daughter", "Friend", "Relative"];
-
-  document.querySelectorAll('.row').forEach(row => {
-    const label = row.querySelector('.label').textContent.trim();
-    const valueSpan = row.querySelector('.value');
-    const currentValue = valueSpan.textContent.trim();
-    if (editableLabels.includes(label)) {
-      if (label === "Marital Status:") {
-        valueSpan.innerHTML = createDropdown(maritalOptions, currentValue);
-      } else if (label === "Gender:") {
-        valueSpan.innerHTML = createDropdown(genderOptions, currentValue);
-      } else if (label === "Relationship:") {
-        valueSpan.innerHTML = createDropdown(relationOptions, currentValue);
-      } else {
-        const type = (label.includes("Birthdate")) ? "date" : "text";
-        valueSpan.innerHTML = `<input class="editable" type="${type}" value="${currentValue.replace(/-/g, '-')}" required>`;
-      }
-    }
-  });
-});
-
-function createDropdown(options, selectedValue) {
-  let html = `<select class="editable">`;
-  options.forEach(opt => {
-    const sel = opt === selectedValue ? "selected" : "";
-    html += `<option value="${opt}" ${sel}>${opt}</option>`;
-  });
-  html += `</select>`;
-  return html;
+    input.value = formatted;
 }
 
-// Save
-document.getElementById("saveBtn").addEventListener("click", async () => {
-  const updates = {};
-  let isValid = true;
-  let msg = "";
 
-  document.querySelectorAll('.row').forEach(row => {
-    const label = row.querySelector('.label').textContent.trim();
-    const input = row.querySelector('input, select');
-    if (input) {
-      const value = input.value.trim();
-      if (!value) {
-        isValid = false;
-        msg = "All fields are required!";
-      }
-      if (label === "Contact:" || label === "Contact No:") {
-        const phoneRegex = /^09\d{2}-\d{3}-\d{4}$/;
-        if (!phoneRegex.test(value)) {
-          isValid = false;
-          msg = "Invalid contact number format. Use 0930-648-4698.";
-        }
-      }
-      if (label === "Email:") {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-          isValid = false;
-          msg = "Invalid email address!";
-        }
-      }
-      updates[label] = value;
-    }
-  });
-
-  if (!isValid) {
-    alert(msg);
-    return;
-  }
-
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "updateEmployee",
-        id: EMPLOYEE_ID,
-        updates
-      }),
-    });
-    const result = await res.json();
-    alert(result.message || "Saved successfully!");
-    document.getElementById("saveBtn").style.display = "none";
-    document.getElementById("editBtn").style.display = "inline-block";
-    loadEmployeeData();
-  } catch (err) {
-    alert("Failed to save updates.");
-  }
-});
-
-window.addEventListener("DOMContentLoaded", loadEmployeeData);
+window.addEventListener("DOMContentLoaded",loadEmployeeData);
 </script>
 </body>
 </html>
