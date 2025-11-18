@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Project Form</title>
+<style>
+/* keep your styles... */
+body {font-family:Arial, sans-serif; background:orange; padding:20px;}
+.container{max-width:400px;margin:auto;background:#FFD54F;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+label{display:block;margin-top:10px;font-weight:600}
+input, textarea, select, button {width:100%; padding:10px; margin-top:6px; box-sizing:border-box}
+button{background:#007bff;color:#fff;border:0;border-radius:6px;padding:12px;cursor:pointer}
+.msg{margin-top:12px;font-weight:700;text-align:center}
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>New Project Entry</h2>
+
+    <label>Project No</label>
+    <input id="projectNo" readonly />
+
+    <label>Customer</label>
+    <input id="customer" />
+
+    <label>Reference</label>
+    <input id="reference" />
+
+    <label>Description</label>
+    <textarea id="description"></textarea>
+
+    <label>Status</label>
+    <select id="status">
+      <option value="Ongoing" selected>Ongoing</option>
+      <option value="Completed">Completed</option>
+      <option value="On Hold">On Hold</option>
+    </select>
+
+    <button id="saveBtn">Save</button>
+    <div id="msg" class="msg"></div>
+  </div>
+
+<script>
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwFPRa2Dy2jraf5mZfkKHBpCfQA95pMv7rtt_T3wHMMe7P9dHIvn3feIMcF1QGOkIXAkw/exec'; // <<-- replace
+
+async function getProjectNo() {
+  const msg = document.getElementById('msg');
+  try {
+    const res = await fetch(WEB_APP_URL + '?action=getProjectNo');
+    const data = await res.json();
+    document.getElementById('projectNo').value = data.projectNo || '';
+    msg.textContent = '';
+  } catch (err) {
+    console.error(err);
+    msg.textContent = 'Failed to fetch project number. See console.';
+    msg.style.color = 'red';
+  }
+}
+
+async function saveProject() {
+  const msg = document.getElementById('msg');
+  msg.style.color = 'blue';
+  msg.textContent = 'Saving...';
+
+  const projectNo = document.getElementById('projectNo').value;
+  const customer = document.getElementById('customer').value.trim();
+  const reference = document.getElementById('reference').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const status = document.getElementById('status').value;
+
+  if (!customer || !reference || !description) {
+    msg.style.color = 'red';
+    msg.textContent = 'Please fill in all fields.';
+    return;
+  }
+
+  const payloadObj = { customer, reference, description, status };
+
+  // Send as application/x-www-form-urlencoded to avoid preflight
+  const form = new URLSearchParams();
+  form.append('payload', JSON.stringify(payloadObj));
+
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form.toString()
+    });
+
+    const result = await res.json();
+    if (result.status === 'success') {
+      msg.style.color = 'green';
+      msg.textContent = 'Saved — Project No: ' + result.projectNo;
+      // clear form
+      document.getElementById('customer').value = '';
+      document.getElementById('reference').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('status').value = 'Ongoing';
+      // fetch the next project number (A2 will have just been updated)
+      await getProjectNo();
+    } else {
+      msg.style.color = 'red';
+      msg.textContent = 'Error: ' + (result.message || 'unknown');
+    }
+  } catch (err) {
+    console.error('Save error', err);
+    msg.style.color = 'red';
+    msg.textContent = 'Failed to save (see console).';
+  }
+}
+
+// wire button
+document.getElementById('saveBtn').addEventListener('click', saveProject);
+
+// initial load
+getProjectNo();
+</script>
+</body>
+</html>
