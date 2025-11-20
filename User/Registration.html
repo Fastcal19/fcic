@@ -176,6 +176,9 @@
 <label>Account Number</label>
 <input id="accNo">
 
+<label>Notes</label>
+<textarea id="notes" rows="2"></textarea>
+  
 <h3>Upload Documents</h3>
 
 <label>Business Permit</label>
@@ -262,6 +265,7 @@ async function submitSupplier() {
     bankName: document.getElementById("bankName").value,
     accName: document.getElementById("accName").value,
     accNo: document.getElementById("accNo").value,
+    notes:document.getElementbyId("notes").value,
     permitFile: permitURL,
     bir2303File: birURL,
     idFile: idURL
