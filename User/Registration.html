@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Client & Supplier</title>
+  <style>
+    body { 
+      font-family: Arial; 
+      background:linear-gradient(100deg, orange, gold,orangered);
+      margin: 0; 
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background: white;
+      padding: 25px 30px;
+      margin: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 { margin-top: 0; }
+
+    label { display:block; margin-top:10px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 8px; margin-top:5px; }
+
+    button { 
+      margin-top: 20px; 
+      padding: 12px 20px; 
+      background:#1976d2; 
+      color:white; 
+      border:none; 
+      cursor:pointer;
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    .success { 
+      color: green; 
+      margin-top: 15px; 
+      font-weight: bold; 
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+<h2>Supplier Registration</h2>
+
+<label>Supplier ID</label>
+<input id="supplierID" readonly>
+
+<label>TIN</label>
+<input id="tin" required>
+
+<!-- VAT TYPE -->
+<div style="display:flex; align-items:center; margin-bottom:10px;">
+  <span style="width:150px; font-weight:bold;">VAT Type:</span>
+
+  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
+    <input type="radio" name="vatType" value="VAT Registered" style="margin-right:5px;">
+    VAT Registered
+  </label>
+
+  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
+    <input type="radio" name="vatType" value="Non-VAT" style="margin-right:5px;">
+    Non-VAT
+  </label>
+
+  <label style="display:flex; align-items:center; white-space:nowrap;">
+    <input type="radio" name="vatType" value="Exempt" style="margin-right:5px;">
+    Exempt
+  </label>
+</div>
+
+<!-- REGISTRATION TYPE -->
+<div style="display:flex; align-items:center;">
+  <span style="width:150px; font-weight:bold;">Registration Type:</span>
+
+  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
+    <input type="radio" name="regType" value="DTI" style="margin-right:5px;">
+    DTI
+  </label>
+
+  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
+    <input type="radio" name="regType" value="SEC" style="margin-right:5px;">
+    SEC
+  </label>
+
+  <label style="display:flex; align-items:center; white-space:nowrap;">
+    <input type="radio" name="regType" value="Cooperative" style="margin-right:5px;">
+    Cooperative
+  </label>
+</div>
+
+<label>Registration Number</label>
+<input id="regNo">
+
+<label>Date Issued</label>
+<input type="date" id="dateIssued">
+
+<label>Business Name</label>
+<input id="bname" required>
+
+<label>Trade Name</label>
+<input id="tname" required>
+
+<!-- Supplier TYPE -->
+<div style="display:flex; align-items:center; margin-bottom:10px;">
+  <span style="width:80px; font-weight:bold;">Type:</span>
+
+  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
+    <input type="radio" name="supplierType" value="Individual" style="margin-right:5px;">
+    Individual
+  </label>
+
+  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
+    <input type="radio" name="supplierType" value="Partnership" style="margin-right:5px;">
+    Partnership
+  </label>
+
+  <label style="display:flex; align-items:center; white-space:nowrap;">
+    <input type="radio" name="supplierType" value="Corporation" style="margin-right:5px;">
+    Corporation
+  </label>
+</div>
+
+<!-- CATEGORY -->
+<div style="display:flex; align-items:center;">
+  <span style="width:80px; font-weight:bold;">Category:</span>
+
+  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
+    <input type="radio" name="category" value="Goods" style="margin-right:5px;">
+    Goods
+  </label>
+
+  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
+    <input type="radio" name="category" value="Services" style="margin-right:5px;">
+    Services
+  </label>
+
+  <label style="display:flex; align-items:center; white-space:nowrap;">
+    <input type="radio" name="category" value="Goods & Services" style="margin-right:5px;">
+    Goods & Services
+  </label>
+</div>
+
+<label>Address</label>
+<textarea id="address" rows="2"></textarea>
+
+<label>Contact Person</label>
+<input id="contactPerson">
+
+<label>Position</label>
+<input id="position">
+
+<label>Contact Number</label>
+<input id="contactNumber">
+
+<label>Email</label>
+<input id="email" type="email">
+
+<label>Bank Name</label>
+<input id="bankName">
+
+<label>Account Name</label>
+<input id="accName">
+
+<label>Account Number</label>
+<input id="accNo">
+
+<h3>Upload Documents</h3>
+
+<label>Business Permit</label>
+<input type="file" id="permit">
+
+<label>BIR 2303</label>
+<input type="file" id="bir">
+
+<label>Valid ID</label>
+<input type="file" id="validID">
+
+<button onclick="submitSupplier()">SAVE SUPPLIER</button>
+
+<div id="msg"></div>
+
+</div>
+
+<script>
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx6CJ9wI8_gpqfb23jAQTo4z-5iwdS3NUT-NWL_C1wByHwMiY26px-J7UTFAbc21usOuA/exec";
+
+// Convert uploaded file to Base64
+function fileToBase64(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.readAsDataURL(file);
+  });
+}
+
+// Upload file to Google Drive
+async function uploadFile(file) {
+  if (!file) return "";
+  const base64 = await fileToBase64(file);
+
+  const payload = {
+    action: "uploadFile",
+    fileName: file.name,
+    mimeType: file.type,
+    fileData: base64
+  };
+
+  const res = await fetch(WEBAPP_URL, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  return json.url;
+}
+
+// Load next Supplier ID
+fetch(WEBAPP_URL, {
+  method: "POST",
+  body: JSON.stringify({ action: "getNextID" })
+})
+.then(r => r.json())
+.then(d => document.getElementById("supplierID").value = d.id);
+
+// Save supplier
+async function submitSupplier() {
+  document.getElementById("msg").innerHTML = "Uploading...";
+
+  const permitURL = await uploadFile(document.getElementById("permit").files[0]);
+  const birURL = await uploadFile(document.getElementById("bir").files[0]);
+  const idURL = await uploadFile(document.getElementById("validID").files[0]);
+
+  const data = {
+    action: "saveSupplier",
+    supplierID: document.getElementById("supplierID").value,
+    tin: document.getElementById("tin").value,
+    vatType: document.querySelector("input[name='vatType']:checked")?.value || "",
+    regType: document.querySelector("input[name='regType']:checked")?.value || "",
+    regNo: document.getElementById("regNo").value,
+    dateIssued: document.getElementById("dateIssued").value,
+    bname: document.getElementById("bname").value,
+    tname: document.getElementById("tname").value,
+    supplierType: document.querySelector("input[name='supplierType']:checked")?.value || "",
+    category: document.querySelector("input[name='category']:checked")?.value || "",
+    address: document.getElementById("address").value,
+    contactPerson: document.getElementById("contactPerson").value,
+    position: document.getElementById("position").value,
+    contactNumber: document.getElementById("contactNumber").value,
+    email: document.getElementById("email").value,
+    bankName: document.getElementById("bankName").value,
+    accName: document.getElementById("accName").value,
+    accNo: document.getElementById("accNo").value,
+    permitFile: permitURL,
+    bir2303File: birURL,
+    idFile: idURL
+  };
+
+  const res = await fetch(WEBAPP_URL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+
+  const json = await res.json();
+  document.getElementById("msg").innerHTML = `<span class="success">${json.message}</span>`;
+
+  function clearAllFields() {
+
+  // Clear all text, email, date, number inputs
+  document.querySelectorAll("input[type='text'], input[type='email'], input[type='date'], input[type='number']")
+    .forEach(el => el.value = "");
+
+  // Clear textareas
+  document.querySelectorAll("textarea").forEach(el => el.value = "");
+
+  // Clear radio buttons
+  document.querySelectorAll("input[type='radio']").forEach(el => el.checked = false);
+
+  // Clear file inputs
+  document.querySelectorAll("input[type='file']").forEach(el => el.value = "");
+
+  // Clear message area
+  document.getElementById("msg").innerHTML = "";
+
+  // Request next Supplier ID again
+  fetch(WEBAPP_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "getNextID" })
+  })
+  .then(r => r.json())
+  .then(d => document.getElementById("supplierID").value = d.id);
+}
+
+  // REQUEST NEW SUPPLIER ID
+  fetch(WEBAPP_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "getNextID" })
+  })
+  .then(r => r.json())
+  .then(d => document.getElementById("supplierID").value = d.id);
+}
+</script>
+</body>
+</html>
