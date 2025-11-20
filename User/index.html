@@ -304,7 +304,7 @@
         </div>
       </div>
 
-      <a id="btncs" onclick="showPage('cs')">Client & Supplier Profile</a>
+      <a id="btnCs" onclick="showPage('cs')">Client & Supplier Profile</a>
       
       <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
 
@@ -374,10 +374,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("logoutLink").addEventListener("click", logout);
 
   const visible = {
-    Admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications","btncs", "btnPortals"],
+    Admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications","btnCs", "btnPortals"],
     Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
-    Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests","btncs" "btnPayslip", "btnInventory"],
-    "System Admin": ["btnDashboard", "btnHR", "btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btncs","btnInventory", "btnPortals"]
+    Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests","btnCs" "btnPayslip", "btnInventory"],
+    "System Admin": ["btnDashboard", "btnHR", "btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"]
   };
 
   const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btnProjectCosting","btnApplications","btnRequests","btnPayslip","btnInventory","btnPortals"];
@@ -440,7 +440,7 @@ function showPage(page) {
     rleave: ["Leave Request", "rleave.html"],
     radvances: ["Advances Request", "rAdvances.html"],
     rovertime: ["Overtime Request", "rOT.html"],
-    payslip: ["Client & Supplier Profile", "Registration.html"],
+    cs: ["Client & Supplier Profile", "Registration.html"],
     payslip: ["Pay Slips", "Payslip.html"],
     portals: ["Portals", "Portals.html"]
   };
