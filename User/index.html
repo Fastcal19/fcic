@@ -304,7 +304,7 @@
         </div>
       </div>
 
-      <a id="btnclientsupplier" onclick="showPage('cs')">Client & SUpplier Profile</a>
+      <a id="btncs" onclick="showPage('cs')">Client & SUpplier Profile</a>
       
       <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
 
@@ -374,10 +374,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("logoutLink").addEventListener("click", logout);
 
   const visible = {
-    Admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications", "btnPortals"],
+    Admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications","btncs", "btnPortals"],
     Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
-    Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests", "btnPayslip", "btnInventory"],
-    "System Admin": ["btnDashboard", "btnHR", "btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btnInventory", "btnPortals"]
+    Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests","btncs" "btnPayslip", "btnInventory"],
+    "System Admin": ["btnDashboard", "btnHR", "btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btncs","btnInventory", "btnPortals"]
   };
 
   const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btnProjectCosting","btnApplications","btnRequests","btnPayslip","btnInventory","btnPortals"];
