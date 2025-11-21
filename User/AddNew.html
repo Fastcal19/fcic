@@ -246,6 +246,60 @@ function addContact(data = {}) {
     contactList.appendChild(div);
 }
 
+// Load next Supplier ID
+fetch(WEBAPP_URL, {
+  method: "POST",
+  body: JSON.stringify({ action: "getNextID" })
+})
+.then(r => r.json())
+.then(d => document.getElementById("supplierID").value = d.id);
+
+// Save supplier
+const tinInput = document.getElementById("tin");
+const tinWarning = document.getElementById("tinWarning");
+
+// Regex patterns for valid TINs
+const tinPatterns = [
+  /^\d{3}-\d{3}-\d{3}-\d{3}$/,   // 3-3-3-3
+  /^\d{3}-\d{3}-\d{3}-\d{4}$/,   // 3-3-3-4
+  /^\d{3}-\d{3}-\d{3}-\d{5}$/    // 3-3-3-5
+];
+
+tinInput.addEventListener("input", async () => {
+  let val = tinInput.value.replace(/\D/g, ""); // remove non-digits
+
+  // Auto-format with dashes
+  if (val.length > 3 && val.length <= 6) {
+    val = val.replace(/(\d{3})(\d+)/, "$1-$2");
+  } else if (val.length > 6 && val.length <= 9) {
+    val = val.replace(/(\d{3})(\d{3})(\d+)/, "$1-$2-$3");
+  } else if (val.length > 9) {
+    val = val.substring(0, 14); // max 14 digits
+    val = val.replace(/(\d{3})(\d{3})(\d{3})(\d+)/, "$1-$2-$3-$4");
+  }
+
+  tinInput.value = val;
+
+  // Validate format
+  if (!tinPatterns.some(p => p.test(val))) {
+    tinWarning.textContent = "Invalid TIN format. Use 000-000-000-000, 000-000-000-0000, or 000-000-000-00000.";
+    return;
+  }
+
+  // Check duplicate TIN
+  try {
+    const resCheck = await fetch(WEBAPP_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "checkTIN", tin: val })
+    });
+    const jsonCheck = await resCheck.json();
+    tinWarning.textContent = jsonCheck.exists ? "TIN already exists!" : "";
+  } catch (err) {
+    console.error(err);
+    tinWarning.textContent = "Error checking TIN.";
+  }
+});
+
 function collectContacts() {
     return [...document.querySelectorAll(".contact-row")].map(row => ({
         name: row.querySelector(".c-name").value,
