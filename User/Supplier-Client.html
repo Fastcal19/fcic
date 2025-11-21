@@ -142,7 +142,6 @@ table tbody tr:hover {
     <div style="display:flex; gap:10px;">
       <input id="searchInput" placeholder="🔍 Search by Name, TIN, Address..." onkeyup="searchSupplier()">
       <button class="add-btn" onclick="openModal()">+ Add</button>
-      <button class="add-btn" onclick="refreshData()">⟳ Refresh</button>
     </div>
   </div>
 
@@ -167,12 +166,12 @@ table tbody tr:hover {
 <div id="addModal" class="modal">
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
-    <iframe src="AddNew.html"></iframe>
+    <iframe src="Supplier-Client.html"></iframe>
   </div>
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwJUj3aDzSDAvQzzsn-QekNOwolDyU_D2NdPA_miuxfFMvjLEdXnFIfFRMBeJzrpN_v/exec"; 
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwd_QA3xMJNBYJLP2w9NT38BxeIEQD1TBPYPOBIctyYeWtwJ9N408flzJ20ztfmkMRr7g/exec"; 
 let supplierData = [];
 
 // Load data on page load
@@ -246,7 +245,7 @@ function openModal() {
   const modal = document.getElementById("addModal");
   const iframe = modal.querySelector("iframe");
 
-  iframe.src = "Supplier-Client.html?id=";  // ← empty ID = NEW RECORD
+  iframe.src = "AddNew.html?id=";  // ← empty ID = NEW RECORD
 
   modal.style.display = "block";
 }
@@ -270,15 +269,6 @@ window.onclick = function(event) {
   const modal = document.getElementById("addModal");
   if (event.target == modal) modal.style.display = "none";
 }
-
-function refreshData() {
-  // Delete cached supplier list
-  localStorage.removeItem("supplierData");
-
-  // Fetch fresh data from Google Sheet
-  fetchSuppliers();
-}
-
 </script>
 
 </body>
