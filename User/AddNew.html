@@ -1,120 +1,365 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Project Form</title>
-<style>
-/* keep your styles... */
-body {font-family:Arial, sans-serif; background:orange; padding:20px;}
-.container{max-width:400px;margin:auto;background:#FFD54F;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-label{display:block;margin-top:10px;font-weight:600}
-input, textarea, select, button {width:100%; padding:10px; margin-top:6px; box-sizing:border-box}
-button{background:#007bff;color:#fff;border:0;border-radius:6px;padding:12px;cursor:pointer}
-.msg{margin-top:12px;font-weight:700;text-align:center}
-</style>
+  <meta charset="UTF-8">
+  <title>Client & Supplier Registration</title>
+
+  <style>
+    body { 
+      font-family: Arial; 
+      background: linear-gradient(100deg, orange, gold, orangered);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: white;
+      padding: 25px 30px;
+      margin: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 { margin-top: 0; }
+
+    label { font-weight: bold; }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #999;
+      margin-top: 4px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+
+    .row {
+      display: flex;
+      gap: 20px;
+    }
+
+    .row > div {
+      flex: 1;
+    }
+
+    .dynamic-box {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-top: 10px;
+      background: #fafafa;
+      border-radius: 6px;
+    }
+
+    .remove-btn {
+        background:#d9534f;
+        color:#fff;
+        padding:5px 10px;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+    }
+    .add-btn {
+      background: #0275d8;
+      color: white;
+      padding: 7px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 5px;
+      width: 200px;
+    }
+
+    .attachments-box {
+      border: 2px dashed #999;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+      background: #fafafa;
+    }
+
+    button.save-btn {
+      margin-top: 20px;
+      padding: 12px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: bold;
+    }
+  </style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>New Project Entry</h2>
+<div class="container">
 
-    <label>Project No</label>
-    <input id="projectNo" readonly />
+<h2>Client & Supplier Registration</h2>
 
-    <label>Customer</label>
-    <input id="customer" />
+<label>Supplier ID</label>
+<input id="supplierID" readonly>
 
-    <label>Reference</label>
-    <input id="reference" />
-
-    <label>Description</label>
-    <textarea id="description"></textarea>
-
-    <label>Status</label>
-    <select id="status">
-      <option value="Ongoing" selected>Ongoing</option>
-      <option value="Completed">Completed</option>
-      <option value="On Hold">On Hold</option>
-    </select>
-
-    <button id="saveBtn">Save</button>
-    <div id="msg" class="msg"></div>
+<div class="row">
+  <div>
+    <label>TIN</label>
+    <input id="tin">
   </div>
 
+  <div>
+    <label>VAT Type</label>
+    <select id="vatType">
+      <option value="">-- Select VAT Type --</option>
+      <option>VAT Registered</option>
+      <option>Non-VAT</option>
+      <option>Exempt</option>
+    </select>
+  </div>
+</div>
+
+<div class="row">
+  <div>
+    <label>Registration Type</label>
+    <select id="regType">
+      <option value="">-- Select Registration Type --</option>
+      <option>DTI</option>
+      <option>SEC</option>
+      <option>Cooperative</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Registration Number</label>
+    <input id="regNo">
+  </div>
+
+  <div>
+    <label>Date Issued</label>
+    <input type="date" id="dateIssued">
+  </div>
+</div>
+
+<label>Business Name</label>
+<input id="bname">
+
+<div class="row">
+ <div>
+    <label>Company Type</label>
+    <select id="cType">
+      <option value="">-- Select Company Type --</option>
+      <option>Client</option>
+      <option>Supplier</option>
+      <option>Client & Supplier</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Payment Terms</label>
+    <input id="terms">
+  </div>
+</div>
+
+<div class="row">
+  <div>
+    <label>Type</label>
+    <select id="supplierType">
+      <option value="">-- Select Type --</option>
+      <option>Individual</option>
+      <option>Partnership</option>
+      <option>Corporation</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Category</label>
+    <select id="category">
+      <option value="">-- Select Category --</option>
+      <option>Goods</option>
+      <option>Services</option>
+      <option>Goods & Services</option>
+    </select>
+  </div>
+</div>
+
+<label>Address</label>
+<textarea id="address" rows="2"></textarea>
+
+<label>Nature of Business</label>
+<input id="nature">
+
+<!-- CONTACT PERSONS -->
+<h3>Contact Persons</h3>
+<div id="contactList"></div>
+<button class="add-btn" onclick="addContact()">+ Add Contact</button>
+
+<!-- BANK ACCOUNTS -->
+<h3>Bank Accounts</h3>
+<div id="bankList"></div>
+<button class="add-btn" onclick="addBank()">+ Add Bank</button>
+
+<h3>Attachments</h3>
+<div class="attachments-box">
+  <label>DTI / SEC</label>
+  <input type="file" id="dtiSec">
+
+  <label>Business Permit</label>
+  <input type="file" id="permit">
+
+  <label>BIR Certificate</label>
+  <input type="file" id="bir">
+
+  <label>Client List / Company Profile</label>
+  <input type="file" id="clientList">
+</div>
+
+<button class="save-btn" onclick="submitSupplier()">SAVE</button>
+<div id="msg"></div>
+
+</div>
+
 <script>
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwFPRa2Dy2jraf5mZfkKHBpCfQA95pMv7rtt_T3wHMMe7P9dHIvn3feIMcF1QGOkIXAkw/exec'; // <<-- replace
 
-async function getProjectNo() {
-  const msg = document.getElementById('msg');
-  try {
-    const res = await fetch(WEB_APP_URL + '?action=getProjectNo');
-    const data = await res.json();
-    document.getElementById('projectNo').value = data.projectNo || '';
-    msg.textContent = '';
-  } catch (err) {
-    console.error(err);
-    msg.textContent = 'Failed to fetch project number. See console.';
-    msg.style.color = 'red';
-  }
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwJUj3aDzSDAvQzzsn-QekNOwolDyU_D2NdPA_miuxfFMvjLEdXnFIfFRMBeJzrpN_v/exec";
+
+function addContact(data = {}) {
+    const div = document.createElement("div");
+    div.className = "dynamic-box contact-row";
+
+    div.innerHTML = `
+        <div class="row">
+            <div><input class="c-name" placeholder="Name" value="${data.name || ""}"></div>
+            <div><input class="c-position" placeholder="Position" value="${data.position || ""}"></div>
+        </div>
+        <div class="row">
+            <div><input class="c-number" placeholder="Contact Number" value="${data.number || ""}"></div>
+            <div><input class="c-email" placeholder="Email" value="${data.email || ""}"></div>
+        </div>
+        <button class="remove-btn" onclick="this.parentNode.remove()">Remove</button>
+    `;
+
+    contactList.appendChild(div);
 }
 
-async function saveProject() {
-  const msg = document.getElementById('msg');
-  msg.style.color = 'blue';
-  msg.textContent = 'Saving...';
-
-  const projectNo = document.getElementById('projectNo').value;
-  const customer = document.getElementById('customer').value.trim();
-  const reference = document.getElementById('reference').value.trim();
-  const description = document.getElementById('description').value.trim();
-  const status = document.getElementById('status').value;
-
-  if (!customer || !reference || !description) {
-    msg.style.color = 'red';
-    msg.textContent = 'Please fill in all fields.';
-    return;
-  }
-
-  const payloadObj = { customer, reference, description, status };
-
-  // Send as application/x-www-form-urlencoded to avoid preflight
-  const form = new URLSearchParams();
-  form.append('payload', JSON.stringify(payloadObj));
-
-  try {
-    const res = await fetch(WEB_APP_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: form.toString()
-    });
-
-    const result = await res.json();
-    if (result.status === 'success') {
-      msg.style.color = 'green';
-      msg.textContent = 'Saved — Project No: ' + result.projectNo;
-      // clear form
-      document.getElementById('customer').value = '';
-      document.getElementById('reference').value = '';
-      document.getElementById('description').value = '';
-      document.getElementById('status').value = 'Ongoing';
-      // fetch the next project number (A2 will have just been updated)
-      await getProjectNo();
-    } else {
-      msg.style.color = 'red';
-      msg.textContent = 'Error: ' + (result.message || 'unknown');
-    }
-  } catch (err) {
-    console.error('Save error', err);
-    msg.style.color = 'red';
-    msg.textContent = 'Failed to save (see console).';
-  }
+function collectContacts() {
+    return [...document.querySelectorAll(".contact-row")].map(row => ({
+        name: row.querySelector(".c-name").value,
+        position: row.querySelector(".c-position").value,
+        number: row.querySelector(".c-number").value,
+        email: row.querySelector(".c-email").value
+    }));
 }
 
-// wire button
-document.getElementById('saveBtn').addEventListener('click', saveProject);
+function addBank(data = {}) {
+    const div = document.createElement("div");
+    div.className = "dynamic-box bank-row";
 
-// initial load
-getProjectNo();
+    div.innerHTML = `
+        <div class="row">
+            <div><input class="b-bankName" placeholder="Bank Name" value="${data.bankName || ""}"></div>
+            <div><input class="b-accName" placeholder="Account Name" value="${data.accName || ""}"></div>
+        </div>
+        <div class="row">
+            <div><input class="b-accNo" placeholder="Account Number" value="${data.accNo || ""}"></div>
+        </div>
+            <button class="remove-btn" onclick="this.parentNode.remove()">Remove</button>
+    `;
+
+    bankList.appendChild(div);
+}
+
+function collectBanks() {
+    return [...document.querySelectorAll(".bank-row")].map(row => ({
+        bankName: row.querySelector(".b-bankName").value,
+        accName: row.querySelector(".b-accName").value,
+        accNo: row.querySelector(".b-accNo").value
+    }));
+}
+
+// Convert File → Base64
+function fileToBase64(file) {
+  return new Promise(resolve => {
+    if (!file) return resolve("");
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadFile(file) {
+  if (!file) return "";
+  const base64 = await fileToBase64(file);
+
+  const res = await fetch(WEBAPP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "uploadFile",
+      fileName: file.name,
+      mimeType: file.type,
+      fileData: base64
+    })
+  });
+
+  return (await res.json()).url || "";
+}
+
+// AUTO-ID
+fetch(WEBAPP_URL, {
+  method: "POST",
+  body: JSON.stringify({ action: "getNextID" })
+})
+.then(r => r.json())
+.then(d => supplierID.value = d.id);
+
+// SAVE FORM
+async function submitSupplier() {
+
+  msg.innerHTML = "Saving...";
+
+  const dtiURL = await uploadFile(dtiSec.files[0]);
+  const permitURL = await uploadFile(permit.files[0]);
+  const birURL = await uploadFile(bir.files[0]);
+  const clientListURL = await uploadFile(clientList.files[0]);
+
+  const data = {
+    action: "saveSupplier",
+    supplierID: supplierID.value,
+    tin: tin.value,
+    vatType: vatType.value,
+    regType: regType.value,
+    regNo: regNo.value,
+    dateIssued: dateIssued.value,
+    bname: bname.value,
+    cType: cType.value,
+    terms: terms.value,
+    supplierType: supplierType.value,
+    category: category.value,
+    address: address.value,
+    nature: nature.value,
+
+    contacts: collectContacts(),
+    banks: collectBanks(),
+
+    dtiSecFile: dtiURL,
+    permitFile: permitURL,
+    bir2303File: birURL,
+    clientListFile: clientListURL
+  };
+
+  const res = await fetch(WEBAPP_URL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+
+  msg.innerHTML = `<span style="color:green;font-weight:bold">${(await res.json()).message}</span>`;
+}
+
 </script>
+
 </body>
 </html>
