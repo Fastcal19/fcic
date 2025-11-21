@@ -1,319 +1,286 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Client & Supplier</title>
-  <style>
-    body { 
-      font-family: Arial; 
-      background:linear-gradient(100deg, orange, gold,orangered);
-      margin: 0; 
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
+<meta charset="UTF-8">
+<title>Client & Supplier Management</title>
 
-    .container {
-      width: 100%;
-      max-width: 700px;
-      background: white;
-      padding: 25px 30px;
-      margin: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
+<style>
+  body {
+    font-family: Arial;
+    margin: 0;
+    background: linear-gradient(100deg, orange, gold, orangered);
+  }
 
-    h2 { margin-top: 0; }
+  .container {
+    margin: 20px auto;
+    width: 95%;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+  }
 
-    label { display:block; margin-top:10px; font-weight: bold; }
-    input, textarea { width: 100%; padding: 8px; margin-top:5px; }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
 
-    button { 
-      margin-top: 20px; 
-      padding: 12px 20px; 
-      background:#1976d2; 
-      color:white; 
-      border:none; 
-      cursor:pointer;
-      width: 100%;
-      border-radius: 5px;
-    }
+  .section-title {
+    font-size: 20px;
+    font-weight: bold;
+    border-left: 5px solid #1a73e8;
+    padding-left: 10px;
+  }
 
-    .success { 
-      color: green; 
-      margin-top: 15px; 
-      font-weight: bold; 
-    }
-  </style>
+  #searchInput {
+    width: 350px;
+    padding: 10px 14px;
+    font-size: 15px;
+    border: 2px solid #1a73e8;
+    border-radius: 5px;
+    outline: none;
+    transition: 0.2s;
+  }
+
+  #searchInput:focus {
+    box-shadow: 0 0 5px #1a73e8;
+  }
+
+  .add-btn {
+    background: #1a73e8;
+    padding: 10px 18px;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+  }
+
+  .add-btn:hover {
+    background: #155fc7;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+table th, table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+}
+
+table th {
+    background: #e8eefc;
+    text-align: center; /* Center headers */
+}
+
+table td {
+    text-align: left; /* Keep data left-aligned */
+}
+
+
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+  }
+
+  .modal-content {
+    background-color: #fefefe;
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    position: relative;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 10px; right: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+  }
+
+  iframe {
+    width: 100%;
+    height: 800px;
+    border: none;
+  }
+
+  /* Hover effect for table rows */
+table tbody tr {
+  transition: background 0.2s, transform 0.1s;
+  cursor: pointer; /* optional, indicates it's clickable */
+}
+
+table tbody tr:hover {
+  background: salmon; /* light highlight */
+  transform: scale(1.01); /* subtle zoom effect */
+}
+
+</style>
 </head>
+
 <body>
 
 <div class="container">
 
-<h2>Client & Supplier Registration</h2>
+  <div class="section-header">
+    <div class="section-title">Client & Supplier Management</div>
+    <div style="display:flex; gap:10px;">
+      <input id="searchInput" placeholder="🔍 Search by Name, TIN, Address..." onkeyup="searchSupplier()">
+      <button class="add-btn" onclick="openModal()">+ Add</button>
+      <button class="add-btn" onclick="refreshData()">⟳ Refresh</button>
+    </div>
+  </div>
 
-<label>Supplier ID</label>
-<input id="supplierID" readonly>
+  <table id="supplierTable">
+    <thead>
+      <tr>
+        <th>NO</th>
+        <th>ID</th>
+        <th>TIN</th>
+        <th>BUSINESS NAME</th>
+        <th>ADDRESS</th>
+        <th>BUSINESS ROLE</th>
+        <th>NATURE OF BUSINESS</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<label>TIN</label>
-<input id="tin" required>
-
-<!-- VAT TYPE -->
-<div style="display:flex; align-items:center; margin-bottom:10px;">
-  <span style="width:150px; font-weight:bold;">VAT Type:</span>
-
-  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
-    <input type="radio" name="vatType" value="VAT Registered" style="margin-right:5px;">
-    VAT Registered
-  </label>
-
-  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
-    <input type="radio" name="vatType" value="Non-VAT" style="margin-right:5px;">
-    Non-VAT
-  </label>
-
-  <label style="display:flex; align-items:center; white-space:nowrap;">
-    <input type="radio" name="vatType" value="Exempt" style="margin-right:5px;">
-    Exempt
-  </label>
 </div>
 
-<!-- REGISTRATION TYPE -->
-<div style="display:flex; align-items:center;">
-  <span style="width:150px; font-weight:bold;">Registration Type:</span>
-
-  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
-    <input type="radio" name="regType" value="DTI" style="margin-right:5px;">
-    DTI
-  </label>
-
-  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
-    <input type="radio" name="regType" value="SEC" style="margin-right:5px;">
-    SEC
-  </label>
-
-  <label style="display:flex; align-items:center; white-space:nowrap;">
-    <input type="radio" name="regType" value="Cooperative" style="margin-right:5px;">
-    Cooperative
-  </label>
-</div>
-
-<label>Registration Number</label>
-<input id="regNo">
-
-<label>Date Issued</label>
-<input type="date" id="dateIssued">
-
-<label>Business Name</label>
-<input id="bname" required>
-
-<label>Trade Name</label>
-<input id="tname" required>
-
-<!-- Supplier TYPE -->
-<div style="display:flex; align-items:center; margin-bottom:10px;">
-  <span style="width:80px; font-weight:bold;">Type:</span>
-
-  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
-    <input type="radio" name="supplierType" value="Individual" style="margin-right:5px;">
-    Individual
-  </label>
-
-  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
-    <input type="radio" name="supplierType" value="Partnership" style="margin-right:5px;">
-    Partnership
-  </label>
-
-  <label style="display:flex; align-items:center; white-space:nowrap;">
-    <input type="radio" name="supplierType" value="Corporation" style="margin-right:5px;">
-    Corporation
-  </label>
-</div>
-
-<!-- CATEGORY -->
-<div style="display:flex; align-items:center;">
-  <span style="width:80px; font-weight:bold;">Category:</span>
-
-  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
-    <input type="radio" name="category" value="Goods" style="margin-right:5px;">
-    Goods
-  </label>
-
-  <label style="display:flex; align-items:center; margin-right:25px; white-space:nowrap;">
-    <input type="radio" name="category" value="Services" style="margin-right:5px;">
-    Services
-  </label>
-
-  <label style="display:flex; align-items:center; white-space:nowrap;">
-    <input type="radio" name="category" value="Goods & Services" style="margin-right:5px;">
-    Goods & Services
-  </label>
-</div>
-
-<label>Address</label>
-<textarea id="address" rows="2"></textarea>
-
-<label>Contact Person</label>
-<input id="contactPerson">
-
-<label>Position</label>
-<input id="position">
-
-<label>Contact Number</label>
-<input id="contactNumber">
-
-<label>Email</label>
-<input id="email" type="email">
-
-<label>Bank Name</label>
-<input id="bankName">
-
-<label>Account Name</label>
-<input id="accName">
-
-<label>Account Number</label>
-<input id="accNo">
-
-<label>Notes</label>
-<textarea id="notes" rows="2"></textarea>
-  
-<h3>Upload Documents</h3>
-
-<label>Business Permit</label>
-<input type="file" id="permit">
-
-<label>BIR 2303</label>
-<input type="file" id="bir">
-
-<label>Valid ID</label>
-<input type="file" id="validID">
-
-<button onclick="submitSupplier()">SAVE SUPPLIER</button>
-
-<div id="msg"></div>
-
+<!-- MODAL -->
+<div id="addModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <iframe src="Supplier-Client.html"></iframe>
+  </div>
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx6CJ9wI8_gpqfb23jAQTo4z-5iwdS3NUT-NWL_C1wByHwMiY26px-J7UTFAbc21usOuA/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwJUj3aDzSDAvQzzsn-QekNOwolDyU_D2NdPA_miuxfFMvjLEdXnFIfFRMBeJzrpN_v/exec"; 
+let supplierData = [];
 
-// Convert uploaded file to Base64
-function fileToBase64(file) {
-  return new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.readAsDataURL(file);
-  });
-}
+// Load data on page load
+window.onload = function() {
+  const savedData = localStorage.getItem("supplierData");
+  if (savedData) {
+    supplierData = JSON.parse(savedData);
+    displayTable(supplierData);
+  } else {
+    fetchSuppliers();
+  }
+};
 
-// Upload file to Google Drive
-async function uploadFile(file) {
-  if (!file) return "";
-  const base64 = await fileToBase64(file);
-
-  const payload = {
-    action: "uploadFile",
-    fileName: file.name,
-    mimeType: file.type,
-    fileData: base64
-  };
-
-  const res = await fetch(WEBAPP_URL, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-
-  const json = await res.json();
-  return json.url;
-}
-
-// Load next Supplier ID
-fetch(WEBAPP_URL, {
-  method: "POST",
-  body: JSON.stringify({ action: "getNextID" })
-})
-.then(r => r.json())
-.then(d => document.getElementById("supplierID").value = d.id);
-
-// Save supplier
-async function submitSupplier() {
-  document.getElementById("msg").innerHTML = "Uploading...";
-
-  const permitURL = await uploadFile(document.getElementById("permit").files[0]);
-  const birURL = await uploadFile(document.getElementById("bir").files[0]);
-  const idURL = await uploadFile(document.getElementById("validID").files[0]);
-
-  const data = {
-    action: "saveSupplier",
-    supplierID: document.getElementById("supplierID").value,
-    tin: document.getElementById("tin").value,
-    vatType: document.querySelector("input[name='vatType']:checked")?.value || "",
-    regType: document.querySelector("input[name='regType']:checked")?.value || "",
-    regNo: document.getElementById("regNo").value,
-    dateIssued: document.getElementById("dateIssued").value,
-    bname: document.getElementById("bname").value,
-    tname: document.getElementById("tname").value,
-    supplierType: document.querySelector("input[name='supplierType']:checked")?.value || "",
-    category: document.querySelector("input[name='category']:checked")?.value || "",
-    address: document.getElementById("address").value,
-    contactPerson: document.getElementById("contactPerson").value,
-    position: document.getElementById("position").value,
-    contactNumber: document.getElementById("contactNumber").value,
-    email: document.getElementById("email").value,
-    bankName: document.getElementById("bankName").value,
-    accName: document.getElementById("accName").value,
-    accNo: document.getElementById("accNo").value,
-    notes:document.getElementbyId("notes").value,
-    permitFile: permitURL,
-    bir2303File: birURL,
-    idFile: idURL
-  };
-
-  const res = await fetch(WEBAPP_URL, {
-    method: "POST",
-    body: JSON.stringify(data)
-  });
-
-  const json = await res.json();
-  document.getElementById("msg").innerHTML = `<span class="success">${json.message}</span>`;
-
-  function clearAllFields() {
-
-  // Clear all text, email, date, number inputs
-  document.querySelectorAll("input[type='text'], input[type='email'], input[type='date'], input[type='number']")
-    .forEach(el => el.value = "");
-
-  // Clear textareas
-  document.querySelectorAll("textarea").forEach(el => el.value = "");
-
-  // Clear radio buttons
-  document.querySelectorAll("input[type='radio']").forEach(el => el.checked = false);
-
-  // Clear file inputs
-  document.querySelectorAll("input[type='file']").forEach(el => el.value = "");
-
-  // Clear message area
-  document.getElementById("msg").innerHTML = "";
-
-  // Request next Supplier ID again
+function fetchSuppliers() {
   fetch(WEBAPP_URL, {
     method: "POST",
-    body: JSON.stringify({ action: "getNextID" })
+    body: JSON.stringify({ action: "loadData" })
   })
-  .then(r => r.json())
-  .then(d => document.getElementById("supplierID").value = d.id);
+  .then(res => res.json())
+  .then(data => {
+    supplierData = data.sort((a, b) => (a.bname || "").localeCompare(b.bname || ""));
+    localStorage.setItem("supplierData", JSON.stringify(supplierData));
+    displayTable(supplierData);
+  })
+  .catch(err => console.error("Error loading data:", err));
 }
 
-  // REQUEST NEW SUPPLIER ID
-  fetch(WEBAPP_URL, {
-    method: "POST",
-    body: JSON.stringify({ action: "getNextID" })
-  })
-  .then(r => r.json())
-  .then(d => document.getElementById("supplierID").value = d.id);
+function searchSupplier() {
+  const value = document.getElementById("searchInput").value.toLowerCase();
+  const filtered = supplierData.filter(r =>
+    (r.bname || "").toLowerCase().includes(value) ||
+    (r.tin || "").toLowerCase().includes(value) ||
+    (r.address || "").toLowerCase().includes(value) ||
+    (r.ctype || "").toLowerCase().includes(value) ||
+    (r.nature || "").toLowerCase().includes(value)
+  );
+  displayTable(filtered);
 }
+
+function displayTable(data) {
+  const tbody = document.querySelector("#supplierTable tbody");
+  tbody.innerHTML = "";
+
+  data.forEach((r, index) => {
+    const row = document.createElement("tr");
+    
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${r.supplierID || ""}</td>
+      <td>${r.tin || ""}</td>
+      <td>${r.bname || ""}</td>
+      <td>${r.address || ""}</td>
+      <td>${r.cType || ""}</td>
+      <td>${r.nature || ""}</td>
+    `;
+
+    // 🔥 Clicking a row → open company profile (edit mode)
+    row.onclick = () => openCompanyProfile(r.supplierID);
+
+    tbody.appendChild(row);
+  });
+}
+
+
+/* ============================
+   MODAL FUNCTIONS
+============================ */
+
+// 🔵 1. + ADD BUTTON → opens Supplier-Client.html
+function openModal() {
+  const modal = document.getElementById("addModal");
+  const iframe = modal.querySelector("iframe");
+
+  iframe.src = "Supplier-Client.html?id=";  // ← empty ID = NEW RECORD
+
+  modal.style.display = "block";
+}
+
+// 🔵 2. ROW CLICK → opens Company Profile page
+function openCompanyProfile(id) {
+  const modal = document.getElementById("addModal");
+  const iframe = modal.querySelector("iframe");
+
+  iframe.src = "EditCompany.html?id=" + encodeURIComponent(id);  // ← edit mode
+
+  modal.style.display = "block";
+}
+
+function closeModal() {
+  document.getElementById("addModal").style.display = "none";
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const modal = document.getElementById("addModal");
+  if (event.target == modal) modal.style.display = "none";
+}
+
+function refreshData() {
+  // Delete cached supplier list
+  localStorage.removeItem("supplierData");
+
+  // Fetch fresh data from Google Sheet
+  fetchSuppliers();
+}
+
 </script>
+
 </body>
 </html>
+
