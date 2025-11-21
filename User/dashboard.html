@@ -142,6 +142,62 @@
       pointer-events: none;
     }
 
+    /* ============================
+   FULLSCREEN OVERLAY SPINNER
+   ============================ */
+#overlaySpinner {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: all;
+}
+
+/* spinner circle */
+#overlaySpinner .lds-dual-ring {
+  width: 55px;
+  height: 55px;
+}
+
+#overlaySpinner .lds-dual-ring:after {
+  width: 50px;
+  height: 50px;
+  border-width: 6px;
+  border-color: #f97316 transparent #f97316 transparent;
+}
+
+/* Dual Ring Spinner */
+.lds-dual-ring {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+}
+
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  border-color: #fff transparent #fff transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+
+@keyframes lds-dual-ring {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
     /* 📱 Mobile */
     @media (max-width: 600px) {
       body {
@@ -240,6 +296,11 @@
     }
   </style>
 </head>
+<!-- Fullscreen Overlay Spinner -->
+<div id="overlaySpinner">
+  <div class="lds-dual-ring"></div>
+</div>
+
 <body>
   <div class="main">
     <div class="calendar-container">
@@ -294,7 +355,9 @@
     }
 
     async function loadNotes() {
+        
       try {
+        showOverlaySpinner();   // ⬅ show
         const res = await fetch(API_URL + "?type=notes");
         const json = await res.json();
         notes = {};
@@ -303,8 +366,10 @@
       } catch (err) {
         console.error("Error loading notes:", err);
         renderCalendar();
-      }
-    }
+      } finally {
+    hideOverlaySpinner(); // ⬅ hide
+  }
+}
 
     function renderCalendar() {
       calendarGrid.innerHTML = "";
@@ -366,6 +431,18 @@
       currentDate.setMonth(currentDate.getMonth() + 1);
       renderCalendar();
     }
+// ======== Overlay Spinner Controls ========
+function showOverlaySpinner() {
+  const o = document.getElementById("overlaySpinner");
+  o.style.visibility = "visible";
+  o.style.opacity = "1";
+}
+
+function hideOverlaySpinner() {
+  const o = document.getElementById("overlaySpinner");
+  o.style.opacity = "0";
+  setTimeout(() => { o.style.visibility = "hidden"; }, 300);
+}
 
     loadNotes();
   </script>
