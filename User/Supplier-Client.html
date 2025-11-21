@@ -66,22 +66,69 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
-}
+  }
 
-table th, table td {
+  table th, table td {
     border: 1px solid #ccc;
     padding: 8px;
-}
+  }
 
-table th {
+  table th {
     background: #e8eefc;
-    text-align: center; /* Center headers */
-}
+    text-align: center;
+  }
 
-table td {
-    text-align: left; /* Keep data left-aligned */
-}
+  table td {
+    text-align: left;
+  }
 
+  table tbody tr {
+    transition: background 0.2s, transform 0.1s;
+    cursor: pointer;
+  }
+
+  table tbody tr:hover {
+    background: salmon;
+    transform: scale(1.01);
+  }
+
+  /* -------------------------
+     CENTERED SPINNER OVERLAY
+     ------------------------- */
+  #spinnerOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  #spinnerOverlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #1a73e8;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 
   /* Modal styles */
   .modal {
@@ -119,21 +166,28 @@ table td {
     border: none;
   }
 
-  /* Hover effect for table rows */
-table tbody tr {
-  transition: background 0.2s, transform 0.1s;
-  cursor: pointer; /* optional, indicates it's clickable */
-}
+  /* Fixed column width */
+  table {
+    table-layout: fixed;
+  }
 
-table tbody tr:hover {
-  background: salmon; /* light highlight */
-  transform: scale(1.01); /* subtle zoom effect */
-}
+  table th:nth-child(1) { width: 1%; }
+  table th:nth-child(2) { width: 3%; }
+  table th:nth-child(3) { width: 8%; }
+  table th:nth-child(4) { width: 25%; }
+  table th:nth-child(5) { width: 25%; }
+  table th:nth-child(6) { width: 5%; }
+  table th:nth-child(7) { width: 15%; }
 
 </style>
 </head>
 
 <body>
+
+<!-- 🔵 SPINNER OVERLAY (CENTERED) -->
+<div id="spinnerOverlay">
+  <div class="loader"></div>
+</div>
 
 <div class="container">
 
@@ -142,6 +196,7 @@ table tbody tr:hover {
     <div style="display:flex; gap:10px;">
       <input id="searchInput" placeholder="🔍 Search by Name, TIN, Address..." onkeyup="searchSupplier()">
       <button class="add-btn" onclick="openModal()">+ Add</button>
+      <button class="add-btn" style="background:#28a745;" onclick="refreshData()">⟳ Refresh</button>
     </div>
   </div>
 
@@ -153,7 +208,7 @@ table tbody tr:hover {
         <th>TIN</th>
         <th>BUSINESS NAME</th>
         <th>ADDRESS</th>
-        <th>BUSINESS ROLE</th>
+        <th>ROLE</th>
         <th>NATURE OF BUSINESS</th>
       </tr>
     </thead>
@@ -166,13 +221,24 @@ table tbody tr:hover {
 <div id="addModal" class="modal">
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
-    <iframe src="AddNew.html"></iframe>
+    <iframe src="Supplier-Client.html"></iframe>
   </div>
 </div>
 
 <script>
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwd_QA3xMJNBYJLP2w9NT38BxeIEQD1TBPYPOBIctyYeWtwJ9N408flzJ20ztfmkMRr7g/exec"; 
 let supplierData = [];
+
+// ------------------
+// Spinner functions
+// ------------------
+function showSpinner() {
+  document.getElementById("spinnerOverlay").classList.add("active");
+}
+
+function hideSpinner() {
+  document.getElementById("spinnerOverlay").classList.remove("active");
+}
 
 // Load data on page load
 window.onload = function() {
@@ -186,6 +252,8 @@ window.onload = function() {
 };
 
 function fetchSuppliers() {
+  showSpinner();
+
   fetch(WEBAPP_URL, {
     method: "POST",
     body: JSON.stringify({ action: "loadData" })
@@ -196,7 +264,7 @@ function fetchSuppliers() {
     localStorage.setItem("supplierData", JSON.stringify(supplierData));
     displayTable(supplierData);
   })
-  .catch(err => console.error("Error loading data:", err));
+  .finally(hideSpinner);
 }
 
 function searchSupplier() {
@@ -228,46 +296,52 @@ function displayTable(data) {
       <td>${r.nature || ""}</td>
     `;
 
-    // 🔥 Clicking a row → open company profile (edit mode)
     row.onclick = () => openCompanyProfile(r.supplierID);
 
     tbody.appendChild(row);
   });
 }
 
-
-/* ============================
-   MODAL FUNCTIONS
-============================ */
-
-// 🔵 1. + ADD BUTTON → opens Supplier-Client.html
 function openModal() {
   const modal = document.getElementById("addModal");
   const iframe = modal.querySelector("iframe");
 
-  iframe.src = "AddNew.html?id=";  // ← empty ID = NEW RECORD
-
+  iframe.src = "Supplier-Client.html?id=";
   modal.style.display = "block";
 }
 
-// 🔵 2. ROW CLICK → opens Company Profile page
 function openCompanyProfile(id) {
   const modal = document.getElementById("addModal");
   const iframe = modal.querySelector("iframe");
 
-  iframe.src = "EditCompany.html?id=" + encodeURIComponent(id);  // ← edit mode
-
+  iframe.src = "EditCompany.html?id=" + encodeURIComponent(id);
   modal.style.display = "block";
 }
 
 function closeModal() {
   document.getElementById("addModal").style.display = "none";
+  refreshData();
 }
 
-// Close modal when clicking outside
 window.onclick = function(event) {
   const modal = document.getElementById("addModal");
   if (event.target == modal) modal.style.display = "none";
+}
+
+function refreshData() {
+  showSpinner();
+
+  fetch(WEBAPP_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "loadData" })
+  })
+  .then(res => res.json())
+  .then(data => {
+    supplierData = data.sort((a, b) => (a.bname || "").localeCompare(b.bname || ""));
+    localStorage.setItem("supplierData", JSON.stringify(supplierData));
+    displayTable(supplierData);
+  })
+  .finally(hideSpinner);
 }
 </script>
 
