@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Chart of Accounts</title>
+
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 20px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    table-layout: fixed; /* IMPORTANT */
+  }
+
+  th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+    word-wrap: break-word; /* Prevent overflow */
+  }
+
+  th {
+    background: #1976d2;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  tr:nth-child(even) {
+    background: #fafafa;
+  }
+
+  /* COLUMN WIDTHS */
+  th:nth-child(1), td:nth-child(1) { width: 80px; }  /* Account Code */
+  th:nth-child(2), td:nth-child(2) { width: 450px; }  /* Account Title */
+  th:nth-child(3), td:nth-child(3) { width: 200px; }  /* Account Type */
+  th:nth-child(4), td:nth-child(4) { width: 150px; }  /* Cash Flow Type */
+  th:nth-child(5), td:nth-child(5) { width: auto; }   /* Description (fills remaining space) */
+
+  .loading {
+    text-align: center;
+    font-size: 18px;
+    margin-top: 20px;
+    color: #1976d2;
+  }
+</style>
+
+
+</head>
+<body>
+
+  <h2>Chart of Accounts</h2>
+
+  <div class="loading" id="loading">Loading data...</div>
+
+  <table id="coaTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Account Code</th>
+        <th>Account Title</th>
+        <th>Account Type</th>
+        <th>Cash Flow Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody id="coaBody"></tbody>
+  </table>
+
+  <script>
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyEuyMCQnJfZAxamf-dG0N-lef76EZsmhfl7fNcw2MKFEgPFuzPNTzvamNHCcUb76IQ7g/exec"; // <--- set your WebApp URL
+
+    async function loadCOA() {
+      try {
+        const res = await fetch(WEBAPP_URL + "?action=getCOA");
+        const data = await res.json();
+
+        const tbody = document.getElementById("coaBody");
+        tbody.innerHTML = "";
+
+        data.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.code}</td>
+            <td>${row.name}</td>
+            <td>${row.type}</td>
+            <td>${row.flow}</td>
+            <td>${row.desc}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("coaTable").style.display = "table";
+
+      } catch (err) {
+        document.getElementById("loading").textContent = "Failed to load data.";
+        console.error(err);
+      }
+    }
+
+    loadCOA();
+  </script>
+
+</body>
+</html>
