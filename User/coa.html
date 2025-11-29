@@ -23,20 +23,18 @@
     background: white;
     margin-top: 20px;
     box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    table-layout: fixed; /* IMPORTANT */
+    table-layout: fixed;
   }
 
   th, td {
     padding: 10px;
     border: 1px solid #ddd;
-    text-align: left;
-    word-wrap: break-word; /* Prevent overflow */
+    word-wrap: break-word;
   }
 
   th {
     background: #1976d2;
     color: white;
-    font-weight: bold;
     text-align: center;
   }
 
@@ -44,12 +42,11 @@
     background: #fafafa;
   }
 
-  /* COLUMN WIDTHS */
-  th:nth-child(1), td:nth-child(1) { width: 80px; }  /* Account Code */
-  th:nth-child(2), td:nth-child(2) { width: 450px; }  /* Account Title */
-  th:nth-child(3), td:nth-child(3) { width: 200px; }  /* Account Type */
-  th:nth-child(4), td:nth-child(4) { width: 150px; }  /* Cash Flow Type */
-  th:nth-child(5), td:nth-child(5) { width: auto; }   /* Description (fills remaining space) */
+  th:nth-child(1), td:nth-child(1) { width: 80px; }
+  th:nth-child(2), td:nth-child(2) { width: 450px; }
+  th:nth-child(3), td:nth-child(3) { width: 200px; }
+  th:nth-child(4), td:nth-child(4) { width: 150px; }
+  th:nth-child(5), td:nth-child(5) { width: auto; }
 
   .loading {
     text-align: center;
@@ -57,10 +54,9 @@
     margin-top: 20px;
     color: #1976d2;
   }
-</style>
-
-
+  </style>
 </head>
+
 <body>
 
   <h2></h2>
@@ -81,38 +77,61 @@
   </table>
 
   <script>
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyEuyMCQnJfZAxamf-dG0N-lef76EZsmhfl7fNcw2MKFEgPFuzPNTzvamNHCcUb76IQ7g/exec"; // <--- set your WebApp URL
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyEuyMCQnJfZAxamf-dG0N-lef76EZsmhfl7fNcw2MKFEgPFuzPNTzvamNHCcUb76IQ7g/exec";
+    const STORAGE_KEY = "COA_DATA";
 
-    async function loadCOA() {
+    function renderTable(data) {
+      const tbody = document.getElementById("coaBody");
+      tbody.innerHTML = "";
+
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.code}</td>
+          <td>${row.name}</td>
+          <td>${row.type}</td>
+          <td>${row.flow}</td>
+          <td>${row.desc}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("coaTable").style.display = "table";
+    }
+
+    // Load from LocalStorage (instant)
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        renderTable(data);
+      }
+    }
+
+    // Fetch from WebApp (fresh update)
+    async function loadFromServer() {
       try {
         const res = await fetch(WEBAPP_URL + "?action=getCOA");
         const data = await res.json();
 
-        const tbody = document.getElementById("coaBody");
-        tbody.innerHTML = "";
+        // Save fresh data to localStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
-        data.forEach(row => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${row.code}</td>
-            <td>${row.name}</td>
-            <td>${row.type}</td>
-            <td>${row.flow}</td>
-            <td>${row.desc}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("coaTable").style.display = "table";
+        // Re-render table with latest data
+        renderTable(data);
 
       } catch (err) {
-        document.getElementById("loading").textContent = "Failed to load data.";
         console.error(err);
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          document.getElementById("loading").textContent = "Failed to load data.";
+        }
       }
     }
 
-    loadCOA();
+    // First load local copy, then get fresh copy
+    loadFromLocalStorage();
+    loadFromServer();
   </script>
 
 </body>
