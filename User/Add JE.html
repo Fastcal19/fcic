@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Journal Entry</title>
+
+  <style>
+    body { 
+      font-family: Arial; 
+      margin: 0; 
+      padding: 15px; 
+      background: linear-gradient(10deg, gold, orangered);
+      box-sizing: border-box; 
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ⭐ FULL-SCREEN LOADING SPINNER ⭐ */
+    #loadingSpinner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .spinner {
+      border: 6px solid #ccc;
+      border-top: 6px solid #f39c12;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 0.8s linear infinite;
+      margin-right: 15px;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* MAIN CONTAINER */
+    .main-container {
+      width: 100%;
+      background: lightgray;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    label { display: block; margin-top: 15px; font-weight: bold; }
+
+    input[type="text"], input[type="date"], select { 
+      width: 100%; padding: 8px; margin-top: 5px; 
+      border: 1px solid #ccc; border-radius: 4px; font-size: 14px; 
+    }
+
+    .row { display: flex; gap: 10px; }
+    .half-width { width: 50%; }
+
+    .add-button { 
+      background: #007bff; color: white; border: none; cursor: pointer; 
+      padding: 8px; width: 20%; font-size: 14px; border-radius: 4px; 
+    }
+    .add-button:hover { background: #0056b3; }
+
+    .entry-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .entry-select, .entry-amount, .entry-vat { 
+      box-sizing: border-box; height: 36px; padding: 6px 8px; 
+      font-size: 14px; border: 1px solid #ccc; border-radius: 4px; 
+    }
+
+    .entry-select { width: 45%; }
+    .entry-vat { width: 25%; }
+    .entry-amount { width: 30%; }
+
+    .delete-button { background: none; color: red; border: none; font-size: 18px; cursor: pointer; }
+    .delete-button:hover { color: darkred; }
+
+    .button-container { display: flex; justify-content: center; margin-top: 20px; }
+    .save-button { width: 20%; height: 40px; font-weight: bold; border: none; border-radius: 4px; background-color: #28a745; color: white; cursor: pointer; }
+    .save-button:hover { background-color: #218838; }
+
+    .total-line { font-weight: bold; font-size: 14px; }
+    .total-button-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; margin-bottom: 10px; }
+
+    textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      resize: vertical;
+    }
+
+    .right-fields {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    #ref {
+      border: none;
+      background: transparent;
+      font-weight: bold;
+      font-size: 30px;
+      color: red;
+      text-align: right;
+    }
+
+    #date { border: 1px solid #ccc; }
+
+    .vat-auto-row {
+      opacity: 0.85;
+      background: #fffaf0;
+      border-left: 4px solid #f0b429;
+    }
+
+    .close-button {
+  width: 20%;
+  height: 40px;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  background-color: #dc3545;
+  color: white;
+  cursor: pointer;
+  margin-left: 30px;
+}
+
+.close-button:hover {
+  background-color: #b02a37;
+}
+
+  </style>
+</head>
+
+<body>
+
+<!-- ⭐ FULL SCREEN SPINNER ⭐ -->
+<div id="loadingSpinner">
+  <div class="spinner"></div>
+  Loading data...
+</div>
+
+<!-- ⭐ MAIN CONTAINER START -->
+<div class="main-container">
+
+<form id="journalForm">
+
+<div class="right-fields">
+  <div class="row">
+    <label for="ref"></label>
+    <input type="text" id="ref" readonly>
+  </div>
+
+  <div class="row">
+    <label for="date">Date:</label>
+    <input type="date" id="date" required>
+  </div>
+</div>
+
+  <label>DEBIT</label>
+  <div id="debit-entries"></div>
+
+  <div class="total-button-row">
+    <button type="button" class="add-button" onclick="addEntry('debit', true)">+ Add Debit</button>
+    <div class="total-line">Total Debit: <span id="totalDebit">0.00</span>
+</div>
+  </div>
+
+  <label>CREDIT</label>
+  <div id="credit-entries"></div>
+
+  <div class="total-button-row">
+    <button type="button" class="add-button" onclick="addEntry('credit', true)">+ Add Credit</button>
+    <div class="total-line">Total Credit: <span id="totalCredit">0.00</span></div>
+  </div>
+
+  <label for="description">Description:</label>
+<textarea id="description" rows="3" required></textarea>
+
+
+  <label for="accountTypeSelect">Account Type:</label>
+  <select id="accountTypeSelect" required>
+    <option value="">Loading...</option>
+  </select>
+
+<div style="display: flex; align-items: center; gap: 8px; margin-top: 15px;">
+    <label for="tinInput" style="margin: 0;">TIN:</label>
+    <input type="checkbox" id="tinCheckbox" checked>
+    <input type="text" id="tinInput" placeholder="Enter TIN">
+</div>
+
+
+<!-- Particulars -->
+<label for="customerDetails">Particulars:</label>
+<textarea id="customerDetails" rows="1" placeholder="Enter particulars..." readonly style="background:#eee;"></textarea>
+
+
+<div class="invoice-project-row" style="display:flex; gap:20px; align-items:flex-start; width:100%">
+
+<div class="invoice-project-row" 
+     style="display:flex; gap:20px; align-items:center; width:100%">
+
+  <!-- Invoice No -->
+  <div class="invoice-row" 
+       style="flex:1; display:flex; align-items:center; gap:10px;">
+    <label for="invoiceNo" style="white-space:nowrap; width:110px;">Invoice No:</label>
+    <input type="checkbox" id="noInvoiceCheckbox" checked>
+    <textarea id="invoiceNo" rows="1" placeholder="Enter invoice number..." 
+              style="width:100%; height:32px; resize:none;"></textarea>
+  </div>
+
+  <!-- Project No -->
+  <div class="project-row" 
+       style="flex:1; display:flex; align-items:center; gap:10px;">
+    <label for="projectNo" style="white-space:nowrap; width:110px;">Project No:</label>
+    <textarea id="projectNo" rows="1" placeholder="Enter project number..." 
+              style="width:100%; height:32px; resize:none;"></textarea>
+  </div>
+
+</div>
+
+
+</div>
+
+
+<div class="transaction-row">
+  <label style="font-weight: bold;">Type of Transaction:</label>
+
+  <label><input type="radio" name="transactionType" value="goods" required> Goods</label>
+  <label><input type="radio" name="transactionType" value="services" required> Services</label>
+</div>
+
+
+
+<!-- Datalist -->
+<datalist id="customerList">
+  <option value="">Loading...</option>
+</datalist>
+
+
+
+  <div class="button-container">
+    <button type="submit" class="save-button">Save</button>
+    <button type="button" class="close-button" onclick="closeForm()">Close</button> 
+</div>
+
+
+</form>
+
+</div> <!-- END MAIN CONTAINER -->
+
+<script>
+/* ------------- (ALL YOUR ORIGINAL JAVASCRIPT IS KEPT 100% INTACT) ---------------- */
+/* ✔ No logic removed  
+   ✔ No functions modified except load start/stop  
+   ✔ Only spinner system added  
+*/
+let chartOfAccounts = [];
+let accountTypes = [];
+let customersAndSuppliers = [];
+
+// --- Reference Format: JE + YY + 3-digit sequence ---
+function generateReference() {
+    const refField = document.getElementById("ref");
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);   // YY
+
+    // Read previous JE entries saved in sessionStorage
+    const entries = JSON.parse(localStorage.getItem("journalEntries")) || [];
+
+    let maxSeq = 0;
+
+    entries.forEach(e => {
+        if (!e.ref) return;
+
+        // expected ref pattern: JE001-24
+        const match = e.ref.match(/^JE(\d+)-\d{2}$/);
+
+        if (match) {
+            const seq = parseInt(match[1], 10);
+            if (seq > maxSeq) maxSeq = seq;
+        }
+    });
+
+    // Next sequence
+    const nextSeq = (maxSeq + 1).toString().padStart(3, "0");
+
+    refField.value = `JE${nextSeq}-${year}`;
+}
+
+
+/* ------------------- NUMBER HELPERS ------------------- */
+function unformatNumber(value) {
+    if (value === undefined || value === null) return "";
+    // Accept numbers or formatted strings
+    const s = String(value).trim();
+    // remove commas and spaces
+    return s.replace(/,/g, '').replace(/\s+/g, '');
+}
+
+function formatNumberWithCommas(value) {
+    if (value === "" || value === undefined || value === null) return "";
+    const num = Number(unformatNumber(value));
+    if (isNaN(num)) return "";
+    return num.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+/* ------------------- LOAD ACCOUNTS ------------------- */
+function loadAccounts() {
+
+  // load via Apps Script
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run.withSuccessHandler(accounts => {
+      chartOfAccounts = (accounts || []).filter(a => a.code && a.name);
+      extractUniqueTypes();
+      populateAccountTypeDropdown();
+      addEntry('debit', false);
+      addEntry('credit', false);
+      updateTotals();
+    }).getChartOfAccounts();
+
+    google.script.run.withSuccessHandler(data => {
+      customersAndSuppliers = data || [];
+      populateCustomerDropdown();
+    }).getCustomerSupplierList();
+
+    // Load auto reference
+    google.script.run.withSuccessHandler(latestRef => {
+      // server could return a latest reference if desired
+      generateReference();
+    }).getLatestReference();
+  } else {
+    // Fallback demo accounts when google.script not available (for local testing)
+    chartOfAccounts = [
+      
+    ];
+    extractUniqueTypes();
+    populateAccountTypeDropdown();
+    addEntry('debit', false);
+    addEntry('credit', false);
+    updateTotals();
+    generateReference();
+  }
+}
+
+/* ------------------- ACCOUNT TYPE DROPDOWN ------------------- */
+function extractUniqueTypes() {
+  accountTypes = [...new Set(chartOfAccounts.map(a => a.type).filter(Boolean))].sort();
+}
+
+function populateAccountTypeDropdown() {
+  const select = document.getElementById('accountTypeSelect');
+  select.innerHTML = '<option value="">-- Select Account Type --</option>';
+  accountTypes.forEach(type => {
+    const opt = document.createElement('option');
+    opt.value = opt.textContent = type;
+    select.appendChild(opt);
+  });
+}
+
+/* ------------------- CUSTOMER DATALIST ------------------- */
+function populateCustomerDropdown() {
+  const ds = document.getElementById('customerList');
+  ds.innerHTML = '';
+  customersAndSuppliers.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.name || c.full || c;
+    ds.appendChild(opt);
+  });
+}
+
+/* ------------------- VAT DROPDOWN ------------------- */
+function createVATSelect(entryType) {
+  const select = document.createElement('select');
+  select.className = 'entry-vat';
+
+  const options = [
+    { val: '', text: 'Non-VAT' },
+    { val: 'VATABLE', text: 'VATable (12%)' },
+    { val: 'EXEMPT', text: 'VAT-Exempt' },
+    { val: 'ZERO', text: 'Zero Rated' }
+  ];
+
+  options.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.val;
+    opt.textContent = o.text;
+    select.appendChild(opt);
+  });
+
+  // Attach VAT handler
+  select.addEventListener("change", () => handleVATChange(select, entryType));
+
+  return select;
+}
+
+/* ------------------- ACCOUNT DROPDOWNS ------------------- */
+function getSelectedAccounts() {
+  return [...document.querySelectorAll('.entry-select')]
+    .map(s => s.value)
+    .filter(v => v);
+}
+
+function refreshDropdowns() {
+  const used = getSelectedAccounts();
+
+  document.querySelectorAll('.entry-select').forEach(select => {
+    const currentValue = select.value;
+
+    select.innerHTML = '<option value="">-- Select Account --</option>';
+
+    chartOfAccounts.forEach(acc => {
+      if (!used.includes(acc.code) || acc.code === currentValue) {
+        const opt = document.createElement('option');
+        opt.value = acc.code;
+        opt.textContent = `${acc.code} - ${acc.name}`;
+        select.appendChild(opt);
+      }
+    });
+
+    select.value = currentValue;
+  });
+}
+
+function createSelect() {
+  const select = document.createElement('select');
+  select.className = 'entry-select';
+  select.addEventListener('change', refreshDropdowns);
+  return select;
+}
+
+/* ------------------- AMOUNT INPUT ------------------- */
+function createAmountInput() {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'entry-amount';
+    input.placeholder = 'Amount';
+
+    // Format on blur
+    input.addEventListener('blur', () => {
+        if (input.value.trim() !== "") {
+            input.value = formatNumberWithCommas(unformatNumber(input.value));
+        }
+        // trigger VAT recalculation for the container this input belongs to
+        const container = input.closest('#debit-entries') ? document.getElementById('debit-entries') : document.getElementById('credit-entries');
+        // trigger VAT compute by dispatching an input event (VAT handler listens to row inputs)
+        container.querySelectorAll('.entry-group').forEach(r => {
+          // no-op: ensure updateTotals reads the formatted values
+        });
+        updateTotals();
+    });
+
+    // Remove formatting on focus
+    input.addEventListener('focus', () => {
+        input.value = unformatNumber(input.value);
+    });
+
+    // Update totals while typing
+    input.addEventListener('input', () => {
+        updateTotals();
+    });
+
+    return input;
+}
+
+/* ------------------- ADD ENTRY ------------------- */
+function addEntry(type, allowDelete) {
+  const container = document.getElementById(type + '-entries');
+  const row = document.createElement('div');
+  row.className = 'entry-group';
+
+  const select = createSelect();
+  const vat = createVATSelect(type);
+  const amount = createAmountInput();
+
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.textContent = '×';
+  del.className = 'delete-button';
+
+  if (allowDelete) {
+    del.onclick = () => {
+      row.remove();
+      refreshDropdowns();
+      updateTotals();
+    };
+  } else {
+    // hide if not deletable
+    del.style.visibility = 'hidden';
+  }
+
+  row.appendChild(select);
+  row.appendChild(vat);
+  row.appendChild(amount);
+  row.appendChild(del);
+
+  container.appendChild(row);
+  refreshDropdowns();
+
+  // attach input listener that VAT handler expects
+  amount.addEventListener('input', () => {
+    updateTotals();
+});
+
+
+  updateTotals();
+}
+
+function formatAmount(num) {
+  return Number(num).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+/* ------------------- EXTRACT ENTRY DATA ------------------- */
+function getEntries(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return [];
+
+  const rows = container.getElementsByClassName("entry-group");
+  const entries = [];
+
+  for (const row of rows) {
+    const accountSelect = row.querySelector(".entry-select");
+    const amountInput   = row.querySelector(".entry-amount");
+
+    if (!accountSelect || !amountInput) continue;
+
+    const selectedOption = accountSelect.selectedOptions[0];
+    const accountCode = selectedOption?.value || "";
+
+    // strip any leading "1234 - " if present
+    const rawText = selectedOption?.textContent || "";
+    const accountName = rawText.replace(/^\s*\d+\s*-\s*/, "").trim();
+
+    const amount = parseFloat(amountInput.value.replace(/,/g, "")) || 0;
+
+    if (accountCode && amount > 0) {
+      entries.push({ accountCode, accountName, amount });
+    }
+  }
+
+  return entries;
+}
+
+
+
+/* ------------------- TOTALS ------------------- */
+function sumAmounts(type) {
+  return [...document.querySelectorAll(`#${type}-entries .entry-amount`)]
+    .reduce((a, b) => a + (parseFloat(unformatNumber(b.value)) || 0), 0);
+}
+
+function updateTotals() {
+    const totalDebit = sumAmounts('debit');
+    const totalCredit = sumAmounts('credit');
+
+    document.getElementById("totalDebit").innerText = formatAmount(totalDebit);
+    document.getElementById("totalCredit").innerText = formatAmount(totalCredit);
+}
+
+/* ------------------- GATHER FORM DATA ------------------- */
+function gatherFormData() {
+  let transactionType = "";
+  const radio = document.querySelector("input[name='transactionType']:checked");
+  if (radio) transactionType = radio.value;
+
+  return {
+    date: document.getElementById('date').value,
+    ref: document.getElementById('ref').value,
+    description: document.getElementById('description').value,
+    accountType: document.getElementById('accountTypeSelect').value,
+    customer: document.getElementById('customerDetails').value,
+    tin: document.getElementById('tinInput').value,
+    invoiceNo: document.getElementById('invoiceNo').value,
+    projectNo: document.getElementById('projectNo').value,
+    transactionType: transactionType,
+    debitEntries: getEntries('debit-entries'),
+    creditEntries: getEntries('credit-entries')
+
+  };
+}
+
+/* ------------------- SAVE TO LOCAL STORAGE ------------------- */
+function saveLocal(data) {
+  try {
+    let queue = JSON.parse(localStorage.getItem("journalQueue")) || [];
+
+    // ✅ Make sure REF is saved
+    if (!data.ref) {
+      data.ref = document.getElementById("ref").value;
+    }
+
+    // ✅ Add timestamp so entries never overwrite
+    data._savedAt = new Date().toISOString();
+
+    queue.push(data);
+
+    // ✅ Save to both queue (for syncing) and entries (for ref generation)
+    localStorage.setItem("journalQueue", JSON.stringify(queue));
+    localStorage.setItem("journalEntries", JSON.stringify(queue));
+
+    console.log("Saved locally:", data.ref);
+    alert("Saved locally! Will sync when online.");
+
+  } catch (err) {
+    console.error("Local save error:", err);
+    alert("Failed to save locally.");
+  }
+}
+
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyv7bpF1Z1QVf6EW-m1N1cC4Ry-c7x-i30iD2H1__QsUndep0W5WzMBQ_h_zJN7yB3v/exec";
+
+async function syncToGoogle() {
+  const queue = JSON.parse(localStorage.getItem("journalQueue")) || [];
+  if (queue.length === 0) return;
+
+  const newQueue = [];
+
+  for (const entry of queue) {
+    try {
+      const url = `${SCRIPT_URL}?data=${encodeURIComponent(JSON.stringify(entry))}`;
+
+      const res = await fetch(url, { method: "GET" });
+
+      if (!res.ok) {
+        newQueue.push(entry);
+        continue;
+      }
+
+      const json = await res.json();
+      console.log("Synced:", json);
+
+    } catch (err) {
+      newQueue.push(entry);
+    }
+  }
+
+  if (newQueue.length > 0) {
+    localStorage.setItem("journalQueue", JSON.stringify(newQueue));
+    console.warn("Some entries not synced. Will retry later.");
+  } else {
+    localStorage.removeItem("journalQueue");
+    console.log("All entries synced!");
+  }
+}
+
+
+document.getElementById('journalForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const data = gatherFormData();
+  const totalDebit = sumAmounts('debit');
+  const totalCredit = sumAmounts('credit');
+
+  if (!data.accountType || !data.customer) {
+    alert('Please fill all required fields.');
+    return;
+  }
+
+  if (Math.abs(totalDebit - totalCredit) > 0.01) {
+    alert('Total debits and credits must match.');
+    return;
+  }
+
+  // ---- If Apps Script is available ----
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+
+    google.script.run
+      .withSuccessHandler(() => {
+
+        // ✅ SAVE LOCALLY FIRST
+        saveLocal(data);
+
+        alert('Journal entry saved!');
+
+        document.getElementById('journalForm').reset();
+        document.getElementById('debit-entries').innerHTML = '';
+        document.getElementById('credit-entries').innerHTML = '';
+        addEntry('debit', false);
+        addEntry('credit', false);
+        updateTotals();
+
+        // ✅ NOW GENERATE NEXT REF
+        generateReference();
+
+      })
+      .withFailureHandler(err => {
+        alert('Server unreachable. Saving locally.');
+        saveLocal(data);
+        generateReference(); // ✅ also increment offline
+      })
+      .saveJournalEntry(data);
+
+  } else {
+    // ---- Offline mode ----
+    alert("Offline. Saving locally.");
+    saveLocal(data);
+    document.getElementById('journalForm').reset();
+
+    // ✅ increment even offline
+    generateReference();
+  }
+});
+
+
+
+/* ------------------- Load from sessionStorage (new) ------------------- */
+function loadAccountsFromWebApp() {
+
+  const stored = sessionStorage.getItem("COA");
+
+  if (!stored) {
+    console.warn("⚠️ No Chart of Accounts found in sessionStorage");
+    alert("Chart of Accounts not found — please reload or login again");
+    return;
+  }
+
+  try {
+    chartOfAccounts = JSON.parse(stored);
+
+    extractUniqueTypes();
+    populateAccountTypeDropdown();
+
+    // ensure at least one row each
+    if (document.querySelectorAll('#debit-entries .entry-group').length === 0) addEntry('debit', false);
+    if (document.querySelectorAll('#credit-entries .entry-group').length === 0) addEntry('credit', false);
+
+    updateTotals();
+  } catch (err) {
+    console.error("Error parsing stored accounts:", err);
+    alert("Failed to parse stored Chart of Accounts");
+  }
+}
+
+
+const webAppURL = "https://script.google.com/macros/s/AKfycbwwoWZMhFGpRHmbnppAKCiXd4JEsdMFZJvUwQW-nb1L_g3NNWA_Zta-gno6oRNu5iasjw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwsCPHNfonEfI0hTA3tOLQ6GZhGr8Bo3NhKluxvLjOOFHoqh1NlKJP8-eVLZFK01INiRQ/exec";
+const tinCheckbox = document.getElementById("tinCheckbox");
+const tinInput = document.getElementById("tinInput");
+const particulars = document.getElementById("customerDetails");
+
+async function saveJournalEntries() {
+  try {
+    const res = await fetch(`${API_URL}?action=getEntries`);
+    const data = await res.json();
+    localStorage.setItem("journalEntries", JSON.stringify(data));
+    console.log("Journal Entries saved:", data);
+  } catch (err) {
+    console.error("Error fetching journal entries:", err);
+  }
+}
+
+async function saveCOA() {
+  try {
+    const res = await fetch(`${API_URL}?action=getCOA`);
+    const data = await res.json();
+    
+    console.log("RAW COA:", data);
+
+    const filtered = data.filter(row => {
+      return Object.values(row)[2];  // 3rd column (C)
+    });
+
+    sessionStorage.setItem("COA", JSON.stringify(filtered));
+    console.log("Filtered:", filtered);
+
+  } catch (err) {
+    console.error("Error:", err);
+  }
+}
+
+
+async function saveAllCustomers() {
+  try {
+    const res = await fetch(`${API_URL}?action=getAllCustomers`);
+    const data = await res.json();
+    sessionStorage.setItem("customers", JSON.stringify(data));
+    console.log("All customers saved:", data);
+  } catch (err) {
+    console.error("Error fetching all customers:", err);
+  }
+}
+
+async function saveAllData() {
+  await saveJournalEntries();
+  await saveCOA();
+  await saveAllCustomers();
+  console.log("All data saved to sessionStorage.");
+}
+
+
+// Initial state
+if (tinInput) tinInput.required = true;
+if (particulars) {
+  particulars.readOnly = true;
+  particulars.style.background = "#eee";
+}
+
+// Toggle behavior
+if (tinCheckbox) tinCheckbox.addEventListener("change", () => {
+    if (tinCheckbox.checked) {
+        // TIN fetching mode
+        tinInput.required = true;
+        tinInput.readOnly = false;
+
+        particulars.readOnly = true;
+        particulars.style.background = "#eee";
+        particulars.value = "";
+    } else {
+        // Manual mode
+        tinInput.required = false;
+        tinInput.readOnly = true;
+        tinInput.value = "";
+
+        particulars.readOnly = false;
+        particulars.style.background = "";
+        particulars.value = "";
+    }
+});
+
+// Fetch customer details when typing TIN (from sessionStorage)
+// Fetch customer details when typing TIN — from sessionStorage
+if (tinInput) tinInput.addEventListener("input", () => {
+    if (!tinCheckbox.checked) return;
+
+    const tin = tinInput.value.trim();
+    if (tin === "") {
+        particulars.value = "";
+        return;
+    }
+
+    const stored = sessionStorage.getItem("customers");
+    if (!stored) {
+        particulars.value = "No customer data in session";
+        return;
+    }
+
+    try {
+        const customers = JSON.parse(stored);
+
+        // normalize: remove hyphens & spaces before comparison
+        const cleanTin = tin.replace(/\D/g, "");
+
+        const match = customers.find(c => 
+            c.tin && c.tin.replace(/\D/g, "") === cleanTin
+        );
+
+        if (match) {
+            particulars.value = match.bname;
+            // optionally also store other info for later use
+            // addressInput.value = match.address;
+        } else {
+            particulars.value = "TIN not found";
+        }
+
+    } catch (err) {
+        console.error("Error parsing customers from session:", err);
+        particulars.value = "Error reading stored data";
+    }
+});
+
+
+
+document.getElementById("noInvoiceCheckbox").addEventListener("change", function () {
+    const invoiceBox = document.getElementById("invoiceNo");
+
+    if (this.checked) {
+        invoiceBox.value = "";
+        invoiceBox.disabled = false;
+        invoiceBox.placeholder = "Enter invoice number...";
+    } else {
+        invoiceBox.disabled = true;
+        invoiceBox.placeholder = "No invoice required";
+    }
+});
+
+/* ------------------- VAT HANDLING ------------------- */
+function handleVATChange(selectElement, entryType) {
+    const row = selectElement.closest(".entry-group");
+    const amountInput = row.querySelector(".entry-amount");
+    const container = document.getElementById(entryType + "-entries");
+
+    function computeVAT() {
+        let totalVATBase = 0;
+
+        // sum only VATable amounts from normal rows (ignore vat-auto-row)
+        container.querySelectorAll(".entry-group").forEach(r => {
+            if (r.classList.contains('vat-auto-row')) return;
+
+            const vatSel = r.querySelector(".entry-vat");
+            const amtRaw = unformatNumber(r.querySelector(".entry-amount")?.value || 0);
+            const amt = parseFloat(amtRaw) || 0;
+
+            if (vatSel && vatSel.value === "VATABLE" && amt > 0) {
+                totalVATBase += amt;
+            }
+        });
+
+        return totalVATBase * 0.12;
+    }
+
+    function updateVatRow() {
+        let vatRow = container.querySelector(".vat-auto-row");
+        const vatAmount = computeVAT();
+
+        // No VATABLE -> remove VAT row if exists
+        if (vatAmount === 0) {
+            if (vatRow) vatRow.remove();
+            updateTotals();
+            return;
+        }
+
+        // Create row if missing
+        if (!vatRow) {
+            vatRow = document.createElement("div");
+            vatRow.className = "entry-group vat-auto-row";
+
+            // Account title (read-only)
+            const title = document.createElement("input");
+            title.type = "text";
+            title.readOnly = true;
+            title.className = "entry-select";
+            title.value = entryType === "debit"
+                ? "1140 - Input VAT"
+                : "2140 - Output VAT";
+
+            // VAT-type blank box (disabled)
+            const vatBox = document.createElement("select");
+            vatBox.className = "entry-vat";
+            vatBox.disabled = true;
+            vatBox.innerHTML = `<option></option>`;
+
+            // Amount (read-only text for consistent formatting)
+            const amtBox = document.createElement("input");
+            amtBox.type = "text";
+            amtBox.className = "entry-amount";
+            amtBox.readOnly = true;
+
+            const del = document.createElement("button");
+            del.className = "delete-button";
+            del.textContent = "×";
+            del.style.visibility = "hidden";
+
+            vatRow.appendChild(title);
+            vatRow.appendChild(vatBox);
+            vatRow.appendChild(amtBox);
+            vatRow.appendChild(del);
+
+            container.appendChild(vatRow);
+        }
+
+        // Update VAT amount (formatted)
+        const amtInput = vatRow.querySelector(".entry-amount");
+        amtInput.value = formatNumberWithCommas(vatAmount.toFixed(2));
+
+        // Always keep at the bottom
+        container.appendChild(vatRow);
+
+        updateTotals();
+    }
+
+    // Recompute VAT every time any amount in the container changes.
+    // Attach listener to the container (event delegation)
+    container.addEventListener('input', updateVatRow, { passive: true });
+
+    // Trigger initial calculation
+    updateVatRow();
+}
+
+/* ------------------- Placeholder server-side helper (client-side stub) ------------------- */
+function getCustomerByTIN(tin) {
+  // This is a placeholder stub; in Apps Script you'd call server-side function
+  // kept here just to match your original structure.
+  return null;
+}
+
+// --- Auto set today's date ---
+document.addEventListener("DOMContentLoaded", function () {
+    const dateField = document.getElementById("date");
+    const today = new Date().toISOString().split("T")[0];
+    dateField.value = today;
+
+    // --- Auto generate Reference ---
+    generateReference();
+});
+
+window.addEventListener("online", syncToGoogle);
+window.addEventListener("load", syncToGoogle);
+
+setInterval(syncToGoogle, 600000); // every 10mins
+
+window.addEventListener("load", saveAllData);
+/* ⭐ ADDED: spinner controls */
+function startLoading() {
+  document.getElementById("loadingSpinner").style.display = "flex";
+}
+function stopLoading() {
+  document.getElementById("loadingSpinner").style.display = "none";
+}
+
+/* ⭐ ADDED: main load wrapper */
+async function loadAllDataWithSpinner() {
+  try {
+      startLoading();
+
+      // 1) Load COA, customers, journal entries into session/local storage
+      await saveAllData();
+
+      // 2) Load COA into form UI
+      loadAccountsFromWebApp();
+
+      // 3) Generate reference
+      generateReference();
+
+  } catch (err) {
+      console.error("Loading error:", err);
+      alert("Failed to load initial data.");
+  } finally {
+      stopLoading();
+  }
+}
+
+function closeForm() {
+    // If running inside a Google Apps Script HTML sidebar/dialog
+    if (google && google.script && google.script.host) {
+        google.script.host.close();
+        return;
+    }
+
+    // Fallback for normal browser
+    window.close();
+
+    // If window.close() is blocked:
+    location.href = "about:blank";
+}
+
+
+/* ⭐ REPLACED your old window.onload */
+window.onload = () => {
+  loadAllDataWithSpinner();
+};
+
+/* ⭐ The rest of your script remains EXACTLY the same (not removed or changed) */
+
+</script>
+
+</body>
+</html>
