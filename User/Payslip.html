@@ -154,10 +154,11 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
       <p class="lead">View and print payslips for the entire year. Click a month to view details.</p>
     </div>
     <div class="controls">
-      <button class="btn" id="exportCsv">Export CSV</button>
-      <button class="btn" id="printAll">Print</button>
-      <select id="yearSelect" aria-label="Choose year"></select>
-    </div>
+  <button class="btn" id="refreshData">Refresh</button> <!-- ⭐ ADDED -->
+  <button class="btn" id="exportCsv">Export CSV</button>
+  <button class="btn" id="printAll">Print</button>
+  <select id="yearSelect" aria-label="Choose year"></select>
+  </div>
   </header>
 
   <div class="grid">
@@ -450,6 +451,15 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e){ console.error(e); alert('Failed to export CSV'); }
   });
 
+  // ⭐ REFRESH BUTTON — CLEAR CACHE + RELOAD
+document.getElementById('refreshData').addEventListener('click', () => {
+  const year = yearSelect.value;
+
+  // Clear cached payslips
+  localStorage.removeItem(`payslips_${empId}_${year}`);
+  localStorage.removeItem(`payslips_refresh_${year}_${empId}`);
+
+  
   loadPayslips();
 });
 </script>
