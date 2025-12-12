@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Employee Payslip — Yearly Summary</title>
+
 <style>
 :root {
   --bg1: #ff7a00;
@@ -11,6 +12,7 @@
   --accent: #06b6d4;
   --glass: rgba(255, 255, 255, 0.05);
 }
+
 * { box-sizing: border-box; }
 
 html, body {
@@ -24,17 +26,17 @@ html, body {
   align-items: flex-start;
 }
 
+/* MAIN */
 .main-container {
   background: linear-gradient(180deg, gold, orangered);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
   width: 100%;
   margin: 10px auto;
-  padding: 0 30px;
+  padding: 0 30px 90px;
   max-width: 1200px;
-  padding-bottom: 90px;
   min-height: 100vh;
 }
 
@@ -45,66 +47,103 @@ header {
   margin-bottom: 20px;
 }
 .brand h1 { margin: 0; font-size: 20px; }
-p.lead { margin: 4px 0 0 0; color: var(--muted); font-size: 13px; }
+.lead { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
-.controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .btn {
   background: linear-gradient(90deg, var(--accent), #7c3aed);
-  border: none; padding: 8px 12px; border-radius: 8px;
-  color: #fff; font-weight: 600; cursor: pointer;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
 }
-.btn:hover { opacity: 0.85; }
+.btn:hover { opacity: .85; }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 14px;
 }
+
 .card {
   grid-column: span 3;
-  background: #fff; padding: 14px;
+  background: #fff;
+  padding: 14px;
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 .card h3 { margin: 0; font-size: 13px; color: var(--muted); }
 .big { font-size: 20px; font-weight: 700; margin-top: 8px; }
+.small { font-size: 13px; color:#64748b; }
 
+/* TABLE */
 .table-wrap {
   grid-column: 1 / -1;
   background: var(--glass);
-  padding: 14px; border-radius: 12px; overflow-x:auto;
+  padding: 14px;
+  border-radius: 12px;
+  overflow-x: auto;
 }
-table { width: 100%; border-collapse: collapse; color: inherit; }
-thead th { text-align: left; padding: 8px; font-size: 12px; color: var(--muted); border-bottom: 1px dashed rgba(255,255,255,0.1);}
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left;
+  padding: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  border-bottom: 1px dashed rgba(255,255,255,0.1);
+}
 tbody tr:hover { background: rgba(255,255,255,0.06); cursor: pointer; }
-tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+tbody td {
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
 
+/* MODAL */
 .modal-backdrop {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background: rgba(2,6,23,0.6);
-  display: none; align-items: center; justify-content: center; z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
 }
+
 .modal {
-  width: 760px; max-width: 100%; background: #fff; color: #111827;
-  padding: 18px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  width: 760px;
+  max-width: 100%;
+  background: #fff;
+  color: #111827;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
-.modal h2 { margin: 0 0 8px 0; }
-.payslip { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.payslip .box { background:#f9fafb; padding:12px; border-radius:8px; border:1px solid #e2e8f0; }
-.row { display:flex; justify-content:space-between; padding:6px 0; }
-.small { font-size:13px; color:#64748b; }
+
+.payslip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.box {
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
 
 #payslipContent {
   display: flex;
   flex-direction: column;
   gap: 15px;
-}
-
-.box {
-  background: white;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
 
 #box-wrapper {
@@ -116,28 +155,34 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   width: 50%;
 }
 
+/* HIDDEN BUTTONS */
 #exportCsv, #printAll, #modalPrint {
   visibility: hidden;
 }
 
+/* RESPONSIVE */
 @media (max-width:900px) {
   .card { grid-column: span 6; }
   .grid { grid-template-columns: repeat(6,1fr); }
 }
+
 @media (max-width:600px) {
-  header { flex-direction: column; align-items: flex-start; }
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
   .card { grid-column: span 6; }
-  .payslip { grid-template-columns:1fr; }
+  .payslip { grid-template-columns: 1fr; }
+
   #box-wrapper { flex-direction: column; }
   #box-left, #box-right { width: 100%; }
-}
 
-@media (max-width: 600px) {
   .modal {
     max-height: 80vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
+
   body.modal-open {
     overflow: hidden;
     position: fixed;
@@ -146,19 +191,22 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 }
 </style>
 </head>
+
 <body>
 <div class="main-container">
+
   <header>
     <div class="brand">
       <h1>Payslip Summary</h1>
       <p class="lead">View and print payslips for the entire year. Click a month to view details.</p>
     </div>
+
     <div class="controls">
-  <button class="btn" id="refreshData">Refresh</button> <!-- ⭐ ADDED -->
-  <button class="btn" id="exportCsv">Export CSV</button>
-  <button class="btn" id="printAll">Print</button>
-  <select id="yearSelect" aria-label="Choose year"></select>
-  </div>
+      <button class="btn" id="refreshData">Refresh</button>
+      <button class="btn" id="exportCsv">Export CSV</button>
+      <button class="btn" id="printAll">Print</button>
+      <select id="yearSelect"></select>
+    </div>
   </header>
 
   <div class="grid">
@@ -198,8 +246,10 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
       </table>
     </div>
   </div>
+
 </div>
 
+<!-- MODAL -->
 <div id="modalBackdrop" class="modal-backdrop">
   <div class="modal">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -215,6 +265,7 @@ tbody td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
   const empId = localStorage.getItem("eid");
   if (!empId) {
     alert("Employee ID not found. Please log in again.");
@@ -229,142 +280,106 @@ document.addEventListener('DOMContentLoaded', () => {
   const payslipContent = document.getElementById('payslipContent');
 
   const currentYear = new Date().getFullYear();
-  for(let y=currentYear; y>=currentYear-5; y--){
-    const o=document.createElement('option'); o.value=y; o.textContent=y;
-    yearSelect.appendChild(o);
+  for(let y = currentYear; y >= currentYear - 5; y--){
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    yearSelect.appendChild(opt);
   }
   yearSelect.value = currentYear;
 
   const money = n => new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'}).format(n);
 
-  /* ---------------------------- FIXED DATE PARSER ---------------------------- */
+  /* --- KEEPING YOUR ORIGINAL parseDate() #1 --- */
   function parseDate(d) {
     if (!d) return null;
-
-    // YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
-      return new Date(d + "T00:00:00");
-    }
-
-    // Try native parser
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(d + "T00:00:00");
     let dt = new Date(d);
     if (!isNaN(dt)) return dt;
-
-    // MM/DD/YYYY
     const mdy = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (mdy) return new Date(`${mdy[3]}-${mdy[1]}-${mdy[2]}T00:00:00`);
-
-    // Try Date.parse fallback
-    try {
-      dt = new Date(Date.parse(d));
-      if (!isNaN(dt)) return dt;
-    } catch(e){}
-
     console.warn("Unrecognized date:", d);
     return null;
   }
-
 
   async function loadPayslips() {
-  tbody.innerHTML = '';
-  const year = Number(yearSelect.value);
+    tbody.innerHTML = '';
+    const year = Number(yearSelect.value);
 
-  // Try local cache
-  let list = JSON.parse(localStorage.getItem(`payslips_${empId}_${year}`));
+    let list = JSON.parse(localStorage.getItem(`payslips_${empId}_${year}`));
 
-  if (!list) {
-    try {
-      const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
-      list = await resp.json();
-      if (list.error) return alert(list.error);
-      localStorage.setItem(`payslips_${empId}_${year}`, JSON.stringify(list));
-    } catch (e) {
-      console.error(e);
-      return alert('Failed to fetch payslips');
+    if (!list) {
+      try {
+        const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
+        list = await resp.json();
+        if (list.error) return alert(list.error);
+        localStorage.setItem(`payslips_${empId}_${year}`, JSON.stringify(list));
+      } catch (e) {
+        console.error(e);
+        return alert('Failed to fetch payslips');
+      }
     }
+
+    /* --- KEEPING YOUR ORIGINAL parseDate() #2 --- */
+    function parseDate(d) {
+      if (!d) return null;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(d + "T00:00:00");
+      let dt = new Date(d);
+      if (!isNaN(dt)) return dt;
+      const mdy = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (mdy) return new Date(`${mdy[3]}-${mdy[1]}-${mdy[2]}T00:00:00`);
+      console.warn("Unrecognized date:", d);
+      return null;
+    }
+
+    list = list.filter(r => {
+      const dt = parseDate(r.pay_date || r.pay_period);
+      return dt && dt.getFullYear() === year;
+    });
+
+    list.sort((a,b) =>
+      parseDate(b.pay_date) - parseDate(a.pay_date)
+    );
+
+    let gross=0, ded=0, net=0, th13=0;
+
+    list.forEach(r => {
+      gross += r.gross;
+      ded += r.total_deductions;
+      net += r.net;
+      th13 += r.thirteenth_pay;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.pay_date || r.pay_period}</td>
+        <td>${money(r.gross)}</td>
+        <td>${money(r.total_deductions)}</td>
+        <td>${money(r.net)}</td>
+        <td>${money(r.thirteenth_pay)}</td>
+      `;
+      tr.addEventListener('click', () => openModal(r));
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('totalGross').textContent = money(gross);
+    document.getElementById('totalDeduction').textContent = money(ded);
+    document.getElementById('totalNet').textContent = money(net);
+    document.getElementById('total13thMonth').textContent = money(th13);
   }
-
-  // -------------------------------
-  // STRICT DATE PARSER
-  // -------------------------------
-  function parseDate(d) {
-    if (!d) return null;
-
-    // Format: YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
-      return new Date(`${d}T00:00:00`);
-    }
-
-    // Try built-in parser
-    let dt = new Date(d);
-    if (!isNaN(dt)) return dt;
-
-    // Format: MM/DD/YYYY
-    const mdy = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (mdy) {
-      return new Date(`${mdy[3]}-${mdy[1]}-${mdy[2]}T00:00:00`);
-    }
-
-    console.warn("Unrecognized date:", d);
-    return null;
-  }
-
-  // -------------------------------
-  // FILTER BY SELECTED YEAR
-  // -------------------------------
-  list = list.filter(r => {
-    const dt = parseDate(r.pay_date || r.pay_period);
-    return dt && dt.getFullYear() === year;
-  });
-
-  // -------------------------------
-  // SORT BY DATE DESC
-  // -------------------------------
-  list.sort((a, b) => {
-    const da = parseDate(a.pay_date);
-    const db = parseDate(b.pay_date);
-    return db - da;
-  });
-
-  // -------------------------------
-  // DISPLAY + TOTALS
-  // -------------------------------
-  let gross = 0, ded = 0, net = 0, th13 = 0;
-
-  list.forEach(r => {
-    gross += r.gross;
-    ded += r.total_deductions;
-    net += r.net;
-    th13 += r.thirteenth_pay;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.pay_date || r.pay_period}</td>
-      <td>${money(r.gross)}</td>
-      <td>${money(r.total_deductions)}</td>
-      <td>${money(r.net)}</td>
-      <td>${money(r.thirteenth_pay)}</td>
-    `;
-    tr.addEventListener('click', () => openModal(r));
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById('totalGross').textContent = money(gross);
-  document.getElementById('totalDeduction').textContent = money(ded);
-  document.getElementById('totalNet').textContent = money(net);
-  document.getElementById('total13thMonth').textContent = money(th13);
-}
 
 
   function openModal(data) {
+
     payslipContent.innerHTML = '';
     const d = data.details || {};
 
     const boxEmployee = document.createElement('div');
     boxEmployee.className = 'box';
     boxEmployee.innerHTML = `
-      <div style="font-weight:700;margin-top:6px; text-align:center;">PAYSLIP</div>
-      <div style="font-weight:700;margin-top:6px; text-align:center;">${formatPrettyDate(data.pay_date || data.pay_period)}</div>
+      <div style="font-weight:700;margin-top:6px;text-align:center;">PAYSLIP</div>
+      <div style="font-weight:700;margin-top:6px;text-align:center;">
+        ${formatPrettyDate(data.pay_date || data.pay_period)}
+      </div>
     `;
 
     const wrapper = document.createElement('div');
@@ -410,6 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     wrapper.appendChild(boxEarnings);
     wrapper.appendChild(boxDeductions);
+
     payslipContent.appendChild(boxEmployee);
     payslipContent.appendChild(wrapper);
 
@@ -434,34 +450,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   yearSelect.addEventListener('change', loadPayslips);
-  document.getElementById('printAll').addEventListener('click',()=>window.print());
-  document.getElementById('exportCsv').addEventListener('click', async ()=>{
+
+  document.getElementById('printAll').addEventListener('click', () => window.print());
+
+  document.getElementById('exportCsv').addEventListener('click', async () => {
     try {
       const year = yearSelect.value;
       const resp = await fetch(`${SCRIPT_URL}?action=getPayslips&empId=${empId}&year=${year}`);
       const list = await resp.json();
-      const cols=['Pay Date','Gross','Deductions','Net','13th Month Pay'];
-      const rows=list.map(r=>[r.pay_date||r.pay_period,r.gross,r.total_deductions,r.net,r.thirteenth_pay]);
-      const csv = cols.join(',') + '\n' + rows.map(r=>r.join(',')).join('\n');
+      const cols = ['Pay Date','Gross','Deductions','Net','13th Month Pay'];
+      const rows = list.map(r => [r.pay_date || r.pay_period, r.gross, r.total_deductions, r.net, r.thirteenth_pay]);
+      const csv = cols.join(',') + '\n' + rows.map(r => r.join(',')).join('\n');
       const blob = new Blob([csv],{type:'text/csv'});
       const a = document.createElement('a');
-      a.href=URL.createObjectURL(blob);
-      a.download=`${empId}_${year}_payslips.csv`;
+      a.href = URL.createObjectURL(blob);
+      a.download = `${empId}_${year}_payslips.csv`;
       a.click();
-    } catch(e){ console.error(e); alert('Failed to export CSV'); }
+    } catch(e) {
+      console.error(e);
+      alert('Failed to export CSV');
+    }
   });
 
-  // ⭐ REFRESH BUTTON — CLEAR CACHE + RELOAD
-document.getElementById('refreshData').addEventListener('click', () => {
-  const year = yearSelect.value;
+  document.getElementById('refreshData').addEventListener('click', () => {
+    const year = yearSelect.value;
+    localStorage.removeItem(`payslips_${empId}_${year}`);
+    localStorage.removeItem(`payslips_refresh_${year}_${empId}`);
+    loadPayslips();
+  });
 
-  // Clear cached payslips
-  localStorage.removeItem(`payslips_${empId}_${year}`);
-  localStorage.removeItem(`payslips_refresh_${year}_${empId}`);
-
-  
   loadPayslips();
+
 });
 </script>
+
 </body>
 </html>
