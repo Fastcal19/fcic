@@ -499,7 +499,17 @@ async function loadLeaves(){
     const myEID=(localStorage.getItem("eid")||"").trim().replace(/^0+/,"");
     const myLeaves=data.filter(r => String(r["EID"]||"").trim().replace(/^0+/,"") === myEID);
 
-    const approved=myLeaves.filter(r=>String(r["Status"]||"").toLowerCase()==="approved");
+    const currentYear = new Date().getFullYear();
+
+const approved = myLeaves.filter(r => {
+  if (String(r["Status"] || "").toLowerCase() !== "approved") return false;
+
+  const fromDate = new Date(r.From);
+  if (isNaN(fromDate)) return false;
+
+  return fromDate.getFullYear() === currentYear;
+});
+
     const usedDays=approved.reduce((sum,r)=>sum+(parseFloat(r["# of Days"]||0)||0),0);
     document.getElementById("leaveApplied").textContent=usedDays;
 
