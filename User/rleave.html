@@ -153,7 +153,7 @@ th { background: #e9ecef; text-align: left; }
   </div>
 </div>
 <!-- ========================================================= -->
-
+ 
 <div class="main-container">
   <div class="cards">
     <div class="card"><h2>Credits</h2><div class="value" id="totalCredits"></div></div>
@@ -203,7 +203,7 @@ th { background: #e9ecef; text-align: left; }
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbyRYppn84PPTTr2KDa-FFHKhXUxRm9W3J6ZyUtosHhpkRvpmGy46B38x1xgqhFwI1ZM/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbw0dX0Mi3IQndAYjwcJZQQ8TAEx7wgCDlIAKa8fdygH9_oXMUYseaDs0FJToN9GeZ2w/exec";
 
 let applicantName = localStorage.getItem('full');
 let applicantEID = localStorage.getItem('eid');
@@ -249,7 +249,6 @@ function openModal(){
 }
 
 
-
 function openEditModal(record,index){
   currentLID = record.LID;
   currentRow = document.querySelector(`tbody tr[data-index='${index}']`);
@@ -287,22 +286,7 @@ function openEditModal(record,index){
   modalBg.style.display = 'flex';
 }
 
-/* ===== ONLY NEW FUNCTION ADDED ===== */
-function closeInfoModal(){
-  document.getElementById("infoModalBg").style.display = "none";
-}
 
-/* ===== YOUR EXISTING FUNCTIONS CONTINUE ===== */
-function openModal(){ document.getElementById("modalBg").style.display="flex"; }
-function closeModal(){ document.getElementById("modalBg").style.display="none"; }
-
-window.addEventListener("load", () => {
-  document.getElementById("infoModalBg").style.display = "flex";
-});
-
-function closeInfoModal(){
-  document.getElementById("infoModalBg").style.display = "none";
-}
 
 function closeModal(){ modalBg.style.display='none'; }
 function validateForm(){ return requiredIds.every(id=>document.getElementById(id).value.trim()!==""); }
@@ -422,6 +406,19 @@ async function submitLeave() {
   } finally {
     btn.disabled = false;
   }
+}
+
+/* ===== ONLY NEW FUNCTION ADDED ===== */
+function closeInfoModal(){
+  document.getElementById("infoModalBg").style.display = "none";
+}
+
+window.addEventListener("load", () => {
+  document.getElementById("infoModalBg").style.display = "flex";
+});
+
+function closeInfoModal(){
+  document.getElementById("infoModalBg").style.display = "none";
 }
 
 async function updateLeave(){
