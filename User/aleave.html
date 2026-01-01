@@ -276,7 +276,14 @@ async function loadEmployees() {
     employees.forEach(emp => {
       const name = emp.Name || emp["Employee Name"];
       const credits = parseFloat(emp["Leave Credits"] || 0);
-      const empLeaves = allLeaves.filter(l => (l.Status||"").toLowerCase()==="approved" && (l.Name||l["Employee Name"])===name);
+      const currentYear = new Date().getFullYear();
+const empLeaves = allLeaves.filter(l => {
+  const leaveYear = new Date(l.From).getFullYear();
+  return (l.Status||"").toLowerCase() === "approved"
+      && (l.Name||l["Employee Name"]) === name
+      && leaveYear === currentYear;
+});
+
       const used = empLeaves.reduce((sum,l)=>sum+parseFloat(l["# of Days"]||0),0);
       usedByName[name]=used;
     });
