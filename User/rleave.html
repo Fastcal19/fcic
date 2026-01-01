@@ -138,6 +138,22 @@ th { background: #e9ecef; text-align: left; }
 </head>
 <body>
 
+  <!-- ================= LEAVE INFO POPUP (NEW) ================= -->
+<div class="modal-bg" id="infoModalBg">
+  <div class="modal">
+    <h3>Leave Entitlements (Current Year)</h3>
+    <ul style="font-size:14px; padding-left:18px;">
+      <li><b>10 Days</b> – Sick, Vacation, Emergency & Birthday Leave</li>
+      <li><b>7 Days</b> – Paternity Leave</li>
+      <li><b>105 Days</b> – Maternity Leave</li>
+      <li><b>120 Days</b> – Maternity Leave (Solo Parent)</li>
+      <li><b>60 Days</b> – Miscarriage / Emergency Termination</li>
+    </ul>
+    <button class="new" onclick="closeInfoModal()">I Understand</button>
+  </div>
+</div>
+<!-- ========================================================= -->
+
 <div class="main-container">
   <div class="cards">
     <div class="card"><h2>Credits</h2><div class="value" id="totalCredits"></div></div>
@@ -174,6 +190,7 @@ th { background: #e9ecef; text-align: left; }
     <input type="date" id="fromDate">
     <input type="date" id="toDate">
     <input type="number" id="days" min="1" placeholder="Number of days">
+    <input type="number" id="remainingLeaveModal" readonly placeholder="Remaining Leave" style="background:#f0f0f0;font-weight:600;">
     <div class="actions">
       <button class="close-btn" onclick="closeModal()">Close</button>
       <button id="cancelBtn" class="edit" onclick="cancelLeave()" style="display:none;">Cancel</button>
@@ -186,7 +203,7 @@ th { background: #e9ecef; text-align: left; }
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbwshzWaldiZvNqe6y4coOUWOKmim1qyBzZSMnBNsyUBsNvzt09wIvv5fKU4umVS0fuM/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbw0dX0Mi3IQndAYjwcJZQQ8TAEx7wgCDlIAKa8fdygH9_oXMUYseaDs0FJToN9GeZ2w/exec";
 
 let applicantName = localStorage.getItem('full');
 let applicantEID = localStorage.getItem('eid');
@@ -224,7 +241,13 @@ function openModal(){
   submitBtn.style.display="inline-block";
   refreshSaveState();
   modalBg.style.display='flex';
+
+  const remaining = parseFloat(document.getElementById("remainingLeave").textContent) || 0;
+  document.getElementById("remainingLeaveModal").value = remaining;
+
+  modalBg.style.display = 'flex';
 }
+
 
 
 function openEditModal(record,index){
@@ -264,7 +287,22 @@ function openEditModal(record,index){
   modalBg.style.display = 'flex';
 }
 
+/* ===== ONLY NEW FUNCTION ADDED ===== */
+function closeInfoModal(){
+  document.getElementById("infoModalBg").style.display = "none";
+}
 
+/* ===== YOUR EXISTING FUNCTIONS CONTINUE ===== */
+function openModal(){ document.getElementById("modalBg").style.display="flex"; }
+function closeModal(){ document.getElementById("modalBg").style.display="none"; }
+
+window.addEventListener("load", () => {
+  document.getElementById("infoModalBg").style.display = "flex";
+});
+
+function closeInfoModal(){
+  document.getElementById("infoModalBg").style.display = "none";
+}
 
 function closeModal(){ modalBg.style.display='none'; }
 function validateForm(){ return requiredIds.every(id=>document.getElementById(id).value.trim()!==""); }
