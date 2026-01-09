@@ -32,193 +32,200 @@
 </head>
 <body>
 
-  <main>
-    <div class="controls">
-      <label>
-        Year:
-        <select id="yearFilter"></select>
-      </label>
-      <label>
-        Month:
-        <select id="monthFilter">
-          <option value="">All</option>
-          <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
-          <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
-          <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
-          <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
-        </select>
-      </label>
-      <button onclick="loadSales(true)" title="Refresh">🔄 Refresh</button>
-      <div id="hdrTotal" style="font-weight:700;white-space:nowrap">Total: 0.00</div>
-      <div id="lastUpdated"></div>
+<main>
+  <div class="controls">
+    <label>Year:
+      <select id="yearFilter"></select>
+    </label>
+
+    <label>Month:
+      <select id="monthFilter">
+        <option value="">All</option>
+        <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+        <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+        <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+        <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+      </select>
+    </label>
+
+    <button onclick="loadSales(true)" title="Refresh">🔄 Refresh</button>
+
+    <div id="hdrTotal" style="font-weight:700;white-space:nowrap">Total: 0.00</div>
+    <div id="lastUpdated"></div>
+  </div>
+
+  <div class="card">
+    <div id="loading" class="loading">
+      <span class="spinner"></span>Loading sales data…
     </div>
 
-    <div class="card">
-      <div id="loading" class="loading"><span class="spinner"></span>Loading sales data…</div>
-
-      <table id="srTable" style="display:none">
-        <thead>
-          <tr>
-            <th>DATE</th>
-            <th>INVOICE</th>
-            <th>CUSTOMER</th>
-            <th>PURCHASE ORDER NO</th>
-            <th>DESCRIPTION</th>
-            <th>AMOUNT</th>
-          </tr>
-        </thead>
-        <tbody id="srBody"></tbody>
-      </table>
-    </div>
-  </main>
+    <table id="srTable" style="display:none">
+      <thead>
+        <tr>
+          <th>DATE</th>
+          <th>INVOICE</th>
+          <th>CUSTOMER</th>
+          <th>PURCHASE ORDER NO</th>
+          <th>DESCRIPTION</th>
+          <th>AMOUNT</th>
+        </tr>
+      </thead>
+      <tbody id="srBody"></tbody>
+    </table>
+  </div>
+</main>
 
 <script>
 const webAppSales = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
 
 function safeNum(v){
-  if (v === null || v === undefined || v === "") return 0;
-  const n = typeof v === "number" ? v : parseFloat(String(v).replace(/[, ]+/g,""));
+  if(v===null||v===undefined||v==="") return 0;
+  const n = typeof v==="number" ? v : parseFloat(String(v).replace(/[, ]+/g,""));
   return isNaN(n)?0:n;
 }
+
 function fmtDate(d){
   if(!d) return "";
   const dt = new Date(d);
-  if (isNaN(dt)) return String(d);
+  if(isNaN(dt)) return String(d);
   return `${String(dt.getDate()).padStart(2,'0')}-${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][dt.getMonth()]}-${dt.getFullYear()}`;
 }
+
 function detectAmountKey(row){
   const keys = Object.keys(row||{});
-  const candidates = keys.filter(k => /^(amount|amt|total|gross|net|invoiceamount)$/i.test(k));
-  return candidates.length? candidates[0] : keys.includes('AMOUNT')? 'AMOUNT' : keys[keys.length-1];
+  const c = keys.filter(k=>/^(amount|amt|total|gross|net|invoiceamount)$/i.test(k));
+  return c[0] || keys[keys.length-1];
 }
+
 function populateYearFilter(){
-  const sel = document.getElementById('yearFilter');
-  sel.innerHTML = "<option value=''>All</option>";
-  const cur = new Date().getFullYear();
-  for(let y=cur; y>=cur-5; y--){
-    const opt=document.createElement('option'); opt.value=y; opt.textContent=y; sel.appendChild(opt);
+  const sel=document.getElementById('yearFilter');
+  sel.innerHTML="<option value=''>All</option>";
+  const cur=new Date().getFullYear();
+  for(let y=cur;y>=cur-5;y--){
+    const o=document.createElement('option');
+    o.value=y; o.textContent=y;
+    sel.appendChild(o);
   }
-  sel.value = cur;
+  sel.value=cur;
 }
 
 async function loadSales(forceRefresh=false){
-  const loading = document.getElementById('loading');
-  const table = document.getElementById('srTable');
-  const tbody = document.getElementById('srBody');
-  const hdrTotal = document.getElementById('hdrTotal');
-  const lastUpdated = document.getElementById('lastUpdated');
+  const loading=document.getElementById('loading');
+  const table=document.getElementById('srTable');
+  const tbody=document.getElementById('srBody');
+  const hdrTotal=document.getElementById('hdrTotal');
+  const lastUpdated=document.getElementById('lastUpdated');
 
-  if(!forceRefresh) { loading.style.display='block'; table.style.display='none'; }
+  loading.style.display='block';
+  table.style.display='none';
 
   try{
-    let data;
+    let data=null;
 
-    // 🔹 Try loading from localStorage
     if(!forceRefresh){
-      const cached = localStorage.getItem('salesData');
+      const cached=localStorage.getItem('salesData');
       if(cached){
-        const parsed = JSON.parse(cached);
-        data = parsed.data;
-        const savedTime = new Date(parsed.timestamp);
-        lastUpdated.textContent = `Last updated: ${savedTime.toLocaleString()}`;
+        const parsed=JSON.parse(cached);
+        data=parsed.data;
+        lastUpdated.textContent=`Last updated: ${new Date(parsed.timestamp).toLocaleString()}`;
       }
     }
 
-    // 🔹 Fetch new data if no cache or force refresh
-    if(!data || forceRefresh){
-      const res = await fetch(`${webAppSales}?sheet=sales`);
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      data = await res.json();
+    if(!data||forceRefresh){
+      const res=await fetch(
+        `${webAppSales}?sheet=sales&t=${Date.now()}`,
+        {cache:"no-store"}
+      );
+      if(!res.ok) throw new Error(res.status);
+      data=await res.json();
 
-      localStorage.setItem('salesData', JSON.stringify({
+      localStorage.setItem('salesData',JSON.stringify({
         data,
-        timestamp: new Date().toISOString()
+        timestamp:new Date().toISOString()
       }));
-      lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
+
+      lastUpdated.textContent=`Last updated: ${new Date().toLocaleString()}`;
     }
 
-    if(!Array.isArray(data) || data.length===0){
-      loading.textContent = 'No sales data found.';
-      hdrTotal.textContent = 'Total: 0.00';
-      tbody.innerHTML = '';
+    if(!Array.isArray(data)||!data.length){
+      loading.textContent="No sales data found.";
+      hdrTotal.textContent="Total: 0.00";
       return;
     }
 
-    const yearFilter = document.getElementById('yearFilter').value;
-    const monthFilter = document.getElementById('monthFilter').value;
+    const yf=document.getElementById('yearFilter').value;
+    const mf=document.getElementById('monthFilter').value;
 
-    const rows = data.filter(r => {
-      const status = (r.STATUS || r.Status || r.status || "").toString().trim().toUpperCase();
-      if(status === "" || status === "CANCELLED") return false;
-      const d = new Date(r.DATE || r.Date || r.date || r['Date']);
-      if (isNaN(d)) return false;
-      if (yearFilter && d.getFullYear().toString() !== yearFilter) return false;
-      if (monthFilter !== "" && d.getMonth().toString() !== monthFilter) return false;
+    const rows=data.filter(r=>{
+      const s=(r.STATUS||"").toString().toUpperCase();
+      if(s==="CANCELLED"||!s) return false;
+      const d=new Date(r.DATE);
+      if(isNaN(d)) return false;
+      if(yf && d.getFullYear()!=yf) return false;
+      if(mf!=="" && d.getMonth()!=mf) return false;
       return true;
     });
 
-    const grouped = {};
-    rows.forEach(r => {
-      const invoice = (r.INVOICE || r.Invoice || r.invoice || "NO-INVOICE").toString();
-      if(!grouped[invoice]) grouped[invoice] = {
-        DATE: r.DATE || r.Date || r.date || "",
-        INVOICE: invoice,
-        CUSTOMER: r.CUSTOMER || r.Customer || r.customer || "",
-        PO: r.PO || r.PO_NO || r['PO'] || r['PO No'] || "",
-        DESCRIPTIONS: [],
-        TOTAL_AMOUNT:0
-      };
-      if(r.DESCRIPTION || r.Description || r.description) grouped[invoice].DESCRIPTIONS.push(r.DESCRIPTION || r.Description || r.description);
-      const amountKey = detectAmountKey(r);
-      grouped[invoice].TOTAL_AMOUNT += safeNum(r[amountKey]);
+    const grouped={};
+    rows.forEach(r=>{
+      const inv=String(r.INVOICE||"NO-INVOICE");
+      if(!grouped[inv]){
+        grouped[inv]={DATE:r.DATE,INVOICE:inv,CUSTOMER:r.CUSTOMER||"",PO:r.PO||"",DESC:[],TOTAL:0};
+      }
+      if(r.DESCRIPTION) grouped[inv].DESC.push(r.DESCRIPTION);
+      grouped[inv].TOTAL+=safeNum(r[detectAmountKey(r)]);
     });
 
-    // 🔹 Sort by Invoice number (highest → lowest)
-    const sorted = Object.values(grouped).sort((a,b)=>{
-      const numA = parseInt(a.INVOICE.replace(/\D/g,'')) || 0;
-      const numB = parseInt(b.INVOICE.replace(/\D/g,'')) || 0;
-      return numB - numA;
+    const sorted=Object.values(grouped).sort((a,b)=>{
+      return (parseInt(b.INVOICE.replace(/\D/g,''))||0)-(parseInt(a.INVOICE.replace(/\D/g,''))||0);
     });
 
-    let grandTotal = 0;
-    tbody.innerHTML = "";
-    sorted.forEach(item=>{
-      grandTotal += item.TOTAL_AMOUNT;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${fmtDate(item.DATE)}</td>
-        <td>${item.INVOICE}</td>
-        <td>${escapeHtml(item.CUSTOMER)}</td>
-        <td>${escapeHtml(item.PO)}</td>
-        <td>${escapeHtml(item.DESCRIPTIONS.join(', '))}</td>
-        <td>${numberFormat(item.TOTAL_AMOUNT)}</td>
-      `;
-      tbody.appendChild(tr);
+    tbody.innerHTML="";
+    let total=0;
+
+    sorted.forEach(r=>{
+      total+=r.TOTAL;
+      tbody.insertAdjacentHTML("beforeend",`
+        <tr>
+          <td>${fmtDate(r.DATE)}</td>
+          <td>${r.INVOICE}</td>
+          <td>${escapeHtml(r.CUSTOMER)}</td>
+          <td>${escapeHtml(r.PO)}</td>
+          <td>${escapeHtml(r.DESC.join(', '))}</td>
+          <td>${numberFormat(r.TOTAL)}</td>
+        </tr>
+      `);
     });
 
-    const trTotal = document.createElement('tr');
-    trTotal.className = 'total-row';
-    trTotal.innerHTML = `<td colspan="5" style="text-align:right">TOTAL</td><td>${numberFormat(grandTotal)}</td>`;
-    tbody.appendChild(trTotal);
+    tbody.insertAdjacentHTML("beforeend",`
+      <tr class="total-row">
+        <td colspan="5" style="text-align:right">TOTAL</td>
+        <td>${numberFormat(total)}</td>
+      </tr>
+    `);
 
-    hdrTotal.textContent = "Total: " + numberFormat(grandTotal);
-    loading.style.display='none';
-    table.style.display='table';
-  }catch(err){
-    console.error(err);
-    loading.textContent = "Failed to load sales data.";
+    hdrTotal.textContent="Total: "+numberFormat(total);
+    loading.style.display="none";
+    table.style.display="table";
+
+  }catch(e){
+    console.error(e);
+    loading.textContent="Failed to load sales data.";
   }
 }
 
-function numberFormat(n){ return (Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+function numberFormat(n){
+  return (Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function escapeHtml(s){
+  return String(s||"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+}
 
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded',()=>{
   populateYearFilter();
-  document.getElementById('monthFilter').value = "";
-  loadSales(false);
-  document.getElementById('yearFilter').addEventListener('change', ()=> loadSales());
-  document.getElementById('monthFilter').addEventListener('change', ()=> loadSales());
+  loadSales();
+  yearFilter.onchange=()=>loadSales();
+  monthFilter.onchange=()=>loadSales();
 });
 </script>
 </body>
