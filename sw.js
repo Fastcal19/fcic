@@ -4,16 +4,16 @@ const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo.png'
-  '/logo-512.png'
-  '/fcic logo.png'
+  '/logo-192.png',    // main icon
+  '/logo-512.png',    // high-res icon
+  '/fcic-logo.png'    // any other assets
 ];
 
-
-// INSTALL
+// ----------------- INSTALL -----------------
 self.addEventListener('install', e => {
-  self.skipWaiting(); // ✅ fixed typo (was 'seld')
   console.log('[ServiceWorker] Install event started');
+  self.skipWaiting(); // activate new SW immediately
+
   e.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -24,33 +24,40 @@ self.addEventListener('install', e => {
   );
 });
 
-// ACTIVATE
+// ----------------- ACTIVATE -----------------
 self.addEventListener('activate', e => {
   console.log('[ServiceWorker] Activate event');
+
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
+    caches.keys()
+      .then(keys => Promise.all(
         keys
-          .filter(k => k !== CACHE_NAME)
-          .map(k => caches.delete(k))
-      )
-    ).then(() => {
-      console.log('[ServiceWorker] Old caches cleared');
-      return self.clients.claim(); // ✅ moved inside .then
-    })
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// FETCH
+// ----------------- FETCH -----------------
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request)
-      .then(response => {
-        // Serve from cache, or fetch if not cached
-        return response || fetch(e.request);
-      })
-      .catch(err => {
-        console.error('[ServiceWorker] Fetch failed:', err);
-      })
-  );
+  // Network-first for logos so they always update
+  if (e.request.url.endsWith('logo-192.png') || e.request.url.endsWith('logo-512.png')) {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const resClone = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, resClone));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+  } else {
+    // Cache-first for other assets
+    e.respondWith(
+      caches.match(e.request)
+        .then(response => response || fetch(e.request))
+        .catch(err => console.error('[ServiceWorker] Fetch failed:', err))
+    );
+  }
 });
