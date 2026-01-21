@@ -512,6 +512,39 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+  const role = localStorage.getItem("role") || "";
+  const isMobile = window.innerWidth <= 768;
+
+  if (isMobile && role === "HR") {
+    const bottomNav = document.getElementById("bottomNav");
+    if (!bottomNav) return;
+
+    // Clear existing buttons
+    bottomNav.innerHTML = "";
+
+    // Rebuild HR mobile navigation
+    bottomNav.innerHTML = `
+      <button onclick="showPage('dashboard')">🏠<br>Home</button>
+      <button id="leaveButton">🗓️<br>Leave</button>
+      <button onclick="showPage('employeelist')">👥<br>Employee</button>
+      <button id="mobileMenuToggle">☰<br>Menu</button>
+    `;
+
+    // Reattach Leave button logic
+    document.getElementById("leaveButton").addEventListener("click", function () {
+      showPage("aleave"); // HR leave page
+    });
+
+    // Reattach Menu toggle
+    document.getElementById("mobileMenuToggle").addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+      overlay.classList.toggle("active");
+    });
+  }
+});
+
+
 
 function logout() {
   localStorage.clear();
