@@ -207,15 +207,22 @@
     }
     #installBtn:hover { background: #e68900; }
 
-    /* Hide manual login sections */
-.login-box .manual-btn,
-#loginBox input[type="text"],
-#loginBox input[type="password"],
-#loginBoxModal .manual-btn,
-#loginBoxModal input[type="text"],
-#loginBoxModal input[type="password"] {
+    /* Hide manual login fields and buttons */
+#loginBox,
+#loginBoxModal {
+  display: none !important; /* hides the whole box */
+}
+
+/* If you want to hide just username/password but keep Google button visible */
+#loginBox input#username,
+#loginBox input#password,
+#loginBox .manual-btn,
+#loginBoxModal input#usernameModal,
+#loginBoxModal input#passwordModal,
+#loginBoxModal .manual-btn {
   display: none !important;
 }
+
 
     @media (max-width: 768px) {
       .hero h1 { font-size: 2.2rem; }
