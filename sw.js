@@ -4,7 +4,7 @@ const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/Logo.png'
+  '/logo.png'
 ];
 
 
