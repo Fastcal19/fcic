@@ -1,12 +1,12 @@
-const CACHE_NAME = 'app-cache-v2';
+const CACHE_NAME = 'app-cache-v3';
+
 const ASSETS = [
-  '/',               // root
+  '/',
   '/index.html',
   '/manifest.json',
-  '/fcic.png',       // optional
-  '/fcic logo.png',  // optional
-  '/Updating.html'
+  '/Logo.png'
 ];
+
 
 // INSTALL
 self.addEventListener('install', e => {
