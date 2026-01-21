@@ -376,9 +376,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const visible = {
     Admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications","btnCs","btnInventory","btnPortals"],
     Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
-    Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests","btnCs", "btnPayslip", "btnInventory"],
-    HR: ["btnDashboard", "btnHR","btnRequests","btnPortals"],
-    "System Admin": ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"]
+    Purchaser: ["btnDashboard", "btnProjects", "btnRequests","btnCs", "btnPayslip", "btnInventory"],
+    HR: ["btnDashboard", "btnHR","btnApplications","btnPortals"],
+    "System Admin": ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnProjects", "btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"]
   };
 
   const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btnProjectCosting","btnApplications","btnRequests","btnCs","btnPayslip","btnInventory","btnPortals"];
@@ -434,7 +434,6 @@ function showPage(page) {
     is: ["Income Statement", "Updating.html"],
     inventoryGallery: ["Inventory Gallery", "/inventory/"],
     inventoryList: ["Inventory List", "Updating.html"],
-    projects: ["Project", "Projects.html"],
     aleave: ["Leave Application", "aleave.html"],
     aadvances: ["Cash Advance Application", "Updating.html"],
     aovertime: ["Overtime Application", "aOT.html"],
