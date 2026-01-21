@@ -125,9 +125,6 @@
       border: 1px solid #ccc;
       border-radius: 6px;
     }
-.login-box hr {
-  margin: 20px 0; /* space between sections */
-}
 
     .manual-btn, .gmail-btn {
       width: 85%;
@@ -232,34 +229,16 @@
   <section class="hero">
     <h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
     <div id="loginBox" class="login-box">
-  <h3>Login</h3>
-
-  <input id="username" placeholder="Username"><br>
-  <input id="password" type="password" placeholder="Password"><br>
-
-  <!-- Manual Login -->
-  <button class="manual-btn" onclick="manualLogin()">Login</button>
-
-  <hr>
-
-  <!-- REQUIRED Google Identity Elements -->
-  <div id="g_id_onload"
-       data-client_id="493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com"
-       data-callback="handleCredentialResponse"
-       data-auto_prompt="false">
-  </div>
-
-  <div class="g_id_signin"
-       data-type="standard"
-       data-size="large"
-       data-theme="outline"
-       data-text="signin_with"
-       data-shape="rectangular">
-  </div>
-
-  <p id="loginStatus"></p>
-</div>
-
+      <h3>Login</h3>
+      <input id="username" placeholder="Username"><br>
+      <input id="password" type="password" placeholder="Password"><br>
+      <button class="manual-btn" onclick="manualLogin()">Login</button>
+      <hr>
+      <button class="gmail-btn" onclick="gmailLogin()">
+        <i class="fab fa-google"></i> Sign in with Google
+      </button>
+      <p id="loginStatus"></p>
+    </div>
 
     <!-- ✅ Manual Install Button -->
     <button id="installBtn">📲 Install App</button>
@@ -289,7 +268,7 @@
 
 <!-- SCRIPT -->
 <script>
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxPr-VS_NqGVwe9AOnFvWjQMG8vJQZBy6R4KMgHgXi85d3kcVRV0PYckf44UE3QZzZY9A/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbxcbv-Pn3_miFI9y2Pehx6tWD1NeYy4iMcusTJW-sXK34b4EGO76_fVu8uuAwIgLs4OHg/exec";
 
 const modal = document.getElementById('loginModal');
 const closeModal = document.getElementById('closeModal');
@@ -346,11 +325,9 @@ window.onload = () => {
 function initGoogleSignIn() {
   googleReady = true;
   google.accounts.id.initialize({
-  client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
-  callback: handleCredentialResponse,
-  auto_select: false,
-  context: "signin"
-});
+    client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
+    callback: handleCredentialResponse
+  });
 }
 
 function gmailLogin() {
@@ -371,12 +348,12 @@ async function handleCredentialResponse(response) {
 function handleLoginResponse(response) {
   const status = document.getElementById('loginStatus');
   if (response.success) {
-    localStorage.setItem("role",  response.role  ?? "");
-    localStorage.setItem("username", response.username ?? "");
-    localStorage.setItem("email", response.email ?? "");
-    localStorage.setItem("eid", response.eid ?? "");
-    localStorage.setItem("full", response.full ?? "");
-    localStorage.setItem("photo", response.photo ?? "");
+    localStorage.setItem("role", response.role);
+    localStorage.setItem("username", response.name);
+    localStorage.setItem("email", response.email);
+    localStorage.setItem("eid", response.eid);
+    localStorage.setItem("full", response.full);
+    localStorage.setItem("photo", response.photo);
     status.style.color = "green";
     status.textContent = "✅ Welcome, " + response.name;
     setTimeout(() => { location.href = "/User/"; }, 1000);
@@ -386,13 +363,9 @@ function handleLoginResponse(response) {
   }
 }
 
-  function parseJwt(token) {
-  const base64 = token.split('.')[1]
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-  return JSON.parse(atob(base64));
+function parseJwt(token) {
+  return JSON.parse(atob(token.split('.')[1]));
 }
-
 
 /* ✅ Manual Install Prompt */
 let deferredPrompt;
