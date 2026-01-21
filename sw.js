@@ -6,7 +6,7 @@ const ASSETS = [
   '/manifest.json',
   '/logo-192.png',
   '/logo-512.png',
-  '/fcic logo.png'
+  '/fcic logo.png',
 ];
 
 
