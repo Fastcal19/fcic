@@ -294,6 +294,8 @@
           <a onclick="showPage('aovertime')">Overtime</a>
         </div>
       </div>
+
+      <a id="btnLeave" onclick="showPage('rleave')">Employees Leave</a>
       
       <div id="btnRequests">
         <a class="expandable" onclick="toggleMenu('requestsMenu')">Applications</a>
@@ -377,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications","btnCs","btnInventory","btnPortals"],
     Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
     Purchaser: ["btnDashboard", "btnProjects", "btnRequests","btnCs", "btnPayslip", "btnInventory"],
-    HR: ["btnDashboard", "btnHR","btnApplications","btnPortals"],
+    HR: ["btnDashboard", "btnHR","btnLeave","btnPortals"],
     "System Admin": ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnProjects", "btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"]
   };
 
