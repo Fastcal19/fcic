@@ -4,8 +4,8 @@ const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo-192.png'
-  '/logo-512.png'
+  '/logo-192.png',
+  '/logo-512.png',
   '/fcic logo.png'
 ];
 
