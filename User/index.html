@@ -480,7 +480,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const role = localStorage.getItem("role") || "";
 
       // both Admin and System Admin open same leave page
-      if (role === "Admin" || role === "System Admin") {
+      if (role === "Admin" || role === "System Admin" || role === "HR") {
         showPage("aleave");  // Admin Leave Page
       } else {
         showPage("rleave");  // Staff Leave Page
