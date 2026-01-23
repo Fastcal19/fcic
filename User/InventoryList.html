@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory List</title>
+
+<style>
+body { font-family: Arial, sans-serif; }
+
+.header { display:flex; flex-direction:column; }
+.filters { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+
+.gridview {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+  background:#fff8f0;
+  font-size:13px;
+}
+
+.gridview th {
+  background:#f4a460;
+  padding:10px;
+  border:1px solid #ccc;
+}
+
+.gridview td {
+  padding:6px;
+  border:1px solid #ccc;
+  text-align:center;
+  font-size:12px;
+}
+
+.gridview td.col-desc { text-align:left; }
+
+.summary {
+  margin-top:10px;
+  padding:8px;
+  background:#faf0e6;
+  border:1px solid #f4a460;
+}
+.summary span { margin-right:15px; font-weight:bold; }
+
+button {
+  font-size:11px;
+  padding:4px 6px;
+  cursor:pointer;
+}
+.btn-add { background:#4caf50; color:#fff; border:none; }
+.btn-out { background:#f44336; color:#fff; border:none; }
+</style>
+</head>
+
+<body>
+<div class="header">
+  <h1>INVENTORY LIST</h1>
+
+  <div class="filters">
+    <div>
+      <label>Filter by Category:</label>
+      <select id="category"></select>
+    </div>
+
+    <div>
+      <label>Search:</label>
+      <input type="text" id="search">
+    </div>
+  </div>
+
+  <div class="summary" id="summary">Loading...</div>
+</div>
+
+<table class="gridview">
+<thead>
+<tr>
+  <th>ITEM CODE</th>
+  <th>DESCRIPTION</th>
+  <th>AVAILABLE STOCKS</th>
+  <th>ACTIONS</th>
+</tr>
+</thead>
+<tbody id="inventoryBody"></tbody>
+</table>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbziMlPacf0wQGtJAbrDSUAeFGSb22KMTgDkfeFLIZIgY_2tL0OO0v3auGD5hnfR2_aGgA/exec";
+
+let inventoryData = [];
+
+const categoryEl = document.getElementById("category");
+const searchEl = document.getElementById("search");
+const summaryEl = document.getElementById("summary");
+const bodyEl = document.getElementById("inventoryBody");
+
+categoryEl.onchange = applyFilter;
+searchEl.onkeyup = applyFilter;
+
+async function loadInventory() {
+  const res = await fetch(API_URL);
+  inventoryData = await res.json();
+
+  populateCategories();
+  applyFilter();
+}
+
+function populateCategories() {
+  const cats = [...new Set(inventoryData.map(i => i.category))];
+  categoryEl.innerHTML =
+    `<option value="All">All</option>` +
+    cats.map(c => `<option value="${c}">${c}</option>`).join("");
+}
+
+function renderTable(data) {
+  bodyEl.innerHTML = "";
+
+  data.forEach(item => {
+    bodyEl.innerHTML += `
+      <tr>
+        <td>${item.id}</td>
+        <td class="col-desc">${item.name}</td>
+        <td>${item.stock}</td>
+        <td>
+          <button class="btn-add" onclick="txn('${item.id}','PURCHASE')">Purchase</button>
+          <button class="btn-out" onclick="txn('${item.id}','PULLOUT')">Pullout</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function applyFilter() {
+  let filtered = inventoryData;
+
+  if (categoryEl.value !== "All")
+    filtered = filtered.filter(i => i.category === categoryEl.value);
+
+  if (searchEl.value)
+    filtered = filtered.filter(i =>
+      i.id.toLowerCase().includes(searchEl.value.toLowerCase()) ||
+      i.name.toLowerCase().includes(searchEl.value.toLowerCase())
+    );
+
+  renderTable(filtered);
+  summaryEl.innerHTML = `<b>Total Items:</b> ${filtered.length}`;
+}
+
+async function txn(itemCode, type) {
+  const item = inventoryData.find(i => i.id === itemCode);
+
+  const qty = parseInt(prompt("Quantity:"), 10);
+  if (!qty || qty <= 0) return;
+
+  const remarks = prompt("Remarks:") || "";
+
+  if (type === "PULLOUT" && qty > item.stock) {
+    alert("Insufficient stock");
+    return;
+  }
+
+  const newBalance =
+    type === "PURCHASE" ? item.stock + qty : item.stock - qty;
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      itemCode: item.id,
+      description: item.name,
+      type,
+      qty,
+      remarks,
+      balance: newBalance
+    })
+  });
+
+  item.stock = newBalance;
+  applyFilter();
+}
+
+loadInventory();
+</script>
+</body>
+</html>
