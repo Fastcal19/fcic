@@ -6,15 +6,14 @@
 <title>Inventory List</title>
 
 <style>
-body { font-family: Arial, sans-serif; }
-
-.header { display:flex; flex-direction:column; }
+body { font-family: Arial, sans-serif; margin:0; padding:0; }
+.header { display:flex; flex-direction:column; padding:10px; }
 .filters { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
 
 .gridview {
   width:100%;
   border-collapse:collapse;
-  margin-top:20px;
+  margin-top:10px;
   background:#fff8f0;
   font-size:13px;
 }
@@ -48,13 +47,26 @@ button {
   cursor:pointer;
 }
 .btn-add { background:#4caf50; color:#fff; border:none; }
+.btn-return { background:#2196f3; color:#fff; border:none; }
 .btn-out { background:#f44336; color:#fff; border:none; }
+
+.tab-container { margin-top:20px; }
+.tab-buttons { display:flex; gap:5px; }
+.tab-buttons button { flex:1; padding:8px; cursor:pointer; border:none; background:#ccc; }
+.tab-buttons button.active { background:#0d47a1; color:#fff; }
+
+.tab-content { display:none; margin-top:10px; }
+.tab-content.active { display:block; }
+
+#txn-table { width:100%; border-collapse:collapse; margin-top:10px; }
+#txn-table th, #txn-table td { border:1px solid #ccc; padding:5px; font-size:12px; }
+#txn-table th { background:#f4a460; }
 </style>
 </head>
 
 <body>
 <div class="header">
-  <h1>INVENTORY LIST</h1>
+
 
   <div class="filters">
     <div>
@@ -71,49 +83,81 @@ button {
   <div class="summary" id="summary">Loading...</div>
 </div>
 
-<table class="gridview">
-<thead>
-<tr>
-  <th>ITEM CODE</th>
-  <th>DESCRIPTION</th>
-  <th>AVAILABLE STOCKS</th>
-  <th>ACTIONS</th>
-</tr>
-</thead>
-<tbody id="inventoryBody"></tbody>
-</table>
+<div class="tab-container">
+  <div class="tab-buttons">
+    <button class="active" onclick="openTab('inventory')">Inventory</button>
+    <button onclick="openTab('history')">Transaction History</button>
+  </div>
+
+  <!-- Inventory Table -->
+  <div id="inventory" class="tab-content active">
+    <table class="gridview">
+      <thead>
+        <tr>
+          <th>ITEM CODE</th>
+          <th>DESCRIPTION</th>
+          <th>AVAILABLE STOCKS</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="inventoryBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Transaction History Table -->
+  <div id="history" class="tab-content">
+    <table id="txn-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Item Code</th>
+          <th>Description</th>
+          <th>Type</th>
+          <th>Quantity</th>
+          <th>Remarks</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+      <tbody id="txnBody"></tbody>
+    </table>
+  </div>
+</div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbziMlPacf0wQGtJAbrDSUAeFGSb22KMTgDkfeFLIZIgY_2tL0OO0v3auGD5hnfR2_aGgA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbybPeI6lJs938NdBLMBp_LdSBQ1IgvXD2N6PCOuGvb6ao3kf6X5ai44WbNpgRD_GZLolg/exec";
 
 let inventoryData = [];
+let transactionData = [];
 
 const categoryEl = document.getElementById("category");
 const searchEl = document.getElementById("search");
 const summaryEl = document.getElementById("summary");
 const bodyEl = document.getElementById("inventoryBody");
+const txnBody = document.getElementById("txnBody");
 
 categoryEl.onchange = applyFilter;
 searchEl.onkeyup = applyFilter;
 
 async function loadInventory() {
+  // Load inventory
   const res = await fetch(API_URL);
   inventoryData = await res.json();
-
   populateCategories();
   applyFilter();
+
+  // Load transactions
+  loadTransactions();
 }
 
 function populateCategories() {
   const cats = [...new Set(inventoryData.map(i => i.category))];
   categoryEl.innerHTML =
     `<option value="All">All</option>` +
-    cats.map(c => `<option value="${c}">${c}</option>`).join("");
+    cats.map(c => `<option>${c}</option>`).join("");
 }
 
 function renderTable(data) {
   bodyEl.innerHTML = "";
-
   data.forEach(item => {
     bodyEl.innerHTML += `
       <tr>
@@ -122,6 +166,7 @@ function renderTable(data) {
         <td>${item.stock}</td>
         <td>
           <button class="btn-add" onclick="txn('${item.id}','PURCHASE')">Purchase</button>
+          <button class="btn-return" onclick="txn('${item.id}','RETURN')">Return</button>
           <button class="btn-out" onclick="txn('${item.id}','PULLOUT')">Pullout</button>
         </td>
       </tr>
@@ -131,7 +176,6 @@ function renderTable(data) {
 
 function applyFilter() {
   let filtered = inventoryData;
-
   if (categoryEl.value !== "All")
     filtered = filtered.filter(i => i.category === categoryEl.value);
 
@@ -147,7 +191,6 @@ function applyFilter() {
 
 async function txn(itemCode, type) {
   const item = inventoryData.find(i => i.id === itemCode);
-
   const qty = parseInt(prompt("Quantity:"), 10);
   if (!qty || qty <= 0) return;
 
@@ -158,8 +201,7 @@ async function txn(itemCode, type) {
     return;
   }
 
-  const newBalance =
-    type === "PURCHASE" ? item.stock + qty : item.stock - qty;
+  const newBalance = type === "PULLOUT" ? item.stock - qty : item.stock + qty;
 
   await fetch(API_URL, {
     method: "POST",
@@ -175,6 +217,37 @@ async function txn(itemCode, type) {
 
   item.stock = newBalance;
   applyFilter();
+  loadTransactions();
+}
+
+// TAB SWITCH
+function openTab(tabName) {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab-buttons button").forEach(b => b.classList.remove("active"));
+
+  document.getElementById(tabName).classList.add("active");
+  event.currentTarget.classList.add("active");
+}
+
+// Load transactions
+async function loadTransactions() {
+  const res = await fetch(API_URL + "?sheet=Transactions"); // Make your doGet handle sheet param
+  transactionData = await res.json();
+
+  txnBody.innerHTML = "";
+  transactionData.forEach(txn => {
+    txnBody.innerHTML += `
+      <tr>
+        <td>${new Date(txn.date).toLocaleString()}</td>
+        <td>${txn.itemCode}</td>
+        <td>${txn.description}</td>
+        <td>${txn.type}</td>
+        <td>${txn.qty}</td>
+        <td>${txn.remarks}</td>
+        <td>${txn.balance}</td>
+      </tr>
+    `;
+  });
 }
 
 loadInventory();
