@@ -114,7 +114,7 @@ button { font-size:11px; padding:4px 6px; cursor:pointer; }
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwlTTdLP2QzkC2VFyuJbKe2wTH0f8dSp52yRICLgCq-KShWwaU9ldiQFfrTtxvemRv26Q/exec"; // Replace with your deployed Apps Script URL
+const API_URL = "https://script.google.com/macros/s/AKfycbzYq7nPRcHSod6nvWwmv-sMTg70a_jLbmkqKAkSZI2BhEQmVtBORlw0X6YMTSwqGZXftA/exec"; // Replace with your deployed Apps Script URL
 
 let inventoryData = [];
 let currentFilteredInventory = [];
@@ -163,7 +163,7 @@ function renderInventory(data) {
         <td class="col-desc">${item.name}</td>
         <td>${item.stock}</td>
         <td>
-          <button class="btn-add" onclick="txn('${item.id}','PURCHASE')">Purchase</button>
+          <button class="btn-add" onclick="txn('${item.id}','PURCHASES')">Purchases</button>
           <button class="btn-return" onclick="txn('${item.id}','RETURN')">Return</button>
           <button class="btn-out" onclick="txn('${item.id}','PULLOUT')">Pullout</button>
         </td>
