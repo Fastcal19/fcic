@@ -11,13 +11,25 @@ body {
   padding: 16px;
 }
 
-/* Two-column layout */
+/* Layout */
 .layout {
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 20px;
   max-width: 1200px;
   margin: auto;
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .left {
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 16px;
+  }
 }
 
 /* Left panel */
@@ -33,57 +45,153 @@ textarea, input, button {
   padding: 8px;
 }
 
-/* Gallery grid */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.spinner {
+  display: none;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.spinner::after {
+  content: "";
+  width: 24px;
+  height: 24px;
+  border: 3px solid #ccc;
+  border-top-color: #333;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Grid & photos */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
 }
 
 .grid img {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
+/* Photo wrapper */
+.photo {
+  position: relative;
+}
+
+/* Action buttons */
+.actions {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+.actions button {
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.actions button:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+/* Caption text */
 .caption {
   font-weight: bold;
   margin: 14px 0 6px;
 }
 
-.photo {
-  position: relative;
+/* Spinner animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.actions {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
+/* Fullscreen viewer */
+.viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.viewer.show {
   display: flex;
-  gap: 4px;
+  opacity: 1;
 }
 
-.actions button {
-  font-size: 11px;
-  padding: 4px 6px;
+.viewer img {
+  max-width: 95%;
+  max-height: 95%;
+  border-radius: 8px;
+}
+
+.viewer .close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
 }
 </style>
 </head>
-
 <body>
+
+<!-- Fullscreen Viewer -->
+<div id="viewer" class="viewer" onclick="closeViewer()">
+  <span class="close" onclick="event.stopPropagation(); closeViewer()">✕</span>
+  <img id="viewerImg">
+</div>
 
 <div class="layout">
 
-  <!-- LEFT: Upload -->
+  <!-- LEFT -->
   <div class="left">
     <h3>Upload Photos</h3>
+
     <textarea id="caption" placeholder="Enter caption"></textarea>
     <input type="file" id="photos" multiple accept="image/*">
-    <button onclick="upload()">Upload</button>
+
+    <button id="uploadBtn" onclick="upload()">Upload</button>
+
+    <div class="spinner" id="spinner"></div>
   </div>
 
-  <!-- RIGHT: Gallery -->
+  <!-- RIGHT -->
   <div class="right">
     <h3>All Uploaded Photos</h3>
     <div id="uploads"></div>
@@ -95,6 +203,13 @@ textarea, input, button {
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzM4XTiLqwM5QnbOAyT2UktqkII6S5V9tIip9x0nlBAhI0mPat93xe6fvDjFQ4ytGer/exec";
 
 window.onload = loadAll;
+
+function setUploading(state) {
+  document.getElementById("spinner").style.display = state ? "block" : "none";
+  const btn = document.getElementById("uploadBtn");
+  btn.disabled = state;
+  btn.textContent = state ? "Uploading..." : "Upload";
+}
 
 function loadAll() {
   fetch(`${WEB_APP_URL}?action=list`)
@@ -118,15 +233,23 @@ function renderAll(data) {
       const photo = document.createElement("div");
       photo.className = "photo";
 
+      // Thumbnail
       const img = document.createElement("img");
       img.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w600`;
+      img.onclick = (e) => {
+        e.stopPropagation();
+        openViewer(`https://drive.google.com/uc?id=${item.id}`);
+      };
 
+      // Actions
       const actions = document.createElement("div");
       actions.className = "actions";
 
       const del = document.createElement("button");
       del.textContent = "🗑";
-      del.onclick = () => modify("delete", item.id);
+      del.onclick = () => {
+        if (confirm("Delete this photo?")) modify("delete", item.id);
+      };
 
       const edit = document.createElement("button");
       edit.textContent = "✏️";
@@ -145,13 +268,18 @@ function renderAll(data) {
 }
 
 function upload() {
-  const caption = document.getElementById("caption").value.trim();
-  const files = document.getElementById("photos").files;
+  const captionEl = document.getElementById("caption");
+  const filesEl = document.getElementById("photos");
 
-  if (!caption || files.length === 0 || files.length > 3) {
-    alert("Caption + 1–3 photos required");
+  const caption = captionEl.value.trim();
+  const files = filesEl.files;
+
+  if (!caption || files.length === 0) {
+    alert("Caption + at least 1 photo required");
     return;
   }
+
+  setUploading(true);
 
   const uploads = [];
   let done = 0;
@@ -170,6 +298,7 @@ function upload() {
   });
 }
 
+
 function modify(action, fileId, caption = "") {
   send(action, { fileId, caption });
 }
@@ -178,7 +307,27 @@ function send(action, payload) {
   fetch(WEB_APP_URL, {
     method: "POST",
     body: JSON.stringify({ action, ...payload })
-  }).then(loadAll);
+  })
+  .then(() => {
+    loadAll();
+    if (action === "upload") {
+      document.getElementById("caption").value = "";
+      document.getElementById("photos").value = "";
+      setUploading(false);
+    }
+  });
+}
+
+function openViewer(src) {
+  const viewer = document.getElementById("viewer");
+  document.getElementById("viewerImg").src = src;
+  viewer.classList.add("show");
+}
+
+function closeViewer() {
+  const viewer = document.getElementById("viewer");
+  viewer.classList.remove("show");
+  setTimeout(() => document.getElementById("viewerImg").src = "", 300);
 }
 </script>
 
