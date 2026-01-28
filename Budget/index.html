@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FASTCAL Expenses Budget</title>
+
+<style>
+body { font-family: Arial; margin: 20px; }
+.tabs { display: flex; border-bottom: 2px solid #333; margin-bottom: 10px; }
+.tab { padding: 10px 20px; cursor: pointer; border: 1px solid #333; border-bottom: none; background: #f2f2f2; margin-right: 5px; }
+.tab.active { background: #fff; font-weight: bold; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+table { border-collapse: collapse; width: 100%; font-size: 12px; }
+th { background-color: orange; border: 1px solid #999; padding: 5px; text-align: center; } 
+td { border: 1px solid #999; padding: 5px; text-align: right; }
+th:first-child { text-align: center; font-weight: bold; } 
+td:first-child { text-align: left; font-weight: bold; }
+
+tbody tr:hover { background-color: #f1a9a9; cursor: pointer; }
+tfoot td { font-weight: bold; background: rgb(241, 165, 138); }
+</style>
+</head>
+
+<body>
+
+<!-- PASSWORD PROTECTION -->
+<script>
+const PASSWORD = "fastcal123"; // 🔐 CHANGE PASSWORD HERE
+
+function checkPassword() {
+  const input = prompt("Enter password to access FAST CAL BUDGET:");
+  if (input === PASSWORD) {
+    document.getElementById("protectedContent").style.display = "block";
+  } else {
+    alert("Incorrect password!");
+    checkPassword();
+  }
+}
+window.onload = checkPassword;
+</script>
+
+<!-- PROTECTED CONTENT -->
+<div id="protectedContent" style="display:none;">
+
+<h2>FAST CAL BUDGET</h2>
+
+<div class="tabs">
+  <div class="tab active" onclick="openTab(0)">Monthly Budget</div>
+  <div class="tab" onclick="openTab(1)">Budget vs Actual</div>
+</div>
+
+<div class="tab-content active">
+<table id="budgetTable">
+<thead>
+<tr>
+<th>PARTICULARS</th>
+<th>JANUARY</th><th>FEBRUARY</th><th>MARCH</th><th>APRIL</th>
+<th>MAY</th><th>JUNE</th><th>JULY</th><th>AUGUST</th>
+<th>SEPTEMBER</th><th>OCTOBER</th><th>NOVEMBER</th><th>DECEMBER</th>
+<th>TOTAL</th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr id="grandTotalRow">
+<td>GRAND TOTAL</td>
+</tr>
+</tfoot>
+</table>
+</div>
+
+<div class="tab-content">
+<table id="compareTable">
+<thead>
+<tr>
+<th>Account</th>
+<th>Budget</th>
+<th>Actual</th>
+<th>Variance</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbyPyKE0rpa5-HFGAu4n5r7JptsiKylDje_nbqmH5Kxwrs4jzRXr48JfSGhzI0FZiZL7cA/exec";
+
+function openTab(i){
+ document.querySelectorAll('.tab').forEach((t,idx)=>t.classList.toggle('active',idx===i));
+ document.querySelectorAll('.tab-content').forEach((c,idx)=>c.classList.toggle('active',idx===i));
+}
+
+let monthlyTotals = {
+ "JANUARY":0,"FEBRUARY":0,"MARCH":0,"APRIL":0,"MAY":0,"JUNE":0,
+ "JULY":0,"AUGUST":0,"SEPTEMBER":0,"OCTOBER":0,"NOVEMBER":0,"DECEMBER":0
+};
+
+function formatNumber(num){
+  return num === 0 ? '' : Number(num).toLocaleString('en-PH', {
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+  });
+}
+
+// Fetch Budget
+fetch(API_URL + "?action=budget")
+.then(r => r.json())
+.then(data => {
+  const tbody = document.querySelector("#budgetTable tbody");
+  window.budgetTotals = {};
+
+  data.forEach(row=>{
+    const months = Object.keys(monthlyTotals);
+    let total = 0;
+
+    let tds = months.map(m=>{
+      const val = Number(row[m] || 0);
+      total += val;
+      monthlyTotals[m] += val;
+      return `<td>${formatNumber(val)}</td>`;
+    }).join("");
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${row.ACCOUNT}</td>
+        ${tds}
+        <td>${formatNumber(total)}</td>
+      </tr>
+    `;
+
+    window.budgetTotals[row.ACCOUNT] = total;
+  });
+
+  const grandRow = document.getElementById("grandTotalRow");
+  const monthsTd = Object.values(monthlyTotals)
+    .map(v=>`<td>${formatNumber(v)}</td>`).join("");
+
+  const grandTotal = Object.values(monthlyTotals).reduce((a,b)=>a+b,0);
+  grandRow.innerHTML += monthsTd + `<td>${formatNumber(grandTotal)}</td>`;
+});
+
+// Fetch Actual
+fetch(API_URL + "?action=actual")
+.then(r => r.json())
+.then(data => {
+  const tbody = document.querySelector("#compareTable tbody");
+  data.forEach(row=>{
+    const budget = window.budgetTotals[row.ACCOUNT] || 0;
+    const actual = Number(row.ACTUAL || 0);
+    const variance = budget - actual;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${row.ACCOUNT}</td>
+        <td>${formatNumber(budget)}</td>
+        <td>${formatNumber(actual)}</td>
+        <td>${formatNumber(variance)}</td>
+      </tr>
+    `;
+  });
+});
+</script>
+
+</body>
+</html>
