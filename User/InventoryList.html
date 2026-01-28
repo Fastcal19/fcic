@@ -6,11 +6,36 @@
 <title>Inventory & Transactions</title>
 
 <style>
-body { font-family: Arial, sans-serif; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background:#f4f6f8;
+}
+
+/* ===== MAIN CONTAINER ===== */
+.main-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
 .tab-container { margin-top:20px; }
 .tab-buttons { display:flex; gap:5px; }
-.tab-buttons button { flex:1; padding:8px; cursor:pointer; border:none; background:#ccc; }
-.tab-buttons button.active { background:#0d47a1; color:#fff; }
+.tab-buttons button {
+  flex:1;
+  padding:8px;
+  cursor:pointer;
+  border:none;
+  background:#ccc;
+}
+.tab-buttons button.active {
+  background:#0d47a1;
+  color:#fff;
+}
 
 .tab-content { display:none; margin-top:10px; }
 .tab-content.active { display:block; }
@@ -71,84 +96,105 @@ button {
   padding:4px;
   width:150px;
 }
+
+/* ===== HOVER EFFECTS ===== */
+button:hover {
+  opacity: 0.9;
+  filter: brightness(1.05);
+}
+.btn-add:hover { background:#ffb74d; }
+.btn-return:hover { background:#ffb74d; }
+.btn-out:hover { background:#ff7043; }
+.btn-new:hover { background:#ffa726; }
+
+.gridview tbody tr:hover,
+#txn-table tbody tr:hover {
+  background:#ffe0b2;
+  cursor:pointer;
+}
+
+.tab-buttons button:hover {
+  background:#ffcc80;
+  color:#000;
+}
+
+input:hover, select:hover,
+input:focus, select:focus {
+  border:1px solid #ff9800;
+  outline:none;
+  box-shadow:0 0 3px rgba(255,152,0,0.7);
+}
 </style>
 </head>
 
 <body>
 
-<div class="tab-container">
-  <div class="tab-buttons">
-    <button class="active" onclick="openTab('inventory',event)">Inventory</button>
-    <button onclick="openTab('history',event)">Transaction History</button>
-  </div>
+<div class="main-container">
 
-  <!-- INVENTORY -->
-  <div id="inventory" class="tab-content active">
-
-    <div class="filters">
-      <select id="invCategory"></select>
-      <input type="text" id="invSearch" placeholder="Search item">
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <button class="active" onclick="openTab('inventory',event)">Inventory</button>
+      <button onclick="openTab('history',event)">Transaction History</button>
     </div>
 
-    <div class="summary" id="invSummary"></div>
+    <!-- INVENTORY -->
+    <div id="inventory" class="tab-content active">
 
-    <form id="addItemForm" onsubmit="return addItem(event)">
-      <input id="newItemName" placeholder="Description" required>
-      <input id="newItemCategory" placeholder="Category" required>
+      <div class="filters">
+        <select id="invCategory"></select>
+        <input type="text" id="invSearch" placeholder="Search item">
+      </div>
 
-      <select id="newItemUOM" required>
-        <option value="">UOM</option>
-        <option>pcs</option>
-        <option>box</option>
-        <option>kg</option>
-        <option>g</option>
-        <option>liter</option>
-        <option>pack</option>
-      </select>
+      <div class="summary" id="invSummary"></div>
 
-      <input id="newItemStock" type="number" min="0" placeholder="Initial Stock" required>
-      <button class="btn-new">Add Item</button>
-    </form>
+      <form id="addItemForm" onsubmit="return addItem(event)">
+  <input id="newItemName" placeholder="Description" required>
+  <input id="newItemCategory" placeholder="Category" required>
+  <input id="newItemStock" type="number" min="0" placeholder="Initial Stock" required>
+  <input type="file" id="newItemImage" accept="image/*" required>
+  <button class="btn-new">Add Item</button>
+</form>
 
-    <table class="gridview">
-      <thead>
-        <tr>
-          <th>ITEM CODE</th>
-          <th>DESCRIPTION</th>
-          <th>AVAILABLE STOCKS</th>
-          <th>ACTIONS</th>
-        </tr>
-      </thead>
-      <tbody id="inventoryBody"></tbody>
-    </table>
-  </div>
-
-  <!-- TRANSACTIONS -->
-  <div id="history" class="tab-content">
-    <div class="filters">
-      <input type="text" id="txnSearch" placeholder="Search transaction">
+      <table class="gridview">
+        <thead>
+          <tr>
+            <th>ITEM CODE</th>
+            <th>DESCRIPTION</th>
+            <th>AVAILABLE STOCKS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
     </div>
 
-    <table id="txn-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Item</th>
-          <th>Description</th>
-          <th>Type</th>
-          <th>Qty</th>
-          <th>UOM</th>
-          <th>Remarks</th>
-          <th>Balance</th>
-        </tr>
-      </thead>
-      <tbody id="txnBody"></tbody>
-    </table>
+    <!-- TRANSACTIONS -->
+    <div id="history" class="tab-content">
+      <div class="filters">
+        <input type="text" id="txnSearch" placeholder="Search transaction">
+      </div>
+
+      <table id="txn-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Item</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Qty</th>
+            <th>Remarks</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody id="txnBody"></tbody>
+      </table>
+    </div>
   </div>
+
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyvrJwigbO5c0p_-z8IqN_Z1syiKv3K2Bu30x9ZgKMIypKOWCcmqx6n3mE7lutUSmy2tA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbweFFZee0D6QVI9wB0M7Iyn3hsjuPCZbG_cSFo54YqqpE0t3Bo4AbHSn0IuzRm9NcXJCg/exec";
 
 let inventoryData = [];
 let transactionData = [];
@@ -165,7 +211,6 @@ invCategory.onchange = applyInvFilter;
 invSearch.onkeyup = applyInvFilter;
 txnSearch.onkeyup = applyTxnFilter;
 
-/* ===== COMPUTE STOCK ===== */
 function computeStocks() {
   const map = {};
   inventoryData.forEach(i => map[i.id] = 0);
@@ -180,7 +225,6 @@ function computeStocks() {
   inventoryData.forEach(i => i.stock = map[i.id]);
 }
 
-/* ===== LOAD ===== */
 async function loadInventory() {
   inventoryData = await (await fetch(API_URL)).json();
   transactionData = await (await fetch(API_URL + "?sheet=Transactions")).json();
@@ -206,7 +250,7 @@ function renderInventory(data) {
         <td class="col-desc">${i.name}</td>
         <td><b>${i.stock}</b> ${i.uom}</td>
         <td>
-          <button class="btn-add" onclick="txn('${i.id}','PURCHASES')">Buy</button>
+          <button class="btn-add" onclick="txn('${i.id}','PURCHASES')">Add</button>
           <button class="btn-return" onclick="txn('${i.id}','RETURN')">Return</button>
           <button class="btn-out" onclick="txn('${i.id}','PULLOUT')">Out</button>
         </td>
@@ -227,7 +271,6 @@ function applyInvFilter() {
   invSummary.innerHTML = `<b>Total Items:</b> ${f.length}`;
 }
 
-/* ===== TRANSACTION ===== */
 async function txn(code, type) {
   const item = inventoryData.find(i => i.id === code);
   const qty = Number(prompt(`Quantity (${item.uom}):`));
@@ -259,12 +302,18 @@ async function txn(code, type) {
 
 function applyTxnFilter() {
   const s = txnSearch.value.toLowerCase();
-  const f = transactionData.filter(t =>
+
+  // Filter first
+  let f = transactionData.filter(t =>
     !s ||
     t.itemCode.toLowerCase().includes(s) ||
     t.description.toLowerCase().includes(s)
   );
 
+  // Sort by date descending (latest first)
+  f.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Render
   txnBody.innerHTML = "";
   f.forEach(t => {
     txnBody.innerHTML += `
@@ -274,24 +323,39 @@ function applyTxnFilter() {
         <td>${t.description}</td>
         <td>${t.type}</td>
         <td>${t.qty}</td>
-        <td>${t.uom}</td>
         <td>${t.remarks}</td>
         <td>${t.balance ?? ""} ${t.uom ?? ""}</td>
       </tr>`;
   });
 }
 
-/* ===== ADD ITEM ===== */
+
 async function addItem(e) {
   e.preventDefault();
 
+  const fileInput = document.getElementById("newItemImage");
+  const file = fileInput.files[0];
+  if (!file) return alert("Please select an image");
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("name", newItemName.value);
+
+  // Upload image to Google Drive via Apps Script endpoint
+  const uploadRes = await fetch(API_URL + "?action=uploadImage", {
+    method: "POST",
+    body: formData
+  });
+  const { fileId } = await uploadRes.json(); // assuming your Apps Script returns {fileId: "..."}
+  
+  // Add item to Google Sheet
   await fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({
       description: newItemName.value,
       category: newItemCategory.value,
-      uom: newItemUOM.value,
       stock: +newItemStock.value,
+      image: fileId, // save the Drive file ID
       type: "NEW"
     })
   });
@@ -299,6 +363,7 @@ async function addItem(e) {
   e.target.reset();
   loadInventory();
 }
+
 
 function openTab(id,e){
   document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
