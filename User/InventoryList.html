@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inventory & Transactions</title>
+
 <style>
 body { font-family: Arial, sans-serif; margin:0; padding:0; }
 .tab-container { margin-top:20px; }
@@ -14,56 +15,98 @@ body { font-family: Arial, sans-serif; margin:0; padding:0; }
 .tab-content { display:none; margin-top:10px; }
 .tab-content.active { display:block; }
 
-.gridview, #txn-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; background:#fff8f0; }
-.gridview th, #txn-table th { background:#f4a460; padding:10px; border:1px solid #ccc; }
-.gridview td, #txn-table td { padding:6px; border:1px solid #ccc; text-align:center; font-size:12px; }
+.gridview, #txn-table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+  font-size:13px;
+  background:#fff8f0;
+}
+.gridview th, #txn-table th {
+  background:#f4a460;
+  padding:10px;
+  border:1px solid #ccc;
+}
+.gridview td, #txn-table td {
+  padding:6px;
+  border:1px solid #ccc;
+  text-align:center;
+  font-size:12px;
+}
 .gridview td.col-desc { text-align:left; }
 
-button { font-size:11px; padding:4px 6px; cursor:pointer; border-radius: 5px;width: 80px;text-align: center;}
-.btn-add { background:#4caf50; color:#fff; border:none; }
-.btn-return { background:#2196f3; color:#fff; border:none; }
-.btn-out { background:#f44336; color:#fff; border:none; }
-.btn-new { background:#ff9800; color:#fff; border:none; }
+button {
+  font-size:11px;
+  padding:4px 6px;
+  cursor:pointer;
+  border-radius:5px;
+  width:80px;
+}
+.btn-add { background:#4caf50; color:#fff; }
+.btn-return { background:#2196f3; color:#fff; }
+.btn-out { background:#f44336; color:#fff; }
+.btn-new { background:#ff9800; color:#fff; }
 
-.summary { margin-top:10px; padding:8px; background:#faf0e6; border:1px solid #f4a460; }
-.summary span { margin-right:15px; font-weight:bold; }
+.summary {
+  margin-top:10px;
+  padding:8px;
+  background:#faf0e6;
+  border:1px solid #f4a460;
+}
 
-.filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-.filters input, .filters select { padding:4px; }
+.filters {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
 
-#addItemForm { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
-#addItemForm input { padding:4px; width:150px; }
+#addItemForm {
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+#addItemForm input, #addItemForm select {
+  padding:4px;
+  width:150px;
+}
 </style>
 </head>
+
 <body>
 
 <div class="tab-container">
   <div class="tab-buttons">
-    <button class="active" onclick="openTab('inventory', event)">Inventory</button>
-    <button onclick="openTab('history', event)">Transaction History</button>
+    <button class="active" onclick="openTab('inventory',event)">Inventory</button>
+    <button onclick="openTab('history',event)">Transaction History</button>
   </div>
 
-  <!-- Inventory Tab -->
+  <!-- INVENTORY -->
   <div id="inventory" class="tab-content active">
+
     <div class="filters">
-      <div>
-        <label>Filter by Category:</label>
-        <select id="invCategory"></select>
-      </div>
-      <div>
-        <label>Search:</label>
-        <input type="text" id="invSearch" placeholder="Item code or name">
-      </div>
+      <select id="invCategory"></select>
+      <input type="text" id="invSearch" placeholder="Search item">
     </div>
 
-    <div class="summary" id="invSummary">Loading...</div>
+    <div class="summary" id="invSummary"></div>
 
-    <!-- Add New Item Form -->
     <form id="addItemForm" onsubmit="return addItem(event)">
-      <input type="text" id="newItemName" placeholder="Description" required>
-      <input type="text" id="newItemCategory" placeholder="Category" required>
-      <input type="number" id="newItemStock" placeholder="Initial Stock" min="0" required>
-      <input type="text" id="newItemImage" placeholder="Image URL (optional)">
+      <input id="newItemName" placeholder="Description" required>
+      <input id="newItemCategory" placeholder="Category" required>
+
+      <select id="newItemUOM" required>
+        <option value="">UOM</option>
+        <option>pcs</option>
+        <option>box</option>
+        <option>kg</option>
+        <option>g</option>
+        <option>liter</option>
+        <option>pack</option>
+      </select>
+
+      <input id="newItemStock" type="number" min="0" placeholder="Initial Stock" required>
       <button class="btn-new">Add Item</button>
     </form>
 
@@ -80,30 +123,21 @@ button { font-size:11px; padding:4px 6px; cursor:pointer; border-radius: 5px;wid
     </table>
   </div>
 
-  <!-- Transaction History Tab -->
+  <!-- TRANSACTIONS -->
   <div id="history" class="tab-content">
     <div class="filters">
-      <div>
-        <label>From:</label>
-        <input type="date" id="txnFrom">
-      </div>
-      <div>
-        <label>To:</label>
-        <input type="date" id="txnTo">
-      </div>
-      <div>
-        <label>Search:</label>
-        <input type="text" id="txnSearch" placeholder="Item, Type, Remarks">
-      </div>
+      <input type="text" id="txnSearch" placeholder="Search transaction">
     </div>
+
     <table id="txn-table">
       <thead>
         <tr>
           <th>Date</th>
-          <th>Item Code</th>
+          <th>Item</th>
           <th>Description</th>
           <th>Type</th>
-          <th>Quantity</th>
+          <th>Qty</th>
+          <th>UOM</th>
           <th>Remarks</th>
           <th>Balance</th>
         </tr>
@@ -114,193 +148,167 @@ button { font-size:11px; padding:4px 6px; cursor:pointer; border-radius: 5px;wid
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzYq7nPRcHSod6nvWwmv-sMTg70a_jLbmkqKAkSZI2BhEQmVtBORlw0X6YMTSwqGZXftA/exec"; // Replace with your deployed Apps Script URL
+const API_URL = "https://script.google.com/macros/s/AKfycbyvrJwigbO5c0p_-z8IqN_Z1syiKv3K2Bu30x9ZgKMIypKOWCcmqx6n3mE7lutUSmy2tA/exec";
 
 let inventoryData = [];
-let currentFilteredInventory = [];
 let transactionData = [];
 
-// Inventory elements
 const invCategory = document.getElementById("invCategory");
 const invSearch = document.getElementById("invSearch");
 const invBody = document.getElementById("inventoryBody");
 const invSummary = document.getElementById("invSummary");
 
-// Transaction elements
-const txnFrom = document.getElementById("txnFrom");
-const txnTo = document.getElementById("txnTo");
 const txnSearch = document.getElementById("txnSearch");
 const txnBody = document.getElementById("txnBody");
 
-// Filter event listeners
 invCategory.onchange = applyInvFilter;
 invSearch.onkeyup = applyInvFilter;
-txnFrom.onchange = applyTxnFilter;
-txnTo.onchange = applyTxnFilter;
 txnSearch.onkeyup = applyTxnFilter;
 
-// Load Inventory
+/* ===== COMPUTE STOCK ===== */
+function computeStocks() {
+  const map = {};
+  inventoryData.forEach(i => map[i.id] = 0);
+
+  transactionData.forEach(t => {
+    if (!(t.itemCode in map)) return;
+    const q = Number(t.qty);
+    if (t.type === "PULLOUT") map[t.itemCode] -= q;
+    else map[t.itemCode] += q;
+  });
+
+  inventoryData.forEach(i => i.stock = map[i.id]);
+}
+
+/* ===== LOAD ===== */
 async function loadInventory() {
-  const res = await fetch(API_URL);
-  inventoryData = await res.json();
+  inventoryData = await (await fetch(API_URL)).json();
+  transactionData = await (await fetch(API_URL + "?sheet=Transactions")).json();
+  computeStocks();
   populateInvCategories();
   applyInvFilter();
-  loadTransactions();
+  applyTxnFilter();
 }
 
 function populateInvCategories() {
   const cats = [...new Set(inventoryData.map(i => i.category))];
-  invCategory.innerHTML = `<option value="All">All</option>` + cats.map(c => `<option>${c}</option>`).join("");
+  invCategory.innerHTML =
+    `<option value="All">All</option>` +
+    cats.map(c => `<option>${c}</option>`).join("");
 }
 
 function renderInventory(data) {
-  currentFilteredInventory = data;
   invBody.innerHTML = "";
-  data.forEach(item => {
+  data.forEach(i => {
     invBody.innerHTML += `
       <tr>
-        <td>${item.id}</td>
-        <td class="col-desc">${item.name}</td>
-        <td>${item.stock}</td>
+        <td>${i.id}</td>
+        <td class="col-desc">${i.name}</td>
+        <td><b>${i.stock}</b> ${i.uom}</td>
         <td>
-          <button class="btn-add" onclick="txn('${item.id}','PURCHASES')">Purchases</button>
-          <button class="btn-return" onclick="txn('${item.id}','RETURN')">Return</button>
-          <button class="btn-out" onclick="txn('${item.id}','PULLOUT')">Pullout</button>
+          <button class="btn-add" onclick="txn('${i.id}','PURCHASES')">Buy</button>
+          <button class="btn-return" onclick="txn('${i.id}','RETURN')">Return</button>
+          <button class="btn-out" onclick="txn('${i.id}','PULLOUT')">Out</button>
         </td>
-      </tr>
-    `;
-  });
-}
-
-function applyInvFilter() {
-  let filtered = inventoryData;
-  if (invCategory.value !== "All") filtered = filtered.filter(i => i.category === invCategory.value);
-  if (invSearch.value)
-    filtered = filtered.filter(i =>
-      i.id.toLowerCase().includes(invSearch.value.toLowerCase()) ||
-      i.name.toLowerCase().includes(invSearch.value.toLowerCase())
-    );
-  renderInventory(filtered);
-  invSummary.innerHTML = `<b>Total Items:</b> ${filtered.length}`;
-}
-
-// Transactions
-async function txn(itemCode, type) {
-  const item = inventoryData.find(i => i.id === itemCode);
-  const qty = parseInt(prompt("Quantity:"), 10);
-  if (!qty || qty <= 0) return;
-
-  const remarks = prompt("Remarks:") || "";
-  if (type === "PULLOUT" && qty > item.stock) {
-    alert("Insufficient stock");
-    return;
-  }
-
-  const newBalance = type === "PULLOUT" ? item.stock - qty : item.stock + qty;
-
-  const res = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      itemCode: item.id,
-      description: item.name,
-      type,
-      qty,
-      remarks,
-      balance: newBalance
-    })
-  });
-  const result = await res.json();
-  if(result.status !== "success") { alert("Transaction failed: "+(result.message||"")); return; }
-
-  item.stock = newBalance;
-  currentFilteredInventory.forEach(fItem => { if(fItem.id===item.id) fItem.stock=newBalance; });
-  renderInventory(currentFilteredInventory);
-  loadTransactions();
-}
-
-// Add new item
-async function addItem(e) {
-  e.preventDefault();
-
-  const newItem = {
-    description: document.getElementById("newItemName").value.trim(),
-    category: document.getElementById("newItemCategory").value.trim(),
-    stock: parseInt(document.getElementById("newItemStock").value,10),
-    image: document.getElementById("newItemImage").value.trim(),
-    type: "NEW"
-  };
-
-  if(!newItem.description || !newItem.category) return alert("Please fill all required fields");
-
-  try {
-    const res = await fetch(API_URL, {method:"POST", body:JSON.stringify(newItem)});
-    const result = await res.json();
-    if(result.status !== "success") { alert("Failed to add item: "+(result.message||"")); return; }
-
-    const itemCode = result.itemCode;
-
-    // Add locally
-    inventoryData.push({id:itemCode,name:newItem.description,category:newItem.category,stock:newItem.stock,url:newItem.image});
-    transactionData.push({date:new Date().toISOString(),itemCode,itemCode,description:newItem.description,type:"NEW",qty:newItem.stock,remarks:"Initial stock",balance:newItem.stock});
-
-    populateInvCategories();
-    applyInvFilter();
-    applyTxnFilter();
-    document.getElementById("addItemForm").reset();
-
-  } catch(err) { alert("Error: "+err.message); }
-}
-
-// Tab switch
-function openTab(tabName,e){
-  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
-  document.querySelectorAll(".tab-buttons button").forEach(b=>b.classList.remove("active"));
-  document.getElementById(tabName).classList.add("active");
-  e.currentTarget.classList.add("active");
-}
-
-// Load transactions
-async function loadTransactions() {
-  const res = await fetch(API_URL + "?sheet=Transactions");
-  transactionData = await res.json();
-  applyTxnFilter();
-}
-
-// Transaction filters
-function applyTxnFilter() {
-  let filtered = transactionData;
-  const from = txnFrom.value ? new Date(txnFrom.value) : null;
-  const to = txnTo.value ? new Date(txnTo.value) : null;
-  const s = txnSearch.value.toLowerCase();
-
-  filtered = filtered.filter(txn=>{
-    const txnDate = new Date(txn.date);
-    let dateMatch = true;
-    if(from) dateMatch = txnDate>=from;
-    if(to) dateMatch = dateMatch && txnDate<=to;
-
-    let textMatch=true;
-    if(s) textMatch = txn.itemCode.toLowerCase().includes(s) || txn.description.toLowerCase().includes(s) || txn.type.toLowerCase().includes(s) || (txn.remarks && txn.remarks.toLowerCase().includes(s));
-
-    return dateMatch && textMatch;
-  });
-
-  txnBody.innerHTML = "";
-  filtered.forEach(txn=>{
-    txnBody.innerHTML+=`
-      <tr>
-        <td>${new Date(txn.date).toLocaleString()}</td>
-        <td>${txn.itemCode}</td>
-        <td>${txn.description}</td>
-        <td>${txn.type}</td>
-        <td>${txn.qty}</td>
-        <td>${txn.remarks}</td>
-        <td>${txn.balance}</td>
       </tr>`;
   });
 }
 
+function applyInvFilter() {
+  let f = inventoryData;
+  if (invCategory.value !== "All")
+    f = f.filter(i => i.category === invCategory.value);
+  if (invSearch.value)
+    f = f.filter(i =>
+      i.id.toLowerCase().includes(invSearch.value.toLowerCase()) ||
+      i.name.toLowerCase().includes(invSearch.value.toLowerCase())
+    );
+  renderInventory(f);
+  invSummary.innerHTML = `<b>Total Items:</b> ${f.length}`;
+}
+
+/* ===== TRANSACTION ===== */
+async function txn(code, type) {
+  const item = inventoryData.find(i => i.id === code);
+  const qty = Number(prompt(`Quantity (${item.uom}):`));
+  if (!qty || qty <= 0) return;
+
+  if (type === "PULLOUT" && qty > item.stock)
+    return alert("Insufficient stock");
+
+  const balance =
+    type === "PULLOUT"
+      ? item.stock - qty
+      : item.stock + qty;
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      itemCode: item.id,
+      description: item.name,
+      uom: item.uom,
+      type,
+      qty,
+      remarks: prompt("Remarks:") || "",
+      balance
+    })
+  });
+
+  loadInventory();
+}
+
+function applyTxnFilter() {
+  const s = txnSearch.value.toLowerCase();
+  const f = transactionData.filter(t =>
+    !s ||
+    t.itemCode.toLowerCase().includes(s) ||
+    t.description.toLowerCase().includes(s)
+  );
+
+  txnBody.innerHTML = "";
+  f.forEach(t => {
+    txnBody.innerHTML += `
+      <tr>
+        <td>${new Date(t.date).toLocaleString()}</td>
+        <td>${t.itemCode}</td>
+        <td>${t.description}</td>
+        <td>${t.type}</td>
+        <td>${t.qty}</td>
+        <td>${t.uom}</td>
+        <td>${t.remarks}</td>
+        <td>${t.balance ?? ""} ${t.uom ?? ""}</td>
+      </tr>`;
+  });
+}
+
+/* ===== ADD ITEM ===== */
+async function addItem(e) {
+  e.preventDefault();
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      description: newItemName.value,
+      category: newItemCategory.value,
+      uom: newItemUOM.value,
+      stock: +newItemStock.value,
+      type: "NEW"
+    })
+  });
+
+  e.target.reset();
+  loadInventory();
+}
+
+function openTab(id,e){
+  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab-buttons button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  e.currentTarget.classList.add("active");
+}
+
 loadInventory();
 </script>
+
 </body>
 </html>
