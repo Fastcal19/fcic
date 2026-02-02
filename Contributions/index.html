@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Monthly Contribution Payments</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background:#f4f6f8;
+  padding:20px;
+}
+.container {
+  margin:auto;
+  background:#fff;
+  padding:20px;
+  border-radius:8px;
+}
+h2 {
+  text-align:center;
+}
+select {
+  padding:8px;
+  margin-bottom:15px;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:25px;
+}
+th, td {
+  border:1px solid #ddd;
+  padding:8px;
+  font-size:14px;
+}
+th {
+  background:#2c3e50;
+  color:#fff;
+}
+.agency {
+  background:#ecf0f1;
+  font-weight:bold;
+}
+.total {
+  background:#fafafa;
+  font-weight:bold;
+}
+.right {
+  text-align:right;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h2>Monthly Contribution</h2>
+
+  <div style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
+
+    <!-- LEFT PANEL -->
+    <div>
+      <h4>UNPAID CONTRIBUTIONS</h4>
+      <table>
+        <tr>
+          <th>Month</th>
+          <th class="right">Amount</th>
+        </tr>
+        <tbody id="unpaidList"></tbody>
+      </table>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div id="details">
+      <p style="color:red">Click an unpaid month to view details</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxAIPmW-Es-gNkUSfVtVotUmldY2SEP5crfRqgy3xOQ1HhVwRMIKz_UyRvJ6ChhCwmKxg/exec";
+
+let data = [];
+
+fetch(API_URL)
+  .then(res => res.json())
+  .then(json => {
+    data = json;
+    loadUnpaid();
+  });
+
+/* LOAD UNPAID MONTHS (STATUS = Pending) */
+function loadUnpaid() {
+  const pending = data.filter(d =>
+    d.status !== null &&
+    String(d.status).trim().toLowerCase() === "pending"
+  );
+
+  if (pending.length === 0) {
+    document.getElementById("unpaidList").innerHTML =
+      `<tr>
+        <td colspan="2" style="text-align:center;color:#999">
+          No unpaid contributions
+        </td>
+      </tr>`;
+    return;
+  }
+
+  const months = {};
+  pending.forEach(r => {
+    if (!months[r.month]) months[r.month] = 0;
+    months[r.month] += Number(r.total);
+  });
+
+  document.getElementById("unpaidList").innerHTML =
+    Object.entries(months).map(([m, amt]) => `
+      <tr onclick="render('${m}')" style="cursor:pointer">
+        <td>${m}</td>
+        <td class="right">${amt.toLocaleString()}</td>
+      </tr>
+    `).join("");
+}
+
+/* RENDER DETAILS */
+function render(month) {
+  const filtered = data.filter(d => d.month === month && d.status === "PENDING");
+  const agencies = [...new Set(filtered.map(d => d.agency))];
+
+  let html = `<h3>${month}</h3>`;
+
+  agencies.forEach(a => {
+    const rows = filtered.filter(r => r.agency === a);
+    let emp = 0, empr = 0, tot = 0;
+
+    html += `
+    <table>
+      <tr class="agency"><td colspan="4">${a}</td></tr>
+      <tr>
+        <th>Employee</th>
+        <th>Employer Share</th>
+        <th>Employee Share</th>
+        <th>Total</th>
+      </tr>`;
+
+    rows.forEach(r => {
+      emp += r.empShare;
+      empr += r.emprShare;
+      tot += r.total;
+
+      html += `
+      <tr>
+        <td>${r.employee}</td>
+        <td class="right">${r.emprShare.toLocaleString()}</td>
+        <td class="right">${r.empShare.toLocaleString()}</td>
+        <td class="right">${r.total.toLocaleString()}</td>
+      </tr>`;
+    });
+
+    html += `
+      <tr class="total">
+        <td>TOTAL</td>
+        <td class="right">${empr.toLocaleString()}</td>
+        <td class="right">${emp.toLocaleString()}</td>
+        <td class="right">${tot.toLocaleString()}</td>
+      </tr>
+    </table>`;
+  });
+
+  document.getElementById("details").innerHTML = html;
+}
+</script>
+</body>
