@@ -1,288 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Projects</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Projects</title>
+  <style>
+    html,body { height:100%; margin:0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+      overflow:auto;
+    }
+    #bgCanvas {
+      position: fixed;
+      left: 0; top: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+    .page { position: relative; z-index: 2; padding: 20px; }
+    h2 { margin: 0 0 12px 0; color:#2c3e50; }
 
-<style>
-html,body { height:100%; margin:0; }
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+    /* Filters */
+    .filters {
+      margin-bottom:12px; display:flex; gap:8px;
+      flex-wrap:wrap; align-items:center;
+    }
+    .filters select, .filters button {
+      padding:6px 10px; border-radius:6px; border:1px solid #ccc;
+      background:#fff; cursor:pointer;
+    }
+    .filters label { font-size:14px; color:#333; display:flex; gap:6px; align-items:center; }
+    #spinner-pc {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px; /* exact centering */
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 2000;
 }
 
-.page { position: relative; padding:20px; z-index:2; }
-h2 { margin-bottom:12px; color:#2c3e50; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* Filters */
-.filters {
-  display:flex; flex-wrap:wrap; gap:8px; align-items:center;
-}
-.filters label { display:flex; gap:6px; align-items:center; font-size:14px; }
-.filters select, .filters button {
-  padding:6px 10px; border-radius:6px;
-  border:1px solid #ccc; background:#fff; cursor:pointer;
-}
-#pcSearchFilter { min-width:260px; max-width:360px; }
-
-/* Spinner */
-#spinner-pc {
-  display:none; position:fixed; top:50%; left:50%;
-  width:48px; height:48px; margin:-24px;
-  border:6px solid #eee; border-top:6px solid #3498db;
-  border-radius:50%; animation:spin 1s linear infinite;
-  z-index:2000;
-}
-@keyframes spin { to { transform:rotate(360deg); } }
-
-/* Table */
-table { width:100%; background:orange;
+    /* Table */
+    table { width:100%; background:orange;
       margin-top:8px; box-shadow:0 6px 18px rgba(0,0,0,0.15);
       border-radius:6px; overflow:hidden;
     }
-thead th {
-  background:#4a4a4a; color:#fff; padding:10px;
-}
-th, td { padding:8px 10px; border-bottom:1px solid #eee; word-wrap:break-word; text-align:left; }
+    thead th {
+      background:#4a4a4a; color:#fff; padding:10px;
+      text-align:center; font-weight:600; border-bottom:2px solid #333;
+    }
+    th, td { padding:8px 10px; border-bottom:1px solid #eee; word-wrap:break-word; text-align:left; }
     #pcTable tbody tr:nth-child(odd) { background: #f9f9f9; }
     #pcTable tbody tr:nth-child(even){ background: #ffffff; }
     #pcTable tbody tr:hover { background: orange; cursor: pointer; transition: background-color 0.25s; }
-#pcTable tbody tr:nth-child(odd){ background:#fff3e0; }
-#pcTable tbody tr:nth-child(even){ background:#ffe0b2; }
-#pcTable tbody tr:hover{ background:#ffb74d; cursor:pointer; }
 
-/* Column widths */
-#pcTable th:nth-child(1),td:nth-child(1){ width:7%; }
-#pcTable th:nth-child(2),td:nth-child(2){ width:18%; }
-#pcTable th:nth-child(3),td:nth-child(3){ width:8%; }
-#pcTable th:nth-child(4),td:nth-child(4){ width:38%; }
-#pcTable th:nth-child(5),td:nth-child(5){ width:9%; }
-#pcTable th:nth-child(6),td:nth-child(6){ width:9%; }
-#pcTable th:nth-child(7),td:nth-child(7){ width:11%; }
+    /* Column widths */
+    #pcTable th:nth-child(1), #pcTable td:nth-child(1) { width: 7%; } /*PROJECT NUMBER*/
+    #pcTable th:nth-child(2), #pcTable td:nth-child(2) { width: 20%; } /*CUSTOMER*/
+    #pcTable th:nth-child(3), #pcTable td:nth-child(3) { width: 8%; } /*REFERENCE*/
+    #pcTable th:nth-child(4), #pcTable td:nth-child(4) { width: 30%; } /*DESCRIPTION*/
+    #pcTable th:nth-child(5), #pcTable td:nth-child(5) { width: 8%; } /*LOCATION*/
+    #pcTable th:nth-child(6), #pcTable td:nth-child(6) { width: 8%; } /*FREQUENCY*/
+    #pcTable th:nth-child(7), #pcTable td:nth-child(7) { width: 7%; } /*STATUS*/
 
-.empty-msg { text-align:center; color:#777; padding:12px; }
+    .empty-msg { color:#777; text-align:center; padding:12px; }
 
-/* Modals */
-.modal {
-  display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,.45); z-index:1001;
+    #pcApplyBtn,
+#pcCostingBtn {
+  display: none !important;
 }
-.modal-content {
-  background:#fff; margin:6% auto;
-  width:90%; max-width:900px; height:80%;
-  border-radius:10px; overflow:hidden;
-  position:relative;
+
+
+    /* Modal (shared) */
+    .modal {
+      display:none; position:fixed; z-index:1001;
+      left:0; top:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.45);
+      backdrop-filter: blur(2px);
+    }
+    .modal-content {
+      background:#fff; margin:6% auto; padding:0; border-radius:10px;
+      max-width:900px; width:90%; height:80%;
+      position:relative; box-shadow:0 16px 48px rgba(0,0,0,0.4);
+      overflow:hidden; display:flex; flex-direction:column;
+    }
+    .modal iframe {
+      width:100%; height:100%; border:none;
+      background:#fff; border-radius:10px;
+    }
+    .close-btn {
+      position:absolute; top:10px; right:15px;
+      font-size:22px; color:#fff; cursor:pointer; z-index:10;
+    }
+
+/* Table row striping */
+#pcTable tbody tr:nth-child(odd) { 
+  background: #fff3e0; /* light orange tint */
 }
-.modal iframe { width:100%; height:100%; border:none; }
-.close-btn {
-  position:absolute; top:10px; right:15px;
-  font-size:22px; color:black; cursor:pointer;
+#pcTable tbody tr:nth-child(even) { 
+  background: #ffe0b2; /* slightly darker orange */
 }
-</style>
+
+/* Hover highlight */
+#pcTable tbody tr:hover { 
+  background: #ffb74d; 
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
+#loadingOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  z-index: 1999;
+}
+
+
+    @media (max-width:640px) {
+      .filters { gap:6px; }
+      #pcTable th, #pcTable td { font-size:13px; padding:6px 8px; }
+    }
+  </style>
 </head>
-
 <body>
 
-<div id="spinner-pc"></div>
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+<div id="loadingOverlay"></div>
 
 <div class="page">
-<h2>📊 Projects</h2>
+  <h2>📊 Projects</h2>
 
-<div class="filters">
-<label>Project / Description:
-<select id="pcSearchFilter"><option value="">All Projects</option></select>
-</label>
+  <div class="filters">
+    <label>Project / Description:
+      <select id="pcSearchFilter"><option value="">All Projects</option></select>
+    </label>
+    <label>Customer:
+      <select id="pcCustomerFilter"><option value="">All Customers</option></select>
+    </label>
+    <label>Year:
+      <select id="pcYearFilter"><option value="">All Years</option></select>
+    </label>
+    <label>Status:
+      <select id="pcStatusFilter">
+        <option value="">All Status</option>
+        <option value="ongoing">Ongoing</option>
+        <option value="done">Done</option>
+      </select>
+    </label>
 
-<label>Customer:
-<select id="pcCustomerFilter"><option value="">All Customers</option></select>
-</label>
+    <button id="pcApplyBtn">Apply</button>
+    <button id="pcAddBtn">+ Add New Project</button>
+    <button id="pcCostingBtn">+ Add Costing</button>
+    <div id="spinner-pc" title="Loading"></div>
+  </div>
 
-<label>Year:
-<select id="pcYearFilter"><option value="">All Years</option></select>
-</label>
-
-<label>Status:
-<select id="pcStatusFilter">
-<option value="">All</option>
-<option value="ongoing">Ongoing</option>
-<option value="done">Done</option>
-</select>
-</label>
-
-<button id="pcAddBtn">+ Add New Project</button>
-<button id="pcCostingBtn" hidden>+ Add Costing</button>
-<button id="pcRefreshBtn">⟳ Refresh</button>
-</div>
-
-<table id="pcTable">
-<thead>
-<tr>
-<th>PROJECT NO</th>
-<th>CUSTOMER</th>
-<th>REFERENCE</th>
-<th>DESCRIPTION</th>
-<th>FREQUENCY</th>
-<th>LOCATION</th>
-<th>STATUS</th>
-</tr>
-</thead>
-<tbody id="pcBody">
-<tr><td colspan="7" class="empty-msg">Loading…</td></tr>
-</tbody>
-</table>
-</div>
-
-<!-- Project Details Modal -->
-<div id="projectDetailsModal" class="modal">
-<div class="modal-content" style="height:auto;max-width:700px;">
-<span class="close-btn" id="closeProjectDetails">&times;</span>
-<div style="padding:20px;">
-<h3 id="pdTitle"></h3>
-<table><tbody id="pdBody"></tbody></table>
-</div>
-</div>
+  <table id="pcTable" role="table" aria-label="Project costing table">
+    <thead>
+      <tr>
+        <th>PROJECT NO</th>
+        <th>CUSTOMER</th>
+        <th>REFERENCE</th>
+        <th>DESCRIPTION</th>
+        <th>LOCATION</th>
+        <th>FREQUENCY</th>
+        <th>STATUS</th>
+      </tr>
+    </thead>
+    <tbody id="pcBody">
+      <tr><td colspan="5" class="empty-msg">Loading...</td></tr>
+    </tbody>
+  </table>
 </div>
 
 <!-- Add Project Modal -->
 <div id="addProjectModal" class="modal">
-<div class="modal-content">
-<span class="close-btn" id="closeAddProjectModal">&times;</span>
-<iframe id="addProjectFrame"></iframe>
-</div>
+  <div class="modal-content">
+    <span class="close-btn" id="closeAddProjectModal" title="Close">&times;</span>
+    <iframe id="addProjectFrame" src=""></iframe>
+  </div>
 </div>
 
-<!-- Costing Modal -->
+<!-- Costing Details Modal -->
 <div id="costingModal" class="modal">
-<div class="modal-content">
-<span class="close-btn" id="closeCostingModal">&times;</span>
-<iframe id="costingFrame"></iframe>
-</div>
+  <div class="modal-content">
+    <span class="close-btn" id="closeCostingModal" title="Close">&times;</span>
+    <iframe id="costingFrame" src=""></iframe>
+  </div>
 </div>
 
 <script>
-const webAppProjectCosting =
-"https://script.google.com/macros/s/AKfycbxulmLTZykrhNBm3U7PymbtvgZtr19F3pIDIRMDopERzHZpbJUYjg2HzAMrwZs3jghrkw/exec";
-
+const webAppProjectCosting = "https://script.google.com/macros/s/AKfycbxulmLTZykrhNBm3U7PymbtvgZtr19F3pIDIRMDopERzHZpbJUYjg2HzAMrwZs3jghrkw/exec";
 let pcRows = [];
 
 const el = {
-spinner:document.getElementById('spinner-pc'),
-pcBody:document.getElementById('pcBody'),
-customerFilter:document.getElementById('pcCustomerFilter'),
-yearFilter:document.getElementById('pcYearFilter'),
-statusFilter:document.getElementById('pcStatusFilter'),
-searchFilter:document.getElementById('pcSearchFilter'),
-refreshBtn:document.getElementById('pcRefreshBtn'),
-addBtn:document.getElementById('pcAddBtn'),
-costingBtn:document.getElementById('pcCostingBtn'),
-addModal:document.getElementById('addProjectModal'),
-costingModal:document.getElementById('costingModal'),
-addFrame:document.getElementById('addProjectFrame'),
-costingFrame:document.getElementById('costingFrame')
+  spinner: document.getElementById('spinner-pc'),
+  pcBody: document.getElementById('pcBody'),
+  customerFilter: document.getElementById('pcCustomerFilter'),
+  yearFilter: document.getElementById('pcYearFilter'),
+  statusFilter: document.getElementById('pcStatusFilter'),
+  searchFilter: document.getElementById('pcSearchFilter'),
+  applyBtn: document.getElementById('pcApplyBtn'),
+  addBtn: document.getElementById('pcAddBtn'),
+  addProjectModal: document.getElementById('addProjectModal'),
+  addProjectFrame: document.getElementById('addProjectFrame'),
+  closeAddProjectModal: document.getElementById('closeAddProjectModal'),
+  costingBtn: document.getElementById('pcCostingBtn'),
+  costingModal: document.getElementById('costingModal'),
+  costingFrame: document.getElementById('costingFrame'),
+  closeCostingModal: document.getElementById('closeCostingModal')
 };
 
-function normalizeData(raw){
-if(Array.isArray(raw[0])){
-const h=raw[0]; raw=raw.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]])));
-}
-return raw.map(r=>({
-PROJECT_NO:r.PROJECT_NO||'',
-CUSTOMER:r.CUSTOMER||'',
-REFERENCE:r.REFERENCE||'',
-REFERENCE_LINK:r.PDF||r.URL||'',
-DESCRIPTION:r.DESCRIPTION||'',
-FREQUENCY:r.FREQUENCY||'',
-LOCATION:r.LOCATION||'',
-STATUS:r.STATUS||'',
-DATE:r.DATE||''
-}));
-}
-
-function renderReference(text,link){
-if(link) return `<a href="${link}" target="_blank" onclick="event.stopPropagation()">${text}</a>`;
-return text;
+/* ---------- normalize Data ---------- */
+function normalizeData(raw) {
+  if (!Array.isArray(raw)) return [];
+  if (Array.isArray(raw[0])) {
+    const header = raw[0].map(h=>String(h||'').trim());
+    raw = raw.slice(1).map(r=>Object.fromEntries(header.map((h,i)=>[h,r[i]])));
+  }
+  return raw.map(r=>({
+    PROJECT_NO: r.PROJECT_NO||r.PROJECTNO||r.PROJECT||'',
+    CUSTOMER: r.CUSTOMER||r.CLIENT||r.CUSTOMER_NAME||'',
+    REFERENCE: r.REFERENCE||r.REF||r.PO||'',
+    DESCRIPTION: r.DESCRIPTION||r.DESC||'',
+    LOCATION: r.LOCATION||r.LOC||'',
+    FREQUENCY: r.FREQUENCY||r.FREQ||'',
+    STATUS: r.STATUS||r.STATE||'',
+    DATE: r.DATE||r.TRANSACTION_DATE||'',
+  }));
 }
 
+/* ---------- Populate Filter Options ---------- */
+function populateFilterOptions(){
+  const customers = new Set();
+  const years = new Set();
+  const projects = new Set();
+
+  pcRows.forEach(r=>{
+    if(r.CUSTOMER) customers.add(r.CUSTOMER);
+    if(r.DATE){ const y=new Date(r.DATE).getFullYear(); if(!isNaN(y)) years.add(String(y)); }
+    if(r.PROJECT_NO){
+      const label = r.DESCRIPTION ? `${r.PROJECT_NO} - ${r.DESCRIPTION}` : r.PROJECT_NO;
+      projects.add(label);
+    }
+  });
+
+  el.customerFilter.innerHTML='<option value="">All Customers</option>';
+  [...customers].sort().forEach(c=>el.customerFilter.appendChild(new Option(c,c)));
+
+  el.yearFilter.innerHTML='<option value="">All Years</option>';
+  [...years].sort((a,b)=>b-a).forEach(y=>el.yearFilter.appendChild(new Option(y,y)));
+
+  el.searchFilter.innerHTML='<option value="">All Projects</option>';
+  [...projects].sort().forEach(p=>el.searchFilter.appendChild(new Option(p,p)));
+}
+
+/* ---------- Render Table ---------- */
 function renderTable(){
-const rows=pcRows.filter(r=>{
-if(el.customerFilter.value && r.CUSTOMER!==el.customerFilter.value) return false;
-if(el.statusFilter.value && r.STATUS!==el.statusFilter.value) return false;
-if(el.yearFilter.value && new Date(r.DATE).getFullYear()!=el.yearFilter.value) return false;
-if(el.searchFilter.value && !r.PROJECT_NO.includes(el.searchFilter.value.split(' - ')[0])) return false;
-return true;
+  const cust=el.customerFilter.value.trim().toLowerCase();
+  const year=el.yearFilter.value.trim();
+  const status=el.statusFilter.value.trim().toLowerCase();
+  const search=el.searchFilter.value.trim().toLowerCase();
+
+  const rows=pcRows.filter(r=>{
+    if(cust && r.CUSTOMER.toLowerCase()!==cust) return false;
+    if(status && r.STATUS.toLowerCase()!==status) return false;
+    if(year){
+      const d=new Date(r.DATE);
+      if(isNaN(d)||String(d.getFullYear())!==year) return false;
+    }
+    if(search){
+      const [projNoPart] = search.split(' - ');
+      if(!r.PROJECT_NO.toLowerCase().includes(projNoPart.toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  if(!rows.length){
+    el.pcBody.innerHTML='<tr><td colspan="5" class="empty-msg">No project costing rows found.</td></tr>';
+    return;
+  }
+
+  el.pcBody.innerHTML='';
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${r.PROJECT_NO||''}</td>
+      <td>${r.CUSTOMER||''}</td>
+      <td>${r.REFERENCE||''}</td>
+      <td>${r.DESCRIPTION||''}</td>
+      <td>${r.FREQUENCY||''}</td>
+      <td>${r.LOCATION||''}</td>
+      <td>${r.STATUS||''}</td>
+    `;
+    el.pcBody.appendChild(tr);
+  });
+}
+
+/* ---------- Event Listeners ---------- */
+el.applyBtn.addEventListener('click',renderTable);
+el.customerFilter.addEventListener('change',renderTable);
+el.yearFilter.addEventListener('change',renderTable);
+el.statusFilter.addEventListener('change',renderTable);
+el.searchFilter.addEventListener('change',renderTable);
+
+/* ---------- Modal: Add Project ---------- */
+el.addBtn.addEventListener('click',()=>{
+  el.addProjectFrame.src = 'Add New Project.html';
+  el.addProjectModal.style.display='block';
+});
+el.closeAddProjectModal.addEventListener('click',()=>{
+  el.addProjectModal.style.display='none';
+  el.addProjectFrame.src='';
+});
+window.addEventListener('click',e=>{
+  if(e.target===el.addProjectModal){
+    el.addProjectModal.style.display='none';
+    el.addProjectFrame.src='';
+  }
 });
 
-el.pcBody.innerHTML='';
-if(!rows.length){
-el.pcBody.innerHTML='<tr><td colspan="7" class="empty-msg">No data</td></tr>';
-return;
-}
-
-rows.forEach(r=>{
-const tr=document.createElement('tr');
-tr.onclick=()=>openDetails(r);
-tr.innerHTML=`
-<td>${r.PROJECT_NO}</td>
-<td>${r.CUSTOMER}</td>
-<td>${renderReference(r.REFERENCE,r.REFERENCE_LINK)}</td>
-<td>${r.DESCRIPTION}</td>
-<td>${r.FREQUENCY}</td>
-<td>${r.LOCATION}</td>
-<td>${r.STATUS}</td>`;
-el.pcBody.appendChild(tr);
+/* ---------- Modal: Costing Details ---------- */
+el.costingBtn.addEventListener('click',()=>{
+  el.costingFrame.src = 'Costing Details.html';
+  el.costingModal.style.display = 'block';
 });
-}
-
-function populateFilters(){
-const cust=new Set(), year=new Set(), proj=new Set();
-pcRows.forEach(r=>{
-cust.add(r.CUSTOMER);
-year.add(new Date(r.DATE).getFullYear());
-proj.add(`${r.PROJECT_NO} - ${r.DESCRIPTION}`);
+el.closeCostingModal.addEventListener('click',()=>{
+  el.costingModal.style.display = 'none';
+  el.costingFrame.src = '';
 });
-el.customerFilter.innerHTML='<option value="">All</option>'+[...cust].map(v=>`<option>${v}</option>`).join('');
-el.yearFilter.innerHTML='<option value="">All</option>'+[...year].sort((a,b)=>b-a).map(v=>`<option>${v}</option>`).join('');
-el.searchFilter.innerHTML='<option value="">All</option>'+[...proj].map(v=>`<option>${v}</option>`).join('');
+window.addEventListener('click',e=>{
+  if(e.target===el.costingModal){
+    el.costingModal.style.display='none';
+    el.costingFrame.src='';
+  }
+});
+
+/* ---------- Load Data ---------- */
+async function loadProjectCosting(){
+  el.spinner.style.display='inline-block';
+  try {
+    const res = await fetch(webAppProjectCosting);
+    const data = await res.json();
+    pcRows = normalizeData(data);
+    populateFilterOptions();
+    renderTable();
+  } catch(e){
+    el.pcBody.innerHTML='<tr><td colspan="5" class="empty-msg">Error loading data.</td></tr>';
+    console.error(e);
+  } finally { el.spinner.style.display='none'; }
 }
 
-async function loadData(){
-el.spinner.style.display='block';
-const res=await fetch(webAppProjectCosting);
-pcRows=normalizeData(await res.json());
-populateFilters();
-renderTable();
-el.spinner.style.display='none';
+function showSpinner(show) {
+  el.spinner.style.display = show ? 'block' : 'none';
+  document.getElementById('loadingOverlay').style.display = show ? 'block' : 'none';
 }
 
-function openDetails(r){
-document.getElementById('pdTitle').textContent=`Project ${r.PROJECT_NO}`;
-document.getElementById('pdBody').innerHTML=`
-<tr><td>Customer</td><td>${r.CUSTOMER}</td></tr>
-<tr><td>Reference</td><td>${renderReference(r.REFERENCE,r.REFERENCE_LINK)}</td></tr>
-<tr><td>Description</td><td>${r.DESCRIPTION}</td></tr>
-<tr><td>Frequency</td><td>${r.FREQUENCY}</td></tr>
-<tr><td>Location</td><td>${r.LOCATION}</td></tr>
-<tr><td>Status</td><td>${r.STATUS}</td></tr>`;
-document.getElementById('projectDetailsModal').style.display='block';
-}
-
-document.getElementById('closeProjectDetails').onclick=()=>projectDetailsModal.style.display='none';
-
-el.refreshBtn.onclick=loadData;
-el.customerFilter.onchange=renderTable;
-el.yearFilter.onchange=renderTable;
-el.statusFilter.onchange=renderTable;
-el.searchFilter.onchange=renderTable;
-
-el.addBtn.onclick=()=>{ el.addFrame.src='Add New Project.html'; el.addModal.style.display='block'; };
-el.costingBtn.onclick=()=>{ el.costingFrame.src='Costing Details.html'; el.costingModal.style.display='block'; };
-
-document.getElementById('closeAddProjectModal').onclick=()=>el.addModal.style.display='none';
-document.getElementById('closeCostingModal').onclick=()=>el.costingModal.style.display='none';
-
-loadData();
+loadProjectCosting();
 </script>
-
 </body>
 </html>
