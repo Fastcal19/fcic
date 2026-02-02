@@ -20,10 +20,6 @@ body {
 h2 {
   text-align:center;
 }
-select {
-  padding:8px;
-  margin-bottom:15px;
-}
 table {
   width:100%;
   border-collapse:collapse;
@@ -49,16 +45,75 @@ th {
 .right {
   text-align:right;
 }
+
+/* ================= PRINT STYLES ================= */
+@media print {
+  body, .container {
+    background: #fff;
+    padding: 0;
+  }
+  .unpaid-section, button {
+    display: none !important;
+  }
+  #printDetails {
+    display: block !important;
+  }
+  table {
+    font-size: 12px;
+  }
+  th {
+    background: #eee !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .agency {
+    background: #ddd !important;
+  }
+  .total {
+    background: #f2f2f2 !important;
+    font-weight: bold;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+  .print-header {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  .print-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  .signatures {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+  .sign-box {
+    width: 30%;
+    text-align: center;
+  }
+  .sign-line {
+    margin-top: 40px;
+    border-top: 1px solid #000;
+  }
+}
+#printDetails {
+  display: none;
+}
 </style>
 </head>
 
 <body>
 <div class="container">
-  <h2>Monthly Contribution</h2>
+  <h2></h2>
 
-  <div style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
-
-    <!-- LEFT PANEL -->
+  <!-- Unpaid section (screen only) -->
+  <div class="unpaid-section" style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
     <div>
       <h4>UNPAID CONTRIBUTIONS</h4>
       <table>
@@ -69,19 +124,22 @@ th {
         <tbody id="unpaidList"></tbody>
       </table>
     </div>
-
-    <!-- RIGHT PANEL -->
     <div id="details">
       <p style="color:red">Click an unpaid month to view details</p>
     </div>
-
   </div>
+
+  <button onclick="window.print()" style="margin-bottom:15px">🖨 Print Selected Contributions</button>
+
+  <!-- Selected unpaid contributions for printing -->
+  <div id="printDetails"></div>
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxAIPmW-Es-gNkUSfVtVotUmldY2SEP5crfRqgy3xOQ1HhVwRMIKz_UyRvJ6ChhCwmKxg/exec";
 
 let data = [];
+let selectedMonth = null;
 
 fetch(API_URL)
   .then(res => res.json())
@@ -90,52 +148,48 @@ fetch(API_URL)
     loadUnpaid();
   });
 
-/* LOAD UNPAID MONTHS (STATUS = Pending) */
+/* Load unpaid contributions (screen only) */
 function loadUnpaid() {
-  const pending = data.filter(d =>
-    d.status !== null &&
-    String(d.status).trim().toLowerCase() === "pending"
-  );
+  const pending = data.filter(d => d.status?.toLowerCase() === "pending");
+  const unpaidList = document.getElementById("unpaidList");
 
-  if (pending.length === 0) {
-    document.getElementById("unpaidList").innerHTML =
-      `<tr>
-        <td colspan="2" style="text-align:center;color:#999">
-          No unpaid contributions
-        </td>
-      </tr>`;
+  if (!pending.length) {
+    unpaidList.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#999">No unpaid contributions</td></tr>`;
     return;
   }
 
   const months = {};
-  pending.forEach(r => {
-    if (!months[r.month]) months[r.month] = 0;
-    months[r.month] += Number(r.total);
-  });
+  pending.forEach(r => months[r.month] = (months[r.month] || 0) + Number(r.total));
 
-  document.getElementById("unpaidList").innerHTML =
-    Object.entries(months).map(([m, amt]) => `
-      <tr onclick="render('${m}')" style="cursor:pointer">
-        <td>${m}</td>
-        <td class="right">${amt.toLocaleString()}</td>
-      </tr>
-    `).join("");
+  unpaidList.innerHTML = Object.entries(months).map(([m, amt]) =>
+    `<tr onclick="selectMonth('${m}')" style="cursor:pointer">
+      <td>${m}</td>
+      <td class="right">${amt.toLocaleString()}</td>
+    </tr>`
+  ).join("");
 }
 
-/* RENDER DETAILS */
-function render(month) {
-  const filtered = data.filter(d => d.month === month && d.status === "PENDING");
+/* When user clicks a month */
+function selectMonth(month) {
+  selectedMonth = month;
+  renderDetails(month);
+  preparePrint(month);
+}
+
+/* Render unpaid details for screen */
+function renderDetails(month) {
+  const filtered = data.filter(d => d.month === month && d.status?.toLowerCase() === "pending");
   const agencies = [...new Set(filtered.map(d => d.agency))];
 
-  let html = `<h3>${month}</h3>`;
+  let html = `<div class="print-meta"><div><strong>Month:</strong> ${month}</div></div>`;
 
-  agencies.forEach(a => {
-    const rows = filtered.filter(r => r.agency === a);
-    let emp = 0, empr = 0, tot = 0;
+  agencies.forEach((agency, idx) => {
+    if (idx > 0) html += `<div class="page-break"></div>`;
+    const rows = filtered.filter(r => r.agency === agency);
+    let empTotal = 0, emprTotal = 0, tot = 0;
 
-    html += `
-    <table>
-      <tr class="agency"><td colspan="4">${a}</td></tr>
+    html += `<table>
+      <tr class="agency"><td colspan="4">${agency}</td></tr>
       <tr>
         <th>Employee</th>
         <th>Employer Share</th>
@@ -144,12 +198,10 @@ function render(month) {
       </tr>`;
 
     rows.forEach(r => {
-      emp += r.empShare;
-      empr += r.emprShare;
+      empTotal += r.empShare;
+      emprTotal += r.emprShare;
       tot += r.total;
-
-      html += `
-      <tr>
+      html += `<tr>
         <td>${r.employee}</td>
         <td class="right">${r.emprShare.toLocaleString()}</td>
         <td class="right">${r.empShare.toLocaleString()}</td>
@@ -157,17 +209,67 @@ function render(month) {
       </tr>`;
     });
 
-    html += `
-      <tr class="total">
-        <td>TOTAL</td>
-        <td class="right">${empr.toLocaleString()}</td>
-        <td class="right">${emp.toLocaleString()}</td>
-        <td class="right">${tot.toLocaleString()}</td>
-      </tr>
-    </table>`;
+    html += `<tr class="total">
+      <td>TOTAL</td>
+      <td class="right">${emprTotal.toLocaleString()}</td>
+      <td class="right">${empTotal.toLocaleString()}</td>
+      <td class="right">${tot.toLocaleString()}</td>
+    </tr></table>`;
   });
 
   document.getElementById("details").innerHTML = html;
 }
+
+/* Prepare selected month for printing (each agency has its own signature) */
+function preparePrint(month) {
+  const filtered = data.filter(d => d.month === month && d.status?.toLowerCase() === "pending");
+  const agencies = [...new Set(filtered.map(d => d.agency))];
+  let html = `<div class="print-header"><h3>Monthly Contribution</h3></div>`;
+  html += `<div class="print-meta"><div><strong>Month:</strong> ${month}</div></div>`;
+
+  agencies.forEach((agency, idx) => {
+    if (idx > 0) html += `<div class="page-break"></div>`;
+    const rows = filtered.filter(r => r.agency === agency);
+    let empTotal = 0, emprTotal = 0, tot = 0;
+
+    html += `<table>
+      <tr class="agency"><td colspan="4">${agency}</td></tr>
+      <tr>
+        <th>Employee</th>
+        <th>Employer Share</th>
+        <th>Employee Share</th>
+        <th>Total</th>
+      </tr>`;
+
+    rows.forEach(r => {
+      empTotal += r.empShare;
+      emprTotal += r.emprShare;
+      tot += r.total;
+      html += `<tr>
+        <td>${r.employee}</td>
+        <td class="right">${r.emprShare.toLocaleString()}</td>
+        <td class="right">${r.empShare.toLocaleString()}</td>
+        <td class="right">${r.total.toLocaleString()}</td>
+      </tr>`;
+    });
+
+    html += `<tr class="total">
+      <td>TOTAL</td>
+      <td class="right">${emprTotal.toLocaleString()}</td>
+      <td class="right">${empTotal.toLocaleString()}</td>
+      <td class="right">${tot.toLocaleString()}</td>
+    </tr></table>`;
+
+    // Add signature lines **per agency**
+    html += `<div class="signatures">
+      <div class="sign-box"><div class="sign-line"></div>Prepared By</div>
+      <div class="sign-box"><div class="sign-line"></div>Checked By</div>
+      <div class="sign-box"><div class="sign-line"></div>Approved By</div>
+    </div>`;
+  });
+
+  document.getElementById("printDetails").innerHTML = html;
+}
 </script>
 </body>
+</html>
