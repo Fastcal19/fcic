@@ -56,6 +56,8 @@
 
 /* ✅ Desktop: slide from left */
 .sidebar.active {
+  left: 0;
+  right: auto;
   transform: translateX(0);
 }
 
@@ -222,7 +224,7 @@
     }
 
     .bottom-nav button:hover {
-      background: white;
+      background: rgba(255,255,255,0.3);
       border-radius: 10px;
     }
 
@@ -284,21 +286,19 @@
         </div>
       </div>
 
-      <a id="btnProjects" onclick="showPage('projects')">Projects</a>
+      <a id="btnProjectCosting" onclick="showPage('projectCosting')">Project Costing</a>
 
       <div id="btnApplications">
-        <a class="expandable" onclick="toggleMenu('applicationsMenu')">Requests</a>
+        <a class="expandable" onclick="toggleMenu('applicationsMenu')">Applications</a>
         <div class="submenu" id="applicationsMenu">
           <a onclick="showPage('aadvances')">Advances</a>
           <a onclick="showPage('aleave')">Leave</a>
           <a onclick="showPage('aovertime')">Overtime</a>
         </div>
       </div>
-
-      <a id="btnLeave" onclick="showPage('aleave')">Employees Leave</a>
       
       <div id="btnRequests">
-        <a class="expandable" onclick="toggleMenu('requestsMenu')">Applications</a>
+        <a class="expandable" onclick="toggleMenu('requestsMenu')">Requests</a>
         <div class="submenu" id="requestsMenu">
           <a onclick="showPage('radvances')">Advances</a>
           <a onclick="showPage('rleave')">Leave</a>
@@ -306,10 +306,8 @@
         </div>
       </div>
 
-      <a id="btnCs" onclick="showPage('cs')">Client & Supplier Profile</a>
-      
       <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
-      <a id="btnPayslip" onclick="showPage('photos')">Photos</a> 
+
       <div id="btnInventory">
         <a class="expandable" onclick="toggleMenu('invMenu')">Inventory</a>
         <div class="submenu" id="invMenu">
@@ -328,12 +326,12 @@
     <iframe id="mainFrame"></iframe>
   </div>
 
-  <footer>© 2026 Fast Cal Industrial Corp — All Rights Reserved</footer>
+  <footer>© 2025 Fast Cal Industrial Corp — All Rights Reserved</footer>
 
   <!-- ✅ MOBILE BOTTOM NAVIGATION -->
   <nav class="bottom-nav" id="bottomNav">
     <button onclick="showPage('dashboard')">🏠<br>Home</button>
-    <button id="leaveButton">🗓️<br>Leave</button>
+    <button id="leaveButton">🌴<br>Leave</button>
     <button onclick="showPage('inventoryGallery')">📦<br>Inventory</button>
     <button onclick="showPage('payslip')">💰<br>Payslip</button>
     <button id="mobileMenuToggle">☰<br>Menu</button>
@@ -356,7 +354,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const fullName = localStorage.getItem("full");
   const photo = localStorage.getItem("photo");
-  const email = localStorage.getItem("email");
   if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
   if(photo) document.getElementById("userPhoto").src = "./" + photo;
 
@@ -376,14 +373,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("logoutLink").addEventListener("click", logout);
 
   const visible = {
-    Admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications","btnCs","btnInventory","btnPortals"],
+    Admin: ["btnDashboard", "btnHR", "btnReports", "btnApplications", "btnPortals"],
     Staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
-    Purchaser: ["btnDashboard", "btnProjects", "btnRequests","btnCs", "btnPayslip", "btnInventory"],
-    HR: ["btnDashboard", "btnHR","btnLeave","btnPortals"],
-    "System Admin": ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnProjects", "btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"]
+    Purchaser: ["btnDashboard", "btnProjectCosting", "btnRequests", "btnPayslip", "btnInventory"],
+    "System Admin": ["btnDashboard", "btnHR", "btnReports", "btnProjectCosting", "btnApplications", "btnRequests", "btnPayslip", "btnInventory", "btnPortals"]
   };
 
-  const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btnProjectCosting","btnApplications","btnRequests","btnCs","btnPayslip","btnInventory","btnPortals"];
+  const allIds = ["btnDashboard","btnHR","btnReports","btnProjectCosting","btnApplications","btnRequests","btnPayslip","btnInventory","btnPortals"];
   allIds.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -397,6 +393,63 @@ const overlay = document.getElementById('overlay');
 const menuToggle = document.getElementById('menuToggle');
 let autoHideTimer, isHoveringSidebar = false;
 
+
+const AUTO_HIDE_DELAY = 3000; // 3 seconds
+
+function startAutoHide() {
+  clearTimeout(autoHideTimer);
+  autoHideTimer = setTimeout(() => {
+    if (!isHoveringSidebar) {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+    }
+  }, AUTO_HIDE_DELAY);
+}
+
+// Detect hover (desktop)
+sidebar.addEventListener('mouseenter', () => {
+  isHoveringSidebar = true;
+  clearTimeout(autoHideTimer);
+});
+
+sidebar.addEventListener('mouseleave', () => {
+  isHoveringSidebar = false;
+  startAutoHide();
+});
+
+// When sidebar opens → start timer
+function openSidebar() {
+  sidebar.classList.add('active');
+  overlay.classList.add('active');
+  startAutoHide();
+}
+
+// Override toggles
+menuToggle.addEventListener('click', () => {
+  if (sidebar.classList.contains('active')) {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+  } else {
+    openSidebar();
+  }
+});
+
+mobileMenuToggle.addEventListener('click', openSidebar);
+
+// Auto-hide after clicking any menu item
+document.querySelectorAll('.sidebar a').forEach(link => {
+  link.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+});
+
+// Overlay click already closes → keep it
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('active');
+  overlay.classList.remove('active');
+});
+
 menuToggle.addEventListener('click', () => {
   sidebar.classList.toggle('active');
   overlay.classList.toggle('active');
@@ -406,6 +459,7 @@ overlay.addEventListener('click', () => {
   sidebar.classList.remove('active');
   overlay.classList.remove('active');
 });
+
 
 function toggleMenu(id) {
   const allSubmenus = document.querySelectorAll(".submenu");
@@ -424,27 +478,26 @@ function showPage(page) {
     employeelist: ["List of Employees", "Employee"],
     attendance: ["Attendance", "Updating.html"],
     payroll: ["Payroll", "Updating.html"],
-    coa: ["Chart of Accounts", "coa.html"],
-    je: ["Journal Entries", "JE.html"],
+    coa: ["Chart of Accounts", "Updating.html"],
+    je: ["Journal Entries", "Updating.html"],
     voucher: ["Vouchers", "Updating.html"],
     salesdata: ["Sales", "Updating.html"],
-    projects: ["Projects", "Projects.html"],
+    projects: ["Projects Report", "Updating.html"],
     salesreport: ["Sales Report", "Sales.html"],
     ar: ["Accounts Receivable", "Accounts Receivable.html"],
     ap: ["Accounts Payable", "AP.html"],
     pc: ["Costing Report", "Updating.html"],
     is: ["Income Statement", "Updating.html"],
-    inventoryGallery: ["Inventory Gallery", "/inventory/"],
-    inventoryList: ["Inventory List", "InventoryList.html"],
+    inventoryGallery: ["Inventory Gallery", "inventory.html"],
+    inventoryList: ["Inventory List", "Inventory List.html"],
+    projectCosting: ["Project Costing", "Updating.html"],
     aleave: ["Leave Application", "aleave.html"],
     aadvances: ["Cash Advance Application", "Updating.html"],
     aovertime: ["Overtime Application", "aOT.html"],
     rleave: ["Leave Request", "rleave.html"],
     radvances: ["Advances Request", "rAdvances.html"],
     rovertime: ["Overtime Request", "rOT.html"],
-    cs: ["Client & Supplier List", "Supplier-Client.html"],
     payslip: ["Pay Slips", "Payslip.html"],
-    photos: ["Photos", "Photos.html"],
     portals: ["Portals", "Portals.html"]
   };
 
@@ -453,7 +506,7 @@ function showPage(page) {
       iframe.src = "Admin Dashboard.html";
       header.textContent = "Fast Cal Industrial Corp";
     } else if (role === "HR") {
-      iframe.src = "dashboard.html";
+      iframe.src = "HR Dashboard.html";
       header.textContent = "Fast Cal Industrial Corp";
     } else {
       iframe.src = "dashboard.html";
@@ -472,80 +525,23 @@ function showPage(page) {
   }
 }
 
+
 // ✅ Adjust Leave button behavior depending on user role
-document.addEventListener("DOMContentLoaded", function () {
-  const leaveBtn = document.getElementById("leaveButton");
-
-  if (leaveBtn) {
-    leaveBtn.addEventListener("click", function () {
-      const role = localStorage.getItem("role") || "";
-
-      // both Admin and System Admin open same leave page
-      if (role === "Admin" || role === "System Admin" || role === "HR") {
-        showPage("aleave");  // Admin Leave Page
-      } else {
-        showPage("rleave");  // Staff Leave Page
-      }
-    });
-  }
-});
-
-// ✅ Replace Payslip with Advances on Mobile for Admins
-document.addEventListener("DOMContentLoaded", function () {
-  const role = localStorage.getItem("role") || "";
-  const isMobile = window.innerWidth <= 768;
-
-  if (isMobile && (role === "Admin" || role === "System Admin")) {
-    const bottomNav = document.getElementById("bottomNav");
-
-    // Find the existing Payslip button
-    const payslipBtn = Array.from(bottomNav.querySelectorAll("button")).find(
-      (btn) => btn.innerHTML.includes("Payslip")
-    );
-
-    if (payslipBtn) {
-      // Replace with Advances button
-      payslipBtn.innerHTML = "💵<br>Advances";
-      payslipBtn.onclick = function () {
-        showPage("aadvances");
-      };
+  document.addEventListener("DOMContentLoaded", function () {
+    const leaveBtn = document.getElementById("leaveButton");
+    
+    if (leaveBtn) {
+      leaveBtn.addEventListener("click", function () {
+        if (window.userRole === "Admin") {
+          // Admin → Leave Request
+          showPage("aleave");
+        } else {
+          // Staff → Leave Application
+          showPage("rleave");
+        }
+      });
     }
-  }
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  const role = localStorage.getItem("role") || "";
-  const isMobile = window.innerWidth <= 768;
-
-  if (isMobile && role === "HR") {
-    const bottomNav = document.getElementById("bottomNav");
-    if (!bottomNav) return;
-
-    // Clear existing buttons
-    bottomNav.innerHTML = "";
-
-    // Rebuild HR mobile navigation
-    bottomNav.innerHTML = `
-      <button onclick="showPage('dashboard')">🏠<br>Home</button>
-      <button id="leaveButton">🗓️<br>Leave</button>
-      <button onclick="showPage('employeelist')">👥<br>Employee</button>
-      <button id="mobileMenuToggle">☰<br>Menu</button>
-    `;
-
-    // Reattach Leave button logic
-    document.getElementById("leaveButton").addEventListener("click", function () {
-      showPage("aleave"); // HR leave page
-    });
-
-    // Reattach Menu toggle
-    document.getElementById("mobileMenuToggle").addEventListener("click", () => {
-      sidebar.classList.toggle("active");
-      overlay.classList.toggle("active");
-    });
-  }
-});
-
-
+  });
 
 function logout() {
   localStorage.clear();
