@@ -322,6 +322,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+
 
 <script>
 const firebaseConfig = {
@@ -588,7 +590,29 @@ db.ref("chatRooms/global/members/"+username).set(true);
 openRoom("global","Global Chat");
 loadGroups();
 
+
 </script>
+  <script>
+const messaging = firebase.messaging();
+
+navigator.serviceWorker.register("/firebase-messaging-sw.js")
+.then(reg => {
+  messaging.useServiceWorker(reg);
+});
+
+Notification.requestPermission().then(permission => {
+  if (permission === "granted") {
+    messaging.getToken({
+      vapidKey: "BO8Rs4BvNSG22wqgGYa6nSbiBMldk9Oz6CXgXNlfF0hvCeb1APjiXmk5lRSqbIAanB77OXDogQ9Jp4_sQBBQq7k"
+    }).then(token => {
+      if (token) {
+        db.ref("userTokens/" + username).set(token);
+      }
+    });
+  }
+});
+</script>
+
 <script>
 /* ========= ADVANCED CHAT FEATURES ========= */
 
