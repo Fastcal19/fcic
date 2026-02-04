@@ -131,50 +131,6 @@
     }
 
     /* CHAT TOGGLE */
-#chatToggle {
-  position: fixed;
-  bottom: 70px;
-  right: 10px;
-  background: #333;
-  color: #fff;
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  font-size: 22px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 6000;
-}
-
-#chatBadge {
-  background: red;
-  color: #fff;
-  font-size: 12px;
-  border-radius: 50%;
-  padding: 2px 6px;
-  position: absolute;
-  top: 8px;
-  right: 6px;
-  display: none;
-}
-
-#chatBox {
-  position: fixed;
-  bottom: 70px;
-  right: 10px;
-  width: 95% ;
-  height: 80%;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-  display: none;
-  flex-direction: column;
-  z-index: 6000;
-  overflow: hidden; /* keep messages inside box */
-}
-
 #chatBody {
   display: flex;
   flex: 1 1 auto;
@@ -655,31 +611,6 @@ fileInput.onchange = async () => {
   await ref.put(file);
   const url = await ref.getDownloadURL();
 
-  db.ref("chatRooms/" + currentRoom + "/messages").push({
-    user: username,
-    photo: localStorage.getItem("photo"),
-    fileType: file.type,
-    fileUrl: url,
-    time: Date.now()
-  });
-
-  fileInput.value = "";
-};
-
-
-  function sendFileMessage(type, url) {
-  const msgData = {
-    user: username,
-    photo: localStorage.getItem("photo"),
-    fileType: type,
-    fileUrl: url,
-    time: Date.now()
-  };
-
-  db.ref("chatRooms/" + currentRoom + "/messages").push(msgData);
-}
-
-
 
 function openRoom(room,title){
   currentRoom=room;
@@ -742,20 +673,22 @@ function sendMessage(){
     text, user: username, time: Date.now()
   });
 
+  // 🔔 notify members
+  db.ref("chatRooms/" + currentRoom + "/members").once("value", snap => {
+    snap.forEach(m => {
+      if (m.key !== username) {
+        db.ref("notify/" + m.key).push({
+          room: currentRoom,
+          text,
+          from: username
+        });
+      }
+    });
+  });
+
   chatText.value = "";
 }
 
-  db.ref("chatRooms/" + currentRoom + "/members").once("value", snap => {
-  snap.forEach(m => {
-    if (m.key !== username) {
-      db.ref("notify/" + m.key).push({
-        room: currentRoom,
-        text: msgData.text || "📎 File",
-        from: username
-      });
-    }
-  });
-});
 
   db.ref("notify/" + username).on("child_added", snap => {
   const n = snap.val();
@@ -863,34 +796,6 @@ openRoom = function(room, title){
   db.ref("seen/" + room + "/" + username).set(Date.now());
 };
 
-/* ===== SEEN / READ RECEIPTS ===== */
-function renderMessage(msg, room){
-  const div=document.createElement("div");
-  div.className="chat-msg";
-  const time=msg.time?new Date(msg.time).toLocaleTimeString():"";
-
-  let seenHtml = "";
-
-  db.ref("seen/" + room).once("value", snap => {
-    let readers = [];
-    snap.forEach(s => {
-      if (s.val() > msg.time) readers.push(s.key);
-    });
-    if (readers.length) {
-      seenHtml = `<div style="font-size:10px;color:#999;">Seen by: ${readers.join(", ")}</div>`;
-      div.innerHTML += seenHtml;
-    }
-  });
-
-  div.innerHTML = `<span class="chat-user">${msg.user}</span> <small>${time}</small>: ${msg.text}`;
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop=chatMessages.scrollHeight;
-
-  if (!chatOpen && msg.user !== username) {
-    db.ref("userUnread/" + username + "/" + room)
-      .transaction(v => (v || 0) + 1);
-  }
-}
 </script>
 
 
@@ -1226,8 +1131,6 @@ mobileMenuToggle.addEventListener('click', () => {
   sidebar.classList.toggle('active');
   overlay.classList.toggle('active');
 });
-  </script>
-  
 
 </script>
 
