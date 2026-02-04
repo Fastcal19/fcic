@@ -361,7 +361,8 @@ const storage = firebase.storage();
   </div>
 
   <div id="chatBody">
-    <div id="chatUsers"></div>
+    <div id="chatUsers"><button onclick="createGroup()">➕ Group</button>
+</div>
     <div id="chatMessages"></div>
   </div>
 
@@ -390,6 +391,18 @@ const chatBadge = document.getElementById("chatBadge");
 
 let unread = 0;
 let chatOpen = false;
+let currentRoom = "global";
+let currentRoomName = "Global Chat";
+let messageRef = null;
+
+function privateRoom(a, b) {
+  return "private_" + [a, b].sort().join("_");
+}
+
+function groupRoom(name) {
+  return "group_" + name.replace(/\s+/g, "_");
+}
+
 
 // 🔔 Toggle
 chatToggle.onclick = () => {
@@ -409,21 +422,32 @@ userRef.set({ name: username, role });
 userRef.onDisconnect().remove();
 
 db.ref("onlineUsers").on("value", snap => {
-  chatUsers.innerHTML = "";
+  chatUsers.innerHTML = "<b>Users</b><hr>";
+
   snap.forEach(u => {
-    chatUsers.innerHTML += `• ${u.val().name}<br>`;
+    const uname = u.val().name;
+    if (uname === username) return;
+
+    const div = document.createElement("div");
+    div.textContent = "👤 " + uname;
+    div.style.cursor = "pointer";
+
+    div.onclick = () => openPrivateChat(uname);
+    chatUsers.appendChild(div);
   });
+
+  chatUsers.innerHTML += "<hr><b>Groups</b>";
+  loadGroups();
 });
 
 // 💬 Receive messages
-db.ref("messages").limitToLast(100).on("child_added", snap => {
-  const msg = snap.val();
+function renderMessage(msg) {
   const div = document.createElement("div");
   div.className = "chat-msg";
 
   if (msg.file) {
     div.innerHTML = `<span class="chat-user">${msg.user}:</span><br>
-    <a href="${msg.file}" target="_blank">📎 Download file</a>`;
+      <a href="${msg.file}" target="_blank">📎 Download file</a>`;
   } else {
     div.innerHTML = `<span class="chat-user">${msg.user}:</span> ${msg.text}`;
   }
@@ -432,30 +456,10 @@ db.ref("messages").limitToLast(100).on("child_added", snap => {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 
   if (!chatOpen && msg.user !== username) {
-    unread++;
-    chatBadge.textContent = unread;
-    chatBadge.style.display = "block";
+    notifyUnread(currentRoom);
   }
-});
-
-// ✉️ Send text
-sendChat.onclick = () => sendMessage();
-chatText.addEventListener("keypress", e => {
-  if (e.key === "Enter") sendMessage();
-});
-
-function sendMessage() {
-  if (!chatText.value.trim()) return;
-
-  db.ref("messages").push({
-    user: username,
-    role,
-    text: chatText.value,
-    time: Date.now()
-  });
-
-  chatText.value = "";
 }
+
 
 // 📎 File upload
 attachBtn.onclick = () => fileInput.click();
@@ -468,7 +472,7 @@ fileInput.onchange = () => {
   ref.put(file).then(snapshot =>
     snapshot.ref.getDownloadURL()
   ).then(url => {
-    db.ref("messages").push({
+    db.ref("chatRooms/" + currentRoom + "/messages").push({
       user: username,
       role,
       file: url,
@@ -478,6 +482,79 @@ fileInput.onchange = () => {
 
   fileInput.value = "";
 };
+
+function openPrivateChat(otherUser) {
+  openRoom(
+    privateRoom(username, otherUser),
+    "Chat with " + otherUser
+  );
+}
+
+function openRoom(room, title) {
+  currentRoom = room;
+  currentRoomName = title;
+  chatMessages.innerHTML = "";
+  clearUnread(room);
+
+  if (messageRef) messageRef.off();
+
+  messageRef = db
+    .ref("chatRooms/" + room + "/messages")
+    .limitToLast(100);
+
+  messageRef.on("child_added", snap => {
+    const msg = snap.val();
+    renderMessage(msg);
+  });
+}
+
+function notifyUnread(room) {
+  db.ref("userUnread/" + username + "/" + room)
+    .transaction(v => (v || 0) + 1);
+}
+
+function clearUnread(room) {
+  db.ref("userUnread/" + username + "/" + room).remove();
+}
+
+db.ref("userUnread/" + username).on("value", snap => {
+  let total = 0;
+  snap.forEach(r => total += r.val());
+
+  if (total > 0) {
+    chatBadge.textContent = total;
+    chatBadge.style.display = "block";
+  } else {
+    chatBadge.style.display = "none";
+  }
+});
+
+function createGroup() {
+  const name = prompt("Group name:");
+  if (!name) return;
+
+  const room = groupRoom(name);
+  db.ref("chatRooms/" + room + "/members/" + username).set(true);
+  openRoom(room, name);
+}
+
+function loadGroups() {
+  db.ref("chatRooms").once("value", snap => {
+    snap.forEach(r => {
+      if (
+        r.key.startsWith("group_") &&
+        r.child("members/" + username).exists()
+      ) {
+        const div = document.createElement("div");
+        div.textContent = "👥 " + r.key.replace("group_", "");
+        div.onclick = () =>
+          openRoom(r.key, div.textContent);
+        chatUsers.appendChild(div);
+      }
+    });
+  });
+}
+
 </script>
 
 <body>
