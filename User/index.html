@@ -473,13 +473,15 @@ function renderMessage(msg) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 
   if (!chatOpen && msg.user !== username) {
-  notifyUnread(currentRoom);
+    notifyUnread(currentRoom);
 
-  showDesktopNotification(
-    currentRoomName,
-    msg.user + ": " + (msg.text || "📎 File sent")
-  );
-}
+    showDesktopNotification(
+      currentRoomName,
+      msg.user + ": " + (msg.text || "📎 File sent")
+    );
+  }
+}  // ✅ THIS WAS MISSING
+
 
 // 💬 Send text message
 sendChat.onclick = sendMessage;
@@ -525,11 +527,17 @@ fileInput.onchange = () => {
 };
 
 function openPrivateChat(otherUser) {
-  openRoom(
-    privateRoom(username, otherUser),
-    "Chat with " + otherUser
-  );
+  const room = privateRoom(username, otherUser);
+
+  // Ensure both users are members
+  const updates = {};
+  updates["chatRooms/" + room + "/members/" + username] = true;
+  updates["chatRooms/" + room + "/members/" + otherUser] = true;
+  db.ref().update(updates);
+
+  openRoom(room, "Chat with " + otherUser);
 }
+
 
 function openRoom(room, title) {
   currentRoom = room;
@@ -579,12 +587,15 @@ function createGroup() {
   const members = prompt(
     "Add members (comma separated usernames):\nExample: Juan,Maria,Pedro"
   );
-  if (!members) return;
 
   const room = groupRoom(name);
-  const memberList = members.split(",").map(m => m.trim());
+  const memberList = members
+    ? members.split(",").map(m => m.trim()).filter(m => m)
+    : [];
 
   const updates = {};
+
+  // Always include creator
   updates["chatRooms/" + room + "/members/" + username] = true;
 
   memberList.forEach(m => {
@@ -592,25 +603,46 @@ function createGroup() {
   });
 
   db.ref().update(updates);
+
   openRoom(room, name);
 }
 
+
+
 function loadGroups() {
-  db.ref("chatRooms").once("value", snap => {
+  db.ref("chatRooms").on("value", snap => {
+    // Remove old dynamic rooms
+    const old = chatUsers.querySelectorAll(".room-item");
+    old.forEach(e => e.remove());
+
     snap.forEach(r => {
-      if (
-        r.key.startsWith("group_") &&
-        r.child("members/" + username).exists()
-      ) {
+      // Only show rooms where user is a member
+      if (r.child("members/" + username).exists()) {
+        let label = r.key;
+
+        if (r.key.startsWith("group_")) {
+          label = "👥 " + r.key.replace("group_", "");
+        } else if (r.key.startsWith("private_")) {
+          label = "🔒 " + r.key.replace("private_", "")
+            .replace(username + "_", "")
+            .replace("_" + username, "");
+        } else {
+          return; // skip global here
+        }
+
         const div = document.createElement("div");
-        div.textContent = "👥 " + r.key.replace("group_", "");
+        div.className = "room-item";
+        div.textContent = label;
         div.style.cursor = "pointer";
-        div.onclick = () => openRoom(r.key, div.textContent);
+        div.onclick = () => openRoom(r.key, label);
+
         chatUsers.appendChild(div);
       }
     });
   });
 }
+
+
 // 🔵 Open Global Chat on load
 openRoom("global", "Global Chat");
 
