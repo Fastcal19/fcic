@@ -195,8 +195,56 @@
   overflow-y: auto;
 }
 
+/* ===== Messenger Style Chat ===== */
 .chat-msg {
-  margin-bottom: 6px;
+  display: flex;
+  margin: 6px 10px;
+  max-width: 80%;
+}
+
+.chat-msg.me {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.chat-bubble {
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.chat-msg.me .chat-bubble {
+  background: #0084ff;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-msg.other .chat-bubble {
+  background: #f0f0f0;
+  color: #000;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-time {
+  font-size: 10px;
+  color: #999;
+  margin-top: 4px;
+}
+
+#chatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  font-weight: bold;
+}
+
+#chatTitle {
+  font-size: 15px;
 }
 
 .chat-user {
@@ -205,24 +253,39 @@
 
 #chatInput {
   display: flex;
-  border-top: 1px solid #ccc;
+  align-items: center;
+  padding: 6px;
+  border-top: 1px solid #ddd;
+  background: #fff;
 }
 
 #chatInput input[type="text"] {
   flex: 1;
   border: none;
-  padding: 8px;
+  padding: 10px;
+  border-radius: 20px;
+  background: #f1f1f1;
+  margin: 0 6px;
+  outline: none;
 }
 
 #chatInput button {
-  background: #333;
-  color: #fff;
+  background: none;
   border: none;
-  padding: 0 12px;
+  font-size: 18px;
   cursor: pointer;
 }
 
+#chatMessages {
+  scroll-behavior: smooth;
+}
 
+#typingIndicator {
+  font-style: italic;
+  padding-left: 12px;
+}
+
+    
     @media (min-width: 769px) {
       .sidebar.active ~ .main { margin-left: 220px; }
     }
@@ -345,7 +408,7 @@ const storage = firebase.storage();
 
 <div id="chatBox">
   <div id="chatHeader">
-  <span id="chatTitle">FCIC Chat</span>
+  <span id="chatTitle">💬 FCIC Chat</span>
   <span>
     <button id="addMemberBtn">➕</button>
     <button id="makeAdminBtn">⭐</button>
@@ -507,21 +570,34 @@ leaveGroupBtn.onclick = () => {
 };
 
 /* ===== MESSAGES ===== */
-function renderMessage(msg, room){
-  const div=document.createElement("div");
-  div.className="chat-msg";
-  const time=msg.time?new Date(msg.time).toLocaleTimeString():"";
+function renderMessage(msg, room) {
+  const div = document.createElement("div");
+  const isMe = msg.user === username;
 
-  div.innerHTML = `<span class="chat-user">${msg.user}</span> <small>${time}</small>: ${msg.text}`;
+  div.className = "chat-msg " + (isMe ? "me" : "other");
+
+  const bubble = document.createElement("div");
+  bubble.className = "chat-bubble";
+  bubble.textContent = msg.text;
+
+  const time = document.createElement("div");
+  time.className = "chat-time";
+  time.textContent = msg.time
+    ? new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : "";
+
+  bubble.appendChild(time);
+  div.appendChild(bubble);
   chatMessages.appendChild(div);
-  chatMessages.scrollTop=chatMessages.scrollHeight;
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 
-  // Correct unread per room
-  if (!chatOpen && msg.user !== username) {
+  // unread logic
+  if (!chatOpen && !isMe) {
     db.ref("userUnread/" + username + "/" + room)
       .transaction(v => (v || 0) + 1);
   }
 }
+
 
 function openRoom(room,title){
   currentRoom=room;
