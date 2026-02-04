@@ -155,6 +155,99 @@
       height: calc(100vh - 80px);
     }
 
+    /* CHAT TOGGLE */
+#chatToggle {
+  position: fixed;
+  bottom: 70px;
+  right: 10px;
+  background: #333;
+  color: #fff;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6000;
+}
+
+#chatBadge {
+  background: red;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 50%;
+  padding: 2px 6px;
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  display: none;
+}
+
+#chatBox {
+  position: fixed;
+  bottom: 70px;
+  right: 10px;
+  width: 440px;
+  height: 520px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+  display: none;
+  flex-direction: column;
+  z-index: 6000;
+  overflow: hidden; /* keep messages inside box */
+}
+
+#chatBody {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0; /* important for flex scrolling */
+}
+
+#chatUsers {
+  width: 90px;
+  background: #f4f4f4;
+  font-size: 12px;
+  padding: 6px;
+  overflow-y: auto;
+  border-right: 1px solid #ccc;
+}
+
+#chatMessages {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.chat-msg {
+  margin-bottom: 6px;
+}
+
+.chat-user {
+  color: orangered;
+}
+
+#chatInput {
+  display: flex;
+  border-top: 1px solid #ccc;
+}
+
+#chatInput input[type="text"] {
+  flex: 1;
+  border: none;
+  padding: 8px;
+}
+
+#chatInput button {
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+
     @media (min-width: 769px) {
       .sidebar.active ~ .main { margin-left: 220px; }
     }
@@ -234,6 +327,159 @@
     }
   </style>
 </head>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAnulgPqKSI8Y_mMOTCof6joYscT4FLCXg",
+  authDomain: "fcic-7f3c1.firebaseapp.com",
+  projectId: "fcic-7f3c1",
+  storageBucket: "fcic-7f3c1.appspot.com",
+
+  messagingSenderId: "91128961829",
+  appId: "1:91128961829:web:815baae23a9b5eb3cbd8cc",
+  measurementId: "G-SQPEFEDSR6"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+const storage = firebase.storage();
+</script>
+
+<!-- CHAT BUTTON -->
+<div id="chatToggle">
+  💬 <span id="chatBadge">0</span>
+</div>
+
+<div id="chatBox">
+  <div id="chatHeader">
+    FCIC Chat
+    <span id="chatClose">✖</span>
+  </div>
+
+  <div id="chatBody">
+    <div id="chatUsers"></div>
+    <div id="chatMessages"></div>
+  </div>
+
+  <div id="chatInput">
+    <input type="file" id="fileInput" hidden />
+    <button id="attachBtn">📎</button>
+    <input type="text" id="chatText" placeholder="Type message..." />
+    <button id="sendChat">➤</button>
+  </div>
+</div>
+
+<script>
+const username = localStorage.getItem("full") || "User";
+const role = localStorage.getItem("role") || "Staff";
+
+const chatToggle = document.getElementById("chatToggle");
+const chatBox = document.getElementById("chatBox");
+const chatClose = document.getElementById("chatClose");
+const chatMessages = document.getElementById("chatMessages");
+const chatUsers = document.getElementById("chatUsers");
+const chatText = document.getElementById("chatText");
+const sendChat = document.getElementById("sendChat");
+const attachBtn = document.getElementById("attachBtn");
+const fileInput = document.getElementById("fileInput");
+const chatBadge = document.getElementById("chatBadge");
+
+let unread = 0;
+let chatOpen = false;
+
+// 🔔 Toggle
+chatToggle.onclick = () => {
+  chatBox.style.display = "flex";
+  chatOpen = true;
+  unread = 0;
+  chatBadge.style.display = "none";
+};
+chatClose.onclick = () => {
+  chatBox.style.display = "none";
+  chatOpen = false;
+};
+
+// 👥 Online users
+const userRef = db.ref("onlineUsers/" + username);
+userRef.set({ name: username, role });
+userRef.onDisconnect().remove();
+
+db.ref("onlineUsers").on("value", snap => {
+  chatUsers.innerHTML = "";
+  snap.forEach(u => {
+    chatUsers.innerHTML += `• ${u.val().name}<br>`;
+  });
+});
+
+// 💬 Receive messages
+db.ref("messages").limitToLast(100).on("child_added", snap => {
+  const msg = snap.val();
+  const div = document.createElement("div");
+  div.className = "chat-msg";
+
+  if (msg.file) {
+    div.innerHTML = `<span class="chat-user">${msg.user}:</span><br>
+    <a href="${msg.file}" target="_blank">📎 Download file</a>`;
+  } else {
+    div.innerHTML = `<span class="chat-user">${msg.user}:</span> ${msg.text}`;
+  }
+
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  if (!chatOpen && msg.user !== username) {
+    unread++;
+    chatBadge.textContent = unread;
+    chatBadge.style.display = "block";
+  }
+});
+
+// ✉️ Send text
+sendChat.onclick = () => sendMessage();
+chatText.addEventListener("keypress", e => {
+  if (e.key === "Enter") sendMessage();
+});
+
+function sendMessage() {
+  if (!chatText.value.trim()) return;
+
+  db.ref("messages").push({
+    user: username,
+    role,
+    text: chatText.value,
+    time: Date.now()
+  });
+
+  chatText.value = "";
+}
+
+// 📎 File upload
+attachBtn.onclick = () => fileInput.click();
+
+fileInput.onchange = () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const ref = storage.ref("chatFiles/" + Date.now() + "_" + file.name);
+  ref.put(file).then(snapshot =>
+    snapshot.ref.getDownloadURL()
+  ).then(url => {
+    db.ref("messages").push({
+      user: username,
+      role,
+      file: url,
+      time: Date.now()
+    });
+  });
+
+  fileInput.value = "";
+};
+</script>
+
 <body>
   <header id="pageHeader">Fast Cal Industrial Corp</header>
 
@@ -559,5 +805,9 @@ mobileMenuToggle.addEventListener('click', () => {
   overlay.classList.toggle('active');
 });
   </script>
+  
+
+</script>
+
 </body>
 </html>
