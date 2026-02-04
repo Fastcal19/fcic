@@ -285,6 +285,28 @@
   padding-left: 12px;
 }
 
+.chat-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin: 6px 10px;
+}
+
+.chat-msg.me {
+  flex-direction: row-reverse;
+}
+
+.chat-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chat-bubble {
+  max-width: 70%;
+}
+
     
     @media (min-width: 769px) {
       .sidebar.active ~ .main { margin-left: 220px; }
@@ -573,20 +595,17 @@ leaveGroupBtn.onclick = () => {
 function renderMessage(msg, room) {
   const div = document.createElement("div");
   const isMe = msg.user === username;
-
   div.className = "chat-msg " + (isMe ? "me" : "other");
+
+  const avatar = document.createElement("img");
+  avatar.className = "chat-avatar";
+  avatar.src = msg.photo || "default-avatar.png";
 
   const bubble = document.createElement("div");
   bubble.className = "chat-bubble";
-  bubble.textContent = msg.text;
+  bubble.innerHTML = msg.text;
 
-  const time = document.createElement("div");
-  time.className = "chat-time";
-  time.textContent = msg.time
-    ? new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : "";
-
-  bubble.appendChild(time);
+  div.appendChild(avatar);
   div.appendChild(bubble);
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -595,9 +614,55 @@ function renderMessage(msg, room) {
   if (!chatOpen && !isMe) {
     db.ref("userUnread/" + username + "/" + room)
       .transaction(v => (v || 0) + 1);
+  if (msg.fileUrl) {
+  if (msg.fileType.startsWith("image")) {
+    bubble.innerHTML = `<img src="${msg.fileUrl}" style="max-width:200px;border-radius:12px;">`;
+  } else {
+    bubble.innerHTML = `<a href="${msg.fileUrl}" target="_blank">📎 Download file</a>`;
+  }
+} else {
+  bubble.textContent = msg.text;
+}
   }
 }
 
+  attachBtn.onclick = () => fileInput.click();
+
+fileInput.onchange = async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const ref = storage.ref(`chat/${currentRoom}/${Date.now()}_${file.name}`);
+  await ref.put(file);
+  const url = await ref.getDownloadURL();
+
+  sendFileMessage(file.type, url);
+};
+
+  function sendFileMessage(type, url) {
+  const msgData = {
+    user: username,
+    photo: localStorage.getItem("photo"),
+    fileType: type,
+    fileUrl: url,
+    time: Date.now()
+  };
+
+  db.ref("chatRooms/" + currentRoom + "/messages").push(msgData);
+}
+
+
+  bubble.onclick = () => {
+  const emoji = prompt("React with emoji ❤️ 😂 👍");
+  if (!emoji) return;
+
+  db.ref(`chatRooms/${room}/messages/${msg._id}/reactions/${username}`)
+    .set(emoji);
+};
+if (msg.reactions) {
+  const reactions = Object.values(msg.reactions).join(" ");
+  bubble.innerHTML += `<div style="font-size:12px">${reactions}</div>`;
+}
 
 function openRoom(room,title){
   currentRoom=room;
@@ -660,6 +725,27 @@ function sendMessage(){
 
   chatText.value = "";
 }
+
+  db.ref("chatRooms/" + currentRoom + "/members").once("value", snap => {
+  snap.forEach(m => {
+    if (m.key !== username) {
+      db.ref("notify/" + m.key).push({
+        room: currentRoom,
+        text: msgData.text || "📎 File",
+        from: username
+      });
+    }
+  });
+});
+
+  db.ref("notify/" + username).on("child_added", snap => {
+  const n = snap.val();
+  showDesktopNotification(
+    n.from,
+    `New message in ${n.room}`
+  );
+  snap.ref.remove();
+});
 
 /* ===== INIT ===== */
 db.ref("chatRooms/global/members/"+username).set(true);
