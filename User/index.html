@@ -365,59 +365,55 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
-
 <script>
-const firebaseConfig = {
+firebase.initializeApp({
   apiKey: "AIzaSyAnulgPqKSI8Y_mMOTCof6joYscT4FLCXg",
   authDomain: "fcic-7f3c1.firebaseapp.com",
   projectId: "fcic-7f3c1",
   storageBucket: "fcic-7f3c1.appspot.com",
   messagingSenderId: "91128961829",
   appId: "1:91128961829:web:815baae23a9b5eb3cbd8cc"
-};
+});
 
-firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const storage = firebase.storage();
 </script>
 
-<!-- CHAT BUTTON -->
+<!-- CHAT UI -->
 <div id="chatToggle">💬 <span id="chatBadge">0</span></div>
 
 <div id="chatBox">
   <div id="chatHeader">
-  <span id="chatTitle">💬 FCIC Chat</span>
-  <span>
-    <button id="addMemberBtn">➕</button>
-    <button id="makeAdminBtn">⭐</button>
-    <button id="deleteGroupBtn">🗑️</button>
-    <button id="leaveGroupBtn">🚪</button>
-    <span id="chatClose">✖</span>
-  </span>
-</div>
-
+    <span id="chatTitle">💬 FCIC Chat</span>
+    <span>
+      <button id="addMemberBtn">➕</button>
+      <button id="makeAdminBtn">⭐</button>
+      <button id="deleteGroupBtn">🗑️</button>
+      <button id="leaveGroupBtn">🚪</button>
+      <span id="chatClose">✖</span>
+    </span>
+  </div>
 
   <div id="chatBody">
     <div id="chatUsers">
       <button onclick="createGroup()">➕ Group</button>
-      <hr>
-      <b>Users</b>
-      <hr>
-      <b>Rooms</b>
+      <hr><b>Users</b><hr><b>Rooms</b>
     </div>
     <div id="chatMessages"></div>
   </div>
-  <div id="typingIndicator" style="font-size:12px;padding:4px;color:#666;"></div>
+
+  <div id="typingIndicator"></div>
+
   <div id="chatInput">
-    <input type="file" id="fileInput" hidden />
+    <input type="file" id="fileInput" hidden>
     <button id="attachBtn">📎</button>
-    <input type="text" id="chatText" placeholder="Type message..." />
+    <input type="text" id="chatText" placeholder="Type message...">
     <button id="sendChat">➤</button>
   </div>
 </div>
 
 <script>
-/* ===== CHAT SYSTEM (FULLY FIXED) ===== */
+/* ================= CHAT SYSTEM (FIXED) ================= */
 
 const username = localStorage.getItem("username") || "User";
 const role = localStorage.getItem("role") || "Staff";
@@ -432,160 +428,59 @@ const sendChat = document.getElementById("sendChat");
 const chatBadge = document.getElementById("chatBadge");
 const attachBtn = document.getElementById("attachBtn");
 const fileInput = document.getElementById("fileInput");
-
+const chatTitle = document.getElementById("chatTitle");
 
 let unread = 0;
 let chatOpen = false;
 let currentRoom = "global";
-let currentRoomName = "Global Chat";
 let messageRef = null;
 
-function privateRoom(a,b){ return "private_" + [a,b].sort().join("_");}
-function groupRoom(name){ return "group_" + name.replace(/\s+/g,"_");}
+function privateRoom(a,b){ return "private_" + [a,b].sort().join("_"); }
+function groupRoom(n){ return "group_" + n.replace(/\s+/g,"_"); }
 
-// Toggle
-chatToggle.onclick = ()=>{
+/* TOGGLE */
+chatToggle.onclick = () => {
   chatBox.style.display="flex";
   chatOpen=true;
   unread=0;
   chatBadge.style.display="none";
 };
-chatClose.onclick = ()=>{
+chatClose.onclick = () => {
   chatBox.style.display="none";
   chatOpen=false;
 };
 
-// Presence
-const userRef = db.ref("onlineUsers/" + username);
-userRef.set({ name: username, role });
+/* PRESENCE */
+const userRef = db.ref("onlineUsers/"+username);
+userRef.set({name:username,role});
 userRef.onDisconnect().remove();
 
-/* ===== USERS LIST ===== */
-db.ref("onlineUsers").on("value", snap => {
-  const oldUsers = chatUsers.querySelectorAll(".user-item");
-  oldUsers.forEach(e=>e.remove());
-
-  snap.forEach(u=>{
-    const uname = u.val().name;
-    if(uname===username) return;
-
-    const div = document.createElement("div");
-    div.className="user-item";
-    div.textContent="👤 " + uname;
-    div.onclick=()=>openPrivateChat(uname);
-    chatUsers.appendChild(div);
-  });
-});
-
-/* ===== ROOMS LIST + LAST MESSAGE + UNREAD ===== */
-function loadGroups(){
-  db.ref("chatRooms").on("value", snap=>{
-    const old = chatUsers.querySelectorAll(".room-item");
-    old.forEach(e=>e.remove());
-
-    snap.forEach(r=>{
-      if(!r.child("members/"+username).exists()) return;
-
-      let label="";
-      if(r.key.startsWith("group_")){
-        label="👥 " + r.key.replace("group_","");
-      } else if(r.key.startsWith("private_")){
-        label="🔒 " + r.key.replace("private_","")
-          .replace(username+"_","")
-          .replace("_"+username,"");
-      } else return;
-
-      const div=document.createElement("div");
-      div.className="room-item";
-
-      const last = r.child("lastMessage").val();
-      const preview = last ? ` — ${last.user}: ${last.text.substring(0,20)}` : "";
-
-      div.textContent = label + preview;
-      div.onclick=()=>openRoom(r.key,label);
-      chatUsers.appendChild(div);
-
-      // Unread per room
-      db.ref("userUnread/" + username + "/" + r.key)
-        .on("value", s => {
-          if (s.exists()) {
-            div.textContent = label + preview + " (" + s.val() + ")";
-          } else {
-            div.textContent = label + preview;
-          }
-        });
-    });
-  });
-}
-
-/* ===== GROUP ADMIN ===== */
-function isGroupAdmin(room, cb) {
-  db.ref("chatRooms/" + room + "/admins/" + username)
-    .once("value", snap => cb(snap.exists()));
-}
-
-addMemberBtn.onclick = () => {
-  if (!currentRoom.startsWith("group_")) return;
-
-  isGroupAdmin(currentRoom, isAdmin => {
-    if (!isAdmin) return alert("Only group admins can add members.");
-
-    const newUser = prompt("Enter username to add:");
-    if (!newUser) return;
-
-    db.ref("chatRooms/" + currentRoom + "/members/" + newUser).set(true);
-    alert(newUser + " added to group.");
-  });
-};
-
-leaveGroupBtn.onclick = () => {
-  if (!currentRoom.startsWith("group_")) return;
-  if (!confirm("Leave this group?")) return;
-
-  const updates = {};
-  updates["chatRooms/" + currentRoom + "/members/" + username] = null;
-  updates["chatRooms/" + currentRoom + "/admins/" + username] = null;
-  db.ref().update(updates);
-
-  openRoom("global", "Global Chat");
-};
-
-/* ===== MESSAGES ===== */
-function renderMessage(msg, room, msgId) {
+/* RENDER MESSAGE */
+function renderMessage(msg, room, msgId){
   const isMe = msg.user === username;
-
   const wrap = document.createElement("div");
-  wrap.className = "chat-msg " + (isMe ? "me" : "other");
+  wrap.className = "chat-msg " + (isMe ? "me":"other");
 
   const avatar = document.createElement("img");
-  avatar.className = "chat-avatar";
-  avatar.src = msg.photo || "default-avatar.png";
+  avatar.className="chat-avatar";
+  avatar.src = msg.photo || "fcic logo.png";
 
   const bubble = document.createElement("div");
-  bubble.className = "chat-bubble";
+  bubble.className="chat-bubble";
 
-  // TEXT / FILE
-  if (msg.fileUrl) {
-    if (msg.fileType.startsWith("image")) {
-      bubble.innerHTML = `<img src="${msg.fileUrl}" style="max-width:220px;border-radius:12px">`;
-    } else {
-      bubble.innerHTML = `<a href="${msg.fileUrl}" target="_blank">📎 Download file</a>`;
-    }
-  } else {
-    bubble.textContent = msg.text;
+  if(msg.fileUrl){
+    bubble.innerHTML = msg.fileType.startsWith("image")
+      ? `<img src="${msg.fileUrl}" style="max-width:220px;border-radius:12px">`
+      : `<a href="${msg.fileUrl}" target="_blank">📎 Download file</a>`;
+  } else bubble.textContent = msg.text;
+
+  if(msg.reactions){
+    bubble.innerHTML += `<div>${Object.values(msg.reactions).join(" ")}</div>`;
   }
 
-  // REACTIONS
-  if (msg.reactions) {
-    const r = Object.values(msg.reactions).join(" ");
-    bubble.innerHTML += `<div style="font-size:12px;margin-top:4px">${r}</div>`;
-  }
-
-  // ADD REACTION
-  bubble.onclick = () => {
-    const emoji = prompt("React with ❤️ 😂 👍");
-    if (!emoji) return;
-    db.ref(`chatRooms/${room}/messages/${msgId}/reactions/${username}`).set(emoji);
+  bubble.onclick = ()=>{
+    const e = prompt("React ❤️ 😂 👍");
+    if(e) db.ref(`chatRooms/${room}/messages/${msgId}/reactions/${username}`).set(e);
   };
 
   wrap.appendChild(avatar);
@@ -593,209 +488,77 @@ function renderMessage(msg, room, msgId) {
   chatMessages.appendChild(wrap);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 
-  // UNREAD
-  if (!chatOpen && !isMe) {
-    db.ref("userUnread/" + username + "/" + room)
-      .transaction(v => (v || 0) + 1);
+  if(!chatOpen && !isMe){
+    db.ref("userUnread/"+username+"/"+room).transaction(v=>(v||0)+1);
   }
 }
 
-
-  attachBtn.onclick = () => fileInput.click();
-
-fileInput.onchange = async () => {
+/* FILE UPLOAD — FIXED & CLOSED */
+attachBtn.onclick = ()=>fileInput.click();
+fileInput.onchange = async ()=>{
   const file = fileInput.files[0];
-  if (!file) return;
+  if(!file) return;
 
   const ref = storage.ref(`chat/${currentRoom}/${Date.now()}_${file.name}`);
   await ref.put(file);
   const url = await ref.getDownloadURL();
 
+  db.ref("chatRooms/"+currentRoom+"/messages").push({
+    user:username,
+    role,
+    fileType:file.type,
+    fileUrl:url,
+    time:Date.now()
+  });
 
+  fileInput.value="";
+};
+
+/* OPEN ROOM */
 function openRoom(room,title){
   currentRoom=room;
-  currentRoomName=title;
   chatTitle.textContent=title;
   chatMessages.innerHTML="";
-
-  // Reset unread for this room
-  db.ref("userUnread/" + username + "/" + room).remove();
+  db.ref("userUnread/"+username+"/"+room).remove();
 
   if(messageRef) messageRef.off();
-
-  messageRef=db.ref("chatRooms/"+room+"/messages").limitToLast(100);
- messageRef.on("child_added", snap => {
-  renderMessage(snap.val(), currentRoom, snap.key);
-});
-
-
-function openPrivateChat(otherUser){
-  const room=privateRoom(username,otherUser);
-  const updates={};
-  updates["chatRooms/"+room+"/members/"+username]=true;
-  updates["chatRooms/"+room+"/members/"+otherUser]=true;
-  db.ref().update(updates);
-  openRoom(room,"Chat with "+otherUser);
+  messageRef = db.ref("chatRooms/"+room+"/messages").limitToLast(100);
+  messageRef.on("child_added", s=>renderMessage(s.val(),room,s.key));
 }
 
-/* ===== CREATE GROUP (FIXED) ===== */
-function createGroup() {
+/* PRIVATE CHAT */
+function openPrivateChat(other){
+  const r = privateRoom(username,other);
+  db.ref("chatRooms/"+r+"/members/"+username).set(true);
+  db.ref("chatRooms/"+r+"/members/"+other).set(true);
+  openRoom(r,"Chat with "+other);
+}
+
+/* CREATE GROUP */
+function createGroup(){
   const name = prompt("Group name:");
-  if (!name) return;
-
-  const members = prompt("Add members (comma separated):");
-  const room = groupRoom(name);
-  const list = members ? members.split(",").map(m => m.trim()).filter(Boolean) : [];
-
-  const updates = {};
-  updates["chatRooms/" + room + "/admins/" + username] = true;
-  updates["chatRooms/" + room + "/members/" + username] = true;
-
-  list.forEach(m => updates["chatRooms/" + room + "/members/" + m] = true);
-
-  db.ref().update(updates);
-  openRoom(room, "👥 " + name);
+  if(!name) return;
+  const r = groupRoom(name);
+  db.ref("chatRooms/"+r+"/members/"+username).set(true);
+  db.ref("chatRooms/"+r+"/admins/"+username).set(true);
+  openRoom(r,"👥 "+name);
 }
 
-/* ===== SEND MESSAGE ===== */
+/* SEND TEXT */
 sendChat.onclick = sendMessage;
-chatText.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
-
+chatText.addEventListener("keypress",e=>{if(e.key==="Enter")sendMessage();});
 function sendMessage(){
-  const text = chatText.value.trim();
-  if(!text) return;
-
-  const msgData = { user: username, role, text, time: Date.now() };
-
-  db.ref("chatRooms/" + currentRoom + "/messages").push(msgData);
-
-  db.ref("chatRooms/" + currentRoom + "/lastMessage").set({
-    text, user: username, time: Date.now()
+  const t = chatText.value.trim();
+  if(!t) return;
+  db.ref("chatRooms/"+currentRoom+"/messages").push({
+    user:username,role,text:t,time:Date.now()
   });
-
-  // 🔔 notify members
-  db.ref("chatRooms/" + currentRoom + "/members").once("value", snap => {
-    snap.forEach(m => {
-      if (m.key !== username) {
-        db.ref("notify/" + m.key).push({
-          room: currentRoom,
-          text,
-          from: username
-        });
-      }
-    });
-  });
-
-  chatText.value = "";
+  chatText.value="";
 }
 
-
-  db.ref("notify/" + username).on("child_added", snap => {
-  const n = snap.val();
-  showDesktopNotification(
-    n.from,
-    `New message in ${n.room}`
-  );
-  snap.ref.remove();
-});
-
-/* ===== INIT ===== */
+/* INIT */
 db.ref("chatRooms/global/members/"+username).set(true);
 openRoom("global","Global Chat");
-loadGroups();
-
-
-</script>
-  <script>
-const messaging = firebase.messaging();
-
-navigator.serviceWorker.register("/firebase-messaging-sw.js")
-.then(reg => {
-  messaging.useServiceWorker(reg);
-});
-
-Notification.requestPermission().then(permission => {
-  if (permission === "granted") {
-    messaging.getToken({
-      vapidKey: "BO8Rs4BvNSG22wqgGYa6nSbiBMldk9Oz6CXgXNlfF0hvCeb1APjiXmk5lRSqbIAanB77OXDogQ9Jp4_sQBBQq7k"
-    }).then(token => {
-      if (token) {
-        db.ref("userTokens/" + username).set(token);
-      }
-    });
-  }
-});
-</script>
-
-<script>
-/* ========= ADVANCED CHAT FEATURES ========= */
-
-const typingIndicator = document.getElementById("typingIndicator");
-const makeAdminBtn = document.getElementById("makeAdminBtn");
-const deleteGroupBtn = document.getElementById("deleteGroupBtn");
-
-/* ===== ADMIN TRANSFER / ASSIGN ===== */
-makeAdminBtn.onclick = () => {
-  if (!currentRoom.startsWith("group_")) return;
-
-  isGroupAdmin(currentRoom, isAdmin => {
-    if (!isAdmin) return alert("Only admins can assign admins.");
-
-    const user = prompt("Enter username to make admin:");
-    if (!user) return;
-
-    db.ref("chatRooms/" + currentRoom + "/admins/" + user).set(true);
-    alert(user + " is now a group admin.");
-  });
-};
-
-/* ===== DELETE GROUP ===== */
-deleteGroupBtn.onclick = () => {
-  if (!currentRoom.startsWith("group_")) return;
-
-  isGroupAdmin(currentRoom, isAdmin => {
-    if (!isAdmin) return alert("Only admins can delete the group.");
-
-    if (!confirm("⚠️ Delete this group for ALL members?")) return;
-
-    db.ref("chatRooms/" + currentRoom).remove();
-    alert("Group deleted.");
-    openRoom("global", "Global Chat");
-  });
-};
-
-/* ===== TYPING INDICATOR ===== */
-chatText.addEventListener("input", () => {
-  if (!currentRoom) return;
-  db.ref("typing/" + currentRoom + "/" + username).set(true);
-
-  setTimeout(() => {
-    db.ref("typing/" + currentRoom + "/" + username).remove();
-  }, 1500);
-});
-
-function watchTyping(room){
-  db.ref("typing/" + room).on("value", snap => {
-    let users = [];
-    snap.forEach(s => {
-      if (s.key !== username) users.push(s.key);
-    });
-    typingIndicator.textContent = users.length
-      ? users.join(", ") + " typing..."
-      : "";
-  });
-}
-
-/* Hook typing watcher into openRoom */
-const _openRoomOriginal = openRoom;
-openRoom = function(room, title){
-  _openRoomOriginal(room, title);
-  watchTyping(room);
-
-  // Mark room as SEEN
-  db.ref("seen/" + room + "/" + username).set(Date.now());
-};
-
 </script>
 
 
