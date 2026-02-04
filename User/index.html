@@ -474,6 +474,9 @@ const chatUsers = document.getElementById("chatUsers");
 const chatText = document.getElementById("chatText");
 const sendChat = document.getElementById("sendChat");
 const chatBadge = document.getElementById("chatBadge");
+const attachBtn = document.getElementById("attachBtn");
+const fileInput = document.getElementById("fileInput");
+
 
 let unread = 0;
 let chatOpen = false;
@@ -592,10 +595,11 @@ leaveGroupBtn.onclick = () => {
 };
 
 /* ===== MESSAGES ===== */
-function renderMessage(msg, room) {
-  const div = document.createElement("div");
+function renderMessage(msg, room, msgId) {
   const isMe = msg.user === username;
-  div.className = "chat-msg " + (isMe ? "me" : "other");
+
+  const wrap = document.createElement("div");
+  wrap.className = "chat-msg " + (isMe ? "me" : "other");
 
   const avatar = document.createElement("img");
   avatar.className = "chat-avatar";
@@ -603,28 +607,43 @@ function renderMessage(msg, room) {
 
   const bubble = document.createElement("div");
   bubble.className = "chat-bubble";
-  bubble.innerHTML = msg.text;
 
-  div.appendChild(avatar);
-  div.appendChild(bubble);
-  chatMessages.appendChild(div);
+  // TEXT / FILE
+  if (msg.fileUrl) {
+    if (msg.fileType.startsWith("image")) {
+      bubble.innerHTML = `<img src="${msg.fileUrl}" style="max-width:220px;border-radius:12px">`;
+    } else {
+      bubble.innerHTML = `<a href="${msg.fileUrl}" target="_blank">📎 Download file</a>`;
+    }
+  } else {
+    bubble.textContent = msg.text;
+  }
+
+  // REACTIONS
+  if (msg.reactions) {
+    const r = Object.values(msg.reactions).join(" ");
+    bubble.innerHTML += `<div style="font-size:12px;margin-top:4px">${r}</div>`;
+  }
+
+  // ADD REACTION
+  bubble.onclick = () => {
+    const emoji = prompt("React with ❤️ 😂 👍");
+    if (!emoji) return;
+    db.ref(`chatRooms/${room}/messages/${msgId}/reactions/${username}`).set(emoji);
+  };
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  chatMessages.appendChild(wrap);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 
-  // unread logic
+  // UNREAD
   if (!chatOpen && !isMe) {
     db.ref("userUnread/" + username + "/" + room)
       .transaction(v => (v || 0) + 1);
-  if (msg.fileUrl) {
-  if (msg.fileType.startsWith("image")) {
-    bubble.innerHTML = `<img src="${msg.fileUrl}" style="max-width:200px;border-radius:12px;">`;
-  } else {
-    bubble.innerHTML = `<a href="${msg.fileUrl}" target="_blank">📎 Download file</a>`;
-  }
-} else {
-  bubble.textContent = msg.text;
-}
   }
 }
+
 
   attachBtn.onclick = () => fileInput.click();
 
@@ -636,8 +655,17 @@ fileInput.onchange = async () => {
   await ref.put(file);
   const url = await ref.getDownloadURL();
 
-  sendFileMessage(file.type, url);
+  db.ref("chatRooms/" + currentRoom + "/messages").push({
+    user: username,
+    photo: localStorage.getItem("photo"),
+    fileType: file.type,
+    fileUrl: url,
+    time: Date.now()
+  });
+
+  fileInput.value = "";
 };
+
 
   function sendFileMessage(type, url) {
   const msgData = {
@@ -652,17 +680,6 @@ fileInput.onchange = async () => {
 }
 
 
-  bubble.onclick = () => {
-  const emoji = prompt("React with emoji ❤️ 😂 👍");
-  if (!emoji) return;
-
-  db.ref(`chatRooms/${room}/messages/${msg._id}/reactions/${username}`)
-    .set(emoji);
-};
-if (msg.reactions) {
-  const reactions = Object.values(msg.reactions).join(" ");
-  bubble.innerHTML += `<div style="font-size:12px">${reactions}</div>`;
-}
 
 function openRoom(room,title){
   currentRoom=room;
@@ -676,8 +693,10 @@ function openRoom(room,title){
   if(messageRef) messageRef.off();
 
   messageRef=db.ref("chatRooms/"+room+"/messages").limitToLast(100);
-  messageRef.on("child_added", snap=>renderMessage(snap.val(), room));
-}
+ messageRef.on("child_added", snap => {
+  renderMessage(snap.val(), currentRoom, snap.key);
+});
+
 
 function openPrivateChat(otherUser){
   const room=privateRoom(username,otherUser);
