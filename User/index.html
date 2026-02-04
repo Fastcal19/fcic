@@ -356,9 +356,10 @@ const storage = firebase.storage();
 
 <div id="chatBox">
   <div id="chatHeader">
-    FCIC Chat
-    <span id="chatClose">✖</span>
-  </div>
+  <span id="chatTitle">FCIC Chat</span>
+  <span id="chatClose">✖</span>
+</div>
+
 
   <div id="chatBody">
     <div id="chatUsers"><button onclick="createGroup()">➕ Group</button>
@@ -493,6 +494,8 @@ function openPrivateChat(otherUser) {
 function openRoom(room, title) {
   currentRoom = room;
   currentRoomName = title;
+
+  document.getElementById("chatTitle").textContent = title;
   chatMessages.innerHTML = "";
   clearUnread(room);
 
@@ -503,10 +506,10 @@ function openRoom(room, title) {
     .limitToLast(100);
 
   messageRef.on("child_added", snap => {
-    const msg = snap.val();
-    renderMessage(msg);
+    renderMessage(snap.val());
   });
 }
+
 
 function notifyUnread(room) {
   db.ref("userUnread/" + username + "/" + room)
@@ -533,8 +536,22 @@ function createGroup() {
   const name = prompt("Group name:");
   if (!name) return;
 
+  const members = prompt(
+    "Add members (comma separated usernames):\nExample: Juan,Maria,Pedro"
+  );
+  if (!members) return;
+
   const room = groupRoom(name);
-  db.ref("chatRooms/" + room + "/members/" + username).set(true);
+  const memberList = members.split(",").map(m => m.trim());
+
+  const updates = {};
+  updates["chatRooms/" + room + "/members/" + username] = true;
+
+  memberList.forEach(m => {
+    updates["chatRooms/" + room + "/members/" + m] = true;
+  });
+
+  db.ref().update(updates);
   openRoom(room, name);
 }
 
