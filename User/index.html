@@ -9,7 +9,297 @@
     body { margin:0;font-family:Arial;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:orangered;}
     header { background:orangered;color:#000;padding:10px 20px;text-align:center;font-weight:bold;font-size:20px;box-shadow:0 2px 6px rgba(0,0,0,0.3);}
     footer { background:darkgray;color:#fff;text-align:center;padding:10px;font-size:14px;box-shadow:0 -2px 6px rgba(0,0,0,0.3);}
-    /* ... ALL YOUR OTHER ORIGINAL CSS HERE (UNCHANGED) ... */
+    .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 220px;
+  background: linear-gradient(10deg, gold, orangered);
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #333 #FFB347;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 2000;
+}
+
+/* ✅ Desktop: slide from left */
+.sidebar.active {
+  transform: translateX(0);
+}
+
+/* ✅ Mobile override: slide from right */
+@media (max-width: 768px) {
+  .sidebar {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
+  }
+  .sidebar.active {
+    transform: translateX(0);
+  }
+}
+
+
+    .userbox {
+      text-align: center;
+      padding: 10px 0;
+      position: relative;
+    }
+
+    .userbox img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      background: #fff;
+    }
+
+    .username {
+      font-weight: bold;
+      font-size: 16px;
+      color: #000;
+      margin-top: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .user-dropdown {
+      position: absolute;
+      top: 180px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      min-width: 140px;
+      overflow: hidden;
+      z-index: 3000;
+    }
+
+    .user-dropdown a {
+      color: #000;
+      padding: 10px;
+      text-decoration: none;
+      display: block;
+      font-weight: bold;
+    }
+
+    .user-dropdown a:hover { background: #FFD580; }
+
+    .sidebar a {
+      color: #000;
+      text-decoration: none;
+      padding: 10px;
+      display: block;
+      border-radius: 6px;
+      font-weight: bold;
+      margin: 2px 0;
+      cursor: pointer;
+    }
+
+    .sidebar a:hover { background: #FFD580; }
+
+    .logout-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .main {
+      flex: 1;
+      background: #ccc;
+      display: flex;
+      flex-direction: column;
+      transition: margin-left 0.3s ease-in-out;
+      overflow: hidden;
+      height: calc(100vh - 80px);
+    }
+
+    /* CHAT TOGGLE */
+#chatToggle {
+  position: fixed;
+  bottom: 70px;
+  right: 10px;
+  background: #333;
+  color: #fff;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6000;
+}
+
+#chatBadge {
+  background: red;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 50%;
+  padding: 2px 6px;
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  display: none;
+}
+
+#chatBox {
+  position: fixed;
+  bottom: 70px;
+  right: 10px;
+  width: 95% ;
+  height: 80%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+  display: none;
+  flex-direction: column;
+  z-index: 6000;
+  overflow: hidden; /* keep messages inside box */
+}
+
+#chatBody {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0; /* important for flex scrolling */
+}
+
+#chatUsers {
+  width: 90px;
+  background: #f4f4f4;
+  font-size: 12px;
+  padding: 6px;
+  overflow-y: auto;
+  border-right: 1px solid #ccc;
+}
+
+#chatMessages {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.chat-msg {
+  margin-bottom: 6px;
+}
+
+.chat-user {
+  color: orangered;
+}
+
+#chatInput {
+  display: flex;
+  border-top: 1px solid #ccc;
+}
+
+#chatInput input[type="text"] {
+  flex: 1;
+  border: none;
+  padding: 8px;
+}
+
+#chatInput button {
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+
+    @media (min-width: 769px) {
+      .sidebar.active ~ .main { margin-left: 220px; }
+    }
+
+    iframe {
+      flex: 1;
+      border: none;
+      background: linear-gradient(180deg, gold, orangered);
+    }
+
+    .submenu { display: none; margin-left: 15px; }
+    .submenu.show { display: block; }
+
+    .menu-toggle {
+      position: fixed;
+      top: 12px;
+      left: 10px;
+      background: #333;
+      color: white;
+      border: none;
+      font-size: 18px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 2500;
+    }
+
+    .menu-toggle:hover { background: #555; }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 1500;
+      display: none;
+    }
+
+    .overlay.active { display: block; }
+
+    /* ✅ BOTTOM NAVIGATION FOR MOBILE */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(10deg, gold, orangered);
+      display: none;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
+      z-index: 3000;
+    }
+
+    .bottom-nav button {
+      background: none;
+      border: none;
+      color: #000;
+      font-size: 14px;
+      text-align: center;
+      flex: 1;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .bottom-nav button:hover {
+      background: white;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 768px) {
+      header, footer { display: none; }
+      .menu-toggle { display: none; }
+      .bottom-nav { display: flex; }
+      .main { height: calc(100vh - 55px); }
+    }
 
     /* CHAT */
     #chatToggle { position:fixed;bottom:70px;right:10px;background:#333;color:#fff;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:6000;}
