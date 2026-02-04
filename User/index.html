@@ -343,9 +343,14 @@ const storage = firebase.storage();
 
 <div id="chatBox">
   <div id="chatHeader">
-    <span id="chatTitle">FCIC Chat</span>
+  <span id="chatTitle">FCIC Chat</span>
+  <span>
+    <button id="addMemberBtn">➕</button>
+    <button id="leaveGroupBtn">🚪</button>
     <span id="chatClose">✖</span>
-  </div>
+  </span>
+</div>
+
 
   <div id="chatBody">
     <div id="chatUsers">
@@ -438,12 +443,59 @@ function loadGroups(){
 
       const div=document.createElement("div");
       div.className="room-item";
-      div.textContent=label;
+      const last = r.child("lastMessage").val();
+const preview = last
+  ? `\n${last.user}: ${last.text.substring(0,20)}`
+  : "";
+
+div.textContent = label + preview;
+
       div.onclick=()=>openRoom(r.key,label);
       chatUsers.appendChild(div);
-    });
+
+      db.ref("userUnread/" + username + "/" + r.key)
+  .on("value", s => {
+    if (s.exists()) {
+      div.textContent = label + " (" + s.val() + ")";
+    }
   });
 }
+
+function isGroupAdmin(room, cb) {
+  db.ref("chatRooms/" + room + "/admins/" + username)
+    .once("value", snap => cb(snap.exists()));
+}
+
+document.getElementById("addMemberBtn").onclick = () => {
+  if (!currentRoom.startsWith("group_")) return;
+
+  isGroupAdmin(currentRoom, isAdmin => {
+    if (!isAdmin) {
+      alert("Only group admins can add members.");
+      return;
+    }
+
+    const newUser = prompt("Enter username to add:");
+    if (!newUser) return;
+
+    db.ref("chatRooms/" + currentRoom + "/members/" + newUser).set(true);
+    alert(newUser + " added to group.");
+  });
+};
+
+document.getElementById("leaveGroupBtn").onclick = () => {
+  if (!currentRoom.startsWith("group_")) return;
+
+  if (!confirm("Leave this group?")) return;
+
+  const updates = {};
+  updates["chatRooms/" + currentRoom + "/members/" + username] = null;
+  updates["chatRooms/" + currentRoom + "/admins/" + username] = null;
+
+  db.ref().update(updates);
+
+  openRoom("global", "Global Chat");
+};
 
 /* ===== MESSAGES ===== */
 function renderMessage(msg){
@@ -483,31 +535,47 @@ function openPrivateChat(otherUser){
   openRoom(room,"Chat with "+otherUser);
 }
 
-function createGroup(){
-  const name=prompt("Group name:");
-  if(!name) return;
+function createGroup() {
+  const name = prompt("Group name:");
+  if (!name) return;
 
-  const members=prompt("Add members (comma separated):");
-  const room=groupRoom(name);
-  const list=members?members.split(",").map(m=>m.trim()).filter(m=>m):[];
+  const members = prompt("Add members (comma separated):");
+  const room = groupRoom(name);
+  const list = members
+    ? members.split(",").map(m => m.trim()).filter(m => m)
+    : [];
 
-  const updates={};
-  updates["chatRooms/"+room+"/members/"+username]=true;
-  list.forEach(m=>updates["chatRooms/"+room+"/members/"+m]=true);
+  const updates = {};
+
+  // Creator = admin + member
+  updates["chatRooms/" + room + "/admins/" + username] = true;
+  updates["chatRooms/" + room + "/members/" + username] = true;
+
+  list.forEach(m => {
+    updates["chatRooms/" + room + "/members/" + m] = true;
+  });
 
   db.ref().update(updates);
-  openRoom(room,name);
+  openRoom(room, name);
 }
 
-// Send message
-sendChat.onclick=()=>{
-  const text=chatText.value.trim();
-  if(!text) return;
-  db.ref("chatRooms/"+currentRoom+"/messages").push({
-    user:username, role, text, time:Date.now()
-  });
-  chatText.value="";
+
+// const msgData = {
+  user: username,
+  role,
+  text: text,
+  time: Date.now()
 };
+
+const msgRef = db.ref("chatRooms/" + currentRoom + "/messages").push(msgData);
+
+// 🔥 SAVE LAST MESSAGE PREVIEW
+db.ref("chatRooms/" + currentRoom + "/lastMessage").set({
+  text: text,
+  user: username,
+  time: Date.now()
+});
+
 
 // Global room membership + init
 db.ref("chatRooms/global/members/"+username).set(true);
