@@ -334,6 +334,15 @@
       background: white;
       border-radius: 10px;
     }
+@media (max-width: 768px) {
+  #chatBox {
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+}
 
     @media (max-width: 768px) {
       header, footer { display: none; }
@@ -451,9 +460,41 @@ chatClose.onclick = () => {
 };
 
 /* PRESENCE */
+/* PRESENCE */
 const userRef = db.ref("onlineUsers/"+username);
 userRef.set({name:username,role});
 userRef.onDisconnect().remove();
+
+/* POPULATE USERS & ROOMS */
+db.ref("onlineUsers").on("value", snap => {
+  chatUsers.innerHTML = `<button onclick="createGroup()">➕ Group</button>
+    <hr><b>Users</b>`;
+
+  snap.forEach(s => {
+    if (s.key !== username) {
+      const d = document.createElement("div");
+      d.className = "user-item";
+      d.textContent = s.key;
+      d.onclick = () => openPrivateChat(s.key);
+      chatUsers.appendChild(d);
+    }
+  });
+
+  chatUsers.innerHTML += "<hr><b>Rooms</b>";
+
+  db.ref("chatRooms").once("value", rSnap => {
+    rSnap.forEach(r => {
+      if (r.key.startsWith("group_")) {
+        const d = document.createElement("div");
+        d.className = "room-item";
+        d.textContent = r.key.replace("group_","👥 ");
+        d.onclick = () => openRoom(r.key, d.textContent);
+        chatUsers.appendChild(d);
+      }
+    });
+  });
+});
+
 
 /* RENDER MESSAGE */
 function renderMessage(msg, room, msgId){
@@ -470,7 +511,10 @@ function renderMessage(msg, room, msgId){
 
   if(msg.fileUrl){
     bubble.innerHTML = msg.fileType.startsWith("image")
-      ? `<img src="${msg.fileUrl}" style="max-width:220px;border-radius:12px">`
+      ? `<img src="${msg.fileUrl}" 
+     style="max-width:220px;border-radius:12px;cursor:pointer"
+     onclick="window.open('${msg.fileUrl}','_blank')">
+`
       : `<a href="${msg.fileUrl}" target="_blank">📎 Download file</a>`;
   } else bubble.textContent = msg.text;
 
@@ -488,6 +532,12 @@ function renderMessage(msg, room, msgId){
   chatMessages.appendChild(wrap);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 
+  if (!isMe && !chatOpen) {
+  showDesktopNotification(
+    msg.user,
+    msg.text || "📎 Sent a file"
+  );
+}
   if(!chatOpen && !isMe){
     db.ref("userUnread/"+username+"/"+room).transaction(v=>(v||0)+1);
   }
