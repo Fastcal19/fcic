@@ -443,23 +443,31 @@ function loadGroups(){
 
       const div=document.createElement("div");
       div.className="room-item";
-      const last = r.child("lastMessage").val();
-const preview = last
-  ? `\n${last.user}: ${last.text.substring(0,20)}`
-  : "";
 
-div.textContent = label + preview;
+      // 🔥 LAST MESSAGE PREVIEW
+      const last = r.child("lastMessage").val();
+      const preview = last
+        ? ` — ${last.user}: ${last.text.substring(0,20)}`
+        : "";
+
+      div.textContent = label + preview;
 
       div.onclick=()=>openRoom(r.key,label);
       chatUsers.appendChild(div);
 
+      // 🔥 UNREAD BADGE PER ROOM
       db.ref("userUnread/" + username + "/" + r.key)
-  .on("value", s => {
-    if (s.exists()) {
-      div.textContent = label + " (" + s.val() + ")";
-    }
+        .on("value", s => {
+          if (s.exists()) {
+            div.textContent = label + preview + " (" + s.val() + ")";
+          } else {
+            div.textContent = label + preview;
+          }
+        });
+    });
   });
 }
+
 
 function isGroupAdmin(room, cb) {
   db.ref("chatRooms/" + room + "/admins/" + username)
@@ -512,7 +520,14 @@ function renderMessage(msg){
 
   chatMessages.appendChild(div);
   chatMessages.scrollTop=chatMessages.scrollHeight;
+
+  // 🔥 UNREAD PER ROOM
+  if (!chatOpen && msg.user !== username) {
+    db.ref("userUnread/" + username + "/" + currentRoom)
+      .transaction(v => (v || 0) + 1);
+  }
 }
+
 
 function openRoom(room,title){
   currentRoom=room;
@@ -560,21 +575,34 @@ function createGroup() {
 }
 
 
-// const msgData = {
-  user: username,
-  role,
-  text: text,
-  time: Date.now()
-};
-
-const msgRef = db.ref("chatRooms/" + currentRoom + "/messages").push(msgData);
-
-// 🔥 SAVE LAST MESSAGE PREVIEW
-db.ref("chatRooms/" + currentRoom + "/lastMessage").set({
-  text: text,
-  user: username,
-  time: Date.now()
+sendChat.onclick = sendMessage;
+chatText.addEventListener("keypress", e => {
+  if (e.key === "Enter") sendMessage();
 });
+
+function sendMessage(){
+  const text = chatText.value.trim();
+  if(!text) return;
+
+  const msgData = {
+    user: username,
+    role,
+    text: text,
+    time: Date.now()
+  };
+
+  db.ref("chatRooms/" + currentRoom + "/messages").push(msgData);
+
+  // 🔥 SAVE LAST MESSAGE PREVIEW
+  db.ref("chatRooms/" + currentRoom + "/lastMessage").set({
+    text: text,
+    user: username,
+    time: Date.now()
+  });
+
+  chatText.value = "";
+}
+
 
 
 // Global room membership + init
