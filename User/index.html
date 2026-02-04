@@ -347,6 +347,11 @@ firebase.initializeApp(firebaseConfig);
 
 const db = firebase.database();
 const storage = firebase.storage();
+
+/* 🔔 Ask notification permission ONCE */
+if ("Notification" in window && Notification.permission !== "granted") {
+  Notification.requestPermission();
+}
 </script>
 
 <!-- CHAT BUTTON -->
@@ -443,14 +448,24 @@ db.ref("onlineUsers").on("value", snap => {
 
 // 💬 Receive messages
 function renderMessage(msg) {
+  const time = msg.time
+    ? new Date(msg.time).toLocaleTimeString()
+    : "";
+
   const div = document.createElement("div");
   div.className = "chat-msg";
 
   if (msg.file) {
-    div.innerHTML = `<span class="chat-user">${msg.user}:</span><br>
-      <a href="${msg.file}" target="_blank">📎 Download file</a>`;
+    div.innerHTML = `
+      <span class="chat-user">${msg.user}</span>
+      <small>${time}</small><br>
+      <a href="${msg.file}" target="_blank">📎 Download file</a>
+    `;
   } else {
-    div.innerHTML = `<span class="chat-user">${msg.user}:</span> ${msg.text}`;
+    div.innerHTML = `
+      <span class="chat-user">${msg.user}</span>
+      <small>${time}</small>: ${msg.text}
+    `;
   }
 
   chatMessages.appendChild(div);
@@ -460,6 +475,7 @@ function renderMessage(msg) {
     notifyUnread(currentRoom);
   }
 }
+
 
 
 // 📎 File upload
@@ -564,8 +580,8 @@ function loadGroups() {
       ) {
         const div = document.createElement("div");
         div.textContent = "👥 " + r.key.replace("group_", "");
-        div.onclick = () =>
-          openRoom(r.key, div.textContent);
+        div.style.cursor = "pointer";
+        div.onclick = () => openRoom(r.key, div.textContent);
         chatUsers.appendChild(div);
       }
     });
