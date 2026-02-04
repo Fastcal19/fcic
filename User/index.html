@@ -422,6 +422,7 @@ chatClose.onclick = () => {
   chatOpen = false;
 };
 
+
 // 👥 Online users
 const userRef = db.ref("onlineUsers/" + username);
 userRef.set({ name: username, role });
@@ -472,10 +473,33 @@ function renderMessage(msg) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 
   if (!chatOpen && msg.user !== username) {
-    notifyUnread(currentRoom);
-  }
+  notifyUnread(currentRoom);
+
+  showDesktopNotification(
+    currentRoomName,
+    msg.user + ": " + (msg.text || "📎 File sent")
+  );
 }
 
+// 💬 Send text message
+sendChat.onclick = sendMessage;
+chatText.addEventListener("keypress", e => {
+  if (e.key === "Enter") sendMessage();
+});
+
+function sendMessage() {
+  const text = chatText.value.trim();
+  if (!text) return;
+
+  db.ref("chatRooms/" + currentRoom + "/messages").push({
+    user: username,
+    role: role,
+    text: text,
+    time: Date.now()
+  });
+
+  chatText.value = "";
+}
 
 
 // 📎 File upload
@@ -587,6 +611,8 @@ function loadGroups() {
     });
   });
 }
+// 🔵 Open Global Chat on load
+openRoom("global", "Global Chat");
 
 </script>
 
@@ -901,6 +927,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+function showDesktopNotification(title, body) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, {
+      body: body,
+      icon: "fcic logo.png" // optional
+    });
+  }
+}
 
 
 function logout() {
