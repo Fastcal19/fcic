@@ -473,13 +473,15 @@ function renderMessage(msg) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 
   if (!chatOpen && msg.user !== username) {
-  notifyUnread(currentRoom);
+    notifyUnread(currentRoom);
 
-  showDesktopNotification(
-    currentRoomName,
-    msg.user + ": " + (msg.text || "📎 File sent")
-  );
-}
+    showDesktopNotification(
+      currentRoomName,
+      msg.user + ": " + (msg.text || "📎 File sent")
+    );
+  }
+}  // ✅ THIS WAS MISSING
+
 
 // 💬 Send text message
 sendChat.onclick = sendMessage;
