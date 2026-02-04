@@ -346,6 +346,8 @@ const storage = firebase.storage();
   <span id="chatTitle">FCIC Chat</span>
   <span>
     <button id="addMemberBtn">➕</button>
+    <button id="makeAdminBtn">⭐</button>
+    <button id="deleteGroupBtn">🗑️</button>
     <button id="leaveGroupBtn">🚪</button>
     <span id="chatClose">✖</span>
   </span>
@@ -362,7 +364,7 @@ const storage = firebase.storage();
     </div>
     <div id="chatMessages"></div>
   </div>
-
+  <div id="typingIndicator" style="font-size:12px;padding:4px;color:#666;"></div>
   <div id="chatInput">
     <input type="file" id="fileInput" hidden />
     <button id="attachBtn">📎</button>
@@ -586,6 +588,104 @@ db.ref("chatRooms/global/members/"+username).set(true);
 openRoom("global","Global Chat");
 loadGroups();
 
+</script>
+<script>
+/* ========= ADVANCED CHAT FEATURES ========= */
+
+const typingIndicator = document.getElementById("typingIndicator");
+const makeAdminBtn = document.getElementById("makeAdminBtn");
+const deleteGroupBtn = document.getElementById("deleteGroupBtn");
+
+/* ===== ADMIN TRANSFER / ASSIGN ===== */
+makeAdminBtn.onclick = () => {
+  if (!currentRoom.startsWith("group_")) return;
+
+  isGroupAdmin(currentRoom, isAdmin => {
+    if (!isAdmin) return alert("Only admins can assign admins.");
+
+    const user = prompt("Enter username to make admin:");
+    if (!user) return;
+
+    db.ref("chatRooms/" + currentRoom + "/admins/" + user).set(true);
+    alert(user + " is now a group admin.");
+  });
+};
+
+/* ===== DELETE GROUP ===== */
+deleteGroupBtn.onclick = () => {
+  if (!currentRoom.startsWith("group_")) return;
+
+  isGroupAdmin(currentRoom, isAdmin => {
+    if (!isAdmin) return alert("Only admins can delete the group.");
+
+    if (!confirm("⚠️ Delete this group for ALL members?")) return;
+
+    db.ref("chatRooms/" + currentRoom).remove();
+    alert("Group deleted.");
+    openRoom("global", "Global Chat");
+  });
+};
+
+/* ===== TYPING INDICATOR ===== */
+chatText.addEventListener("input", () => {
+  if (!currentRoom) return;
+  db.ref("typing/" + currentRoom + "/" + username).set(true);
+
+  setTimeout(() => {
+    db.ref("typing/" + currentRoom + "/" + username).remove();
+  }, 1500);
+});
+
+function watchTyping(room){
+  db.ref("typing/" + room).on("value", snap => {
+    let users = [];
+    snap.forEach(s => {
+      if (s.key !== username) users.push(s.key);
+    });
+    typingIndicator.textContent = users.length
+      ? users.join(", ") + " typing..."
+      : "";
+  });
+}
+
+/* Hook typing watcher into openRoom */
+const _openRoomOriginal = openRoom;
+openRoom = function(room, title){
+  _openRoomOriginal(room, title);
+  watchTyping(room);
+
+  // Mark room as SEEN
+  db.ref("seen/" + room + "/" + username).set(Date.now());
+};
+
+/* ===== SEEN / READ RECEIPTS ===== */
+function renderMessage(msg, room){
+  const div=document.createElement("div");
+  div.className="chat-msg";
+  const time=msg.time?new Date(msg.time).toLocaleTimeString():"";
+
+  let seenHtml = "";
+
+  db.ref("seen/" + room).once("value", snap => {
+    let readers = [];
+    snap.forEach(s => {
+      if (s.val() > msg.time) readers.push(s.key);
+    });
+    if (readers.length) {
+      seenHtml = `<div style="font-size:10px;color:#999;">Seen by: ${readers.join(", ")}</div>`;
+      div.innerHTML += seenHtml;
+    }
+  });
+
+  div.innerHTML = `<span class="chat-user">${msg.user}</span> <small>${time}</small>: ${msg.text}`;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop=chatMessages.scrollHeight;
+
+  if (!chatOpen && msg.user !== username) {
+    db.ref("userUnread/" + username + "/" + room)
+      .transaction(v => (v || 0) + 1);
+  }
+}
 </script>
 
 
