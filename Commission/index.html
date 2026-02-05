@@ -128,7 +128,7 @@ tbody tr:nth-child(even) {
     <select id="yearFilter"></select>
     <select id="monthFilter"></select>
     <select id="agentFilter">
-      <option value="ALL">All Agents</option>
+      <option value="ALL">All</option>
     </select>
   </div>
 
@@ -173,8 +173,15 @@ const months = [
   "July","August","September","October","November","December"
 ];
 
-months.forEach((m, i) => monthFilter.innerHTML += `<option value="${i}">${m}</option>`);
-monthFilter.value = now.getMonth();
+monthFilter.innerHTML = `<option value="ALL">All</option>`;
+months.forEach((m, i) => {
+  monthFilter.innerHTML += `<option value="${i}">${m}</option>`;
+});
+monthFilter.value = "ALL";
+
+// ✅ default = current month
+monthFilter.value = now.getMonth().toString();
+
 
 function peso(v) {
   return "₱" + Number(v || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 });
@@ -248,10 +255,18 @@ fetch(API_URL)
 
     salesData = Object.values(grouped).filter(s => s.date);
 
-    [...new Set(salesData.map(s => s.date.getFullYear()))]
-      .sort((a, b) => b - a)
-      .forEach(y => yearFilter.innerHTML += `<option value="${y}">${y}</option>`);
-    yearFilter.value = now.getFullYear();
+    yearFilter.innerHTML = `<option value="ALL">All</option>`;
+
+[...new Set(salesData.map(s => s.date.getFullYear()))]
+  .sort((a, b) => b - a)
+  .forEach(y => {
+    yearFilter.innerHTML += `<option value="${y}">${y}</option>`;
+  });
+
+yearFilter.value = "ALL";
+
+// ✅ default = current year
+yearFilter.value = now.getFullYear().toString();
 
     [...new Set(salesData.map(s => s.agent))]
       .sort()
@@ -264,15 +279,16 @@ function render() {
   tbody.innerHTML = "";
   let ts = 0, tc = 0, tp = 0, tb = 0;
 
-  const y = Number(yearFilter.value);
-  const m = Number(monthFilter.value);
+  const y = yearFilter.value;
+const m = monthFilter.value;
   const agent = agentFilter.value;
 
-  const filtered = salesData.filter(
-    s => s.date.getFullYear() === y &&
-         s.date.getMonth() === m &&
-         (agent === "ALL" || s.agent === agent)
-  );
+  const filtered = salesData.filter(s =>
+  (y === "ALL" || s.date.getFullYear() === Number(y)) &&
+  (m === "ALL" || s.date.getMonth() === Number(m)) &&
+  (agent === "ALL" || s.agent === agent)
+);
+
 
   const agentTotals = {};
   filtered.forEach(s => agentTotals[s.agent] = (agentTotals[s.agent] || 0) + s.amount);
