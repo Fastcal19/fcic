@@ -130,6 +130,16 @@ button:disabled {
   margin: 14px 0 6px;
 }
 
+.select-photo {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  z-index: 5;
+}
+
 /* Spinner animation */
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -167,9 +177,30 @@ button:disabled {
   font-size: 28px;
   cursor: pointer;
 }
+
+.select-photo {
+  pointer-events: auto;
+}
+
 </style>
 </head>
 <body>
+<div id="pullIndicator" style="
+  position: fixed;
+  top: -50px;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: #f4f6f8;
+  color: #333;
+  text-align: center;
+  line-height: 50px;
+  font-size: 14px;
+  z-index: 1000;
+  transition: top 0.25s ease;
+">
+  ↓ Pull to refresh
+</div>
 
 <!-- Fullscreen Viewer -->
 <div id="viewer" class="viewer" onclick="closeViewer()">
@@ -182,12 +213,16 @@ button:disabled {
   <!-- LEFT -->
   <div class="left">
     <h3>Upload Photos</h3>
+    
+
 
     <textarea id="caption" placeholder="Enter caption"></textarea>
     <input type="file" id="photos" multiple accept="image/*">
 
     <button id="uploadBtn" onclick="upload()">Upload</button>
-
+    <button onclick="deleteSelected()" style="margin-top:8px;background:#c62828;color:#fff">
+    Delete Selected
+    </button>
     <div class="spinner" id="spinner"></div>
   </div>
 
@@ -223,8 +258,20 @@ function renderAll(data) {
 
   Object.keys(data).forEach(caption => {
     const cap = document.createElement("div");
-    cap.className = "caption";
-    cap.textContent = caption;
+cap.className = "caption";
+
+const selectAll = document.createElement("input");
+selectAll.type = "checkbox";
+selectAll.style.marginRight = "6px";
+
+selectAll.onchange = () => {
+  grid.querySelectorAll(".select-photo").forEach(cb => {
+    cb.checked = selectAll.checked;
+  });
+};
+
+cap.append(selectAll, document.createTextNode(caption));
+
 
     const grid = document.createElement("div");
     grid.className = "grid";
@@ -233,14 +280,35 @@ function renderAll(data) {
       const photo = document.createElement("div");
       photo.className = "photo";
 
+      // Checkbox
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "select-photo";
+      checkbox.dataset.id = item.id;
+
       // Thumbnail
       const img = document.createElement("img");
       img.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w600`;
       img.onclick = (e) => {
         e.stopPropagation();
         openViewer(`https://drive.google.com/thumbnail?id=${item.id}&sz=w2000`);
-
       };
+      
+      let pressTimer;
+
+img.addEventListener("touchstart", (e) => {
+  pressTimer = setTimeout(() => {
+    checkbox.checked = !checkbox.checked;
+  }, 500);
+});
+
+img.addEventListener("touchend", () => {
+  clearTimeout(pressTimer);
+});
+
+img.addEventListener("touchmove", () => {
+  clearTimeout(pressTimer);
+});
 
       // Actions
       const actions = document.createElement("div");
@@ -248,25 +316,29 @@ function renderAll(data) {
 
       const del = document.createElement("button");
       del.textContent = "🗑";
-      del.onclick = () => {
+      del.onclick = (e) => {
+        e.stopPropagation();
         if (confirm("Delete this photo?")) modify("delete", item.id);
       };
 
       const edit = document.createElement("button");
       edit.textContent = "✏️";
-      edit.onclick = () => {
+      edit.onclick = (e) => {
+        e.stopPropagation();
         const newCap = prompt("New caption:", caption);
         if (newCap) modify("edit", item.id, newCap);
       };
 
       actions.append(edit, del);
-      photo.append(img, actions);
+      photo.append(checkbox, img, actions);
       grid.appendChild(photo);
     });
 
+    // 🔥 THIS WAS MISSING
     uploads.append(cap, grid);
   });
 }
+
 
 function upload() {
   const captionEl = document.getElementById("caption");
@@ -330,6 +402,74 @@ function closeViewer() {
   viewer.classList.remove("show");
   setTimeout(() => document.getElementById("viewerImg").src = "", 300);
 }
+
+function deleteSelected() {
+  const checked = document.querySelectorAll(".select-photo:checked");
+
+  if (checked.length === 0) {
+    alert("No photos selected");
+    return;
+  }
+
+  if (!confirm(`Delete ${checked.length} selected photo(s)?`)) return;
+
+  let count = 0;
+
+  checked.forEach(cb => {
+    send("delete", { fileId: cb.dataset.id });
+    cb.checked = false; // auto clear
+    count++;
+  });
+
+  setTimeout(() => {
+    loadAll();
+  }, 600);
+}
+
+let startY = 0;
+let pulling = false;
+
+window.addEventListener("touchstart", e => {
+  if (window.scrollY === 0) {
+    startY = e.touches[0].clientY;
+    pulling = true;
+  }
+});
+
+window.addEventListener("touchmove", e => {
+  if (!pulling) return;
+
+  const currentY = e.touches[0].clientY;
+  const diff = currentY - startY;
+
+  if (diff > 0 && diff < 120) {
+    e.preventDefault();
+    document.getElementById("pullIndicator").style.top =
+      Math.min(diff - 50, 10) + "px";
+  }
+});
+
+window.addEventListener("touchend", e => {
+  if (!pulling) return;
+
+  const indicator = document.getElementById("pullIndicator");
+  const finalY = indicator.getBoundingClientRect().top;
+
+  indicator.style.top = "-50px";
+  pulling = false;
+
+  if (finalY > -10) {
+    indicator.textContent = "⟳ Refreshing...";
+    indicator.style.top = "0px";
+    loadAll();
+
+    setTimeout(() => {
+      indicator.textContent = "↓ Pull to refresh";
+      indicator.style.top = "-50px";
+    }, 800);
+  }
+});
+
 </script>
 
 </body>
