@@ -238,7 +238,8 @@ function renderAll(data) {
       img.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w600`;
       img.onclick = (e) => {
         e.stopPropagation();
-        openViewer(`https://drive.google.com/uc?id=${item.id}`);
+        openViewer(`https://drive.google.com/thumbnail?id=${item.id}&sz=w2000`);
+
       };
 
       // Actions
