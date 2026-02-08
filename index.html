@@ -17,9 +17,13 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     html, body { height: 100%; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -29,7 +33,6 @@
       flex-direction: column;
     }
 
-    /* HEADER */
     header {
       background: linear-gradient(90deg, orange, white, orange);
       color: white;
@@ -40,18 +43,8 @@
       top: 0;
       z-index: 1000;
     }
-
-    .logo-section {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .logo-section img {
-      height: 55px;
-      display: block;
-    }
+    .logo-section { display: flex; justify-content: center; }
+    .logo-section img { height: 55px; }
 
     main { flex: 1; }
 
@@ -73,17 +66,9 @@
       text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
       animation: flicker 2s infinite;
     }
-
     @keyframes flicker {
       0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
       20%, 24%, 55% { opacity: 0.6; }
-    }
-
-    .hero p {
-      font-size: 1.2rem;
-      margin-top: 1rem;
-      max-width: 600px;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
     }
 
     .hero button {
@@ -99,16 +84,6 @@
     }
     .hero button:hover { background: #e68900; transform: scale(1.05); }
 
-    footer {
-      background: #222;
-      color: #ccc;
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.9rem;
-    }
-    footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; cursor: pointer; }
-    footer a:hover { color: #fff; }
-
     .login-box {
       display: inline-block;
       background: linear-gradient(90deg, orange, white, orange);
@@ -116,8 +91,8 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       margin-top: 20px;
+      text-align: center;
     }
-
     .login-box input {
       width: 80%;
       padding: 10px;
@@ -125,7 +100,6 @@
       border: 1px solid #ccc;
       border-radius: 6px;
     }
-
     .manual-btn, .gmail-btn {
       width: 85%;
       padding: 10px;
@@ -134,65 +108,21 @@
       border-radius: 6px;
       cursor: pointer;
     }
-
-    .manual-btn {
-      background: #4CAF50;
-      color: white;
-    }
-
-    .gmail-btn {
-      background: #DB4437;
-      color: white;
-    }
-
+    .manual-btn { background: #4CAF50; color: white; }
+    .gmail-btn { background: #DB4437; color: white; }
     .gmail-btn i { margin-right: 6px; }
 
-    /* LOGIN MODAL */
-    #loginModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-    #loginBox {
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      width: 300px;
+    footer {
+      background: #222;
+      color: #ccc;
       text-align: center;
-      position: relative;
+      padding: 1rem;
+      font-size: 0.9rem;
     }
-    #loginBox input {
-      margin-top: 10px;
-      width: 100%;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    #loginBox button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #loginBox .manual-btn { background: orangered; color: white; }
-    #loginBox .gmail-btn { background: #4285F4; color: white; }
-    #closeModal {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      cursor: pointer;
-      font-size: 1.2rem;
-      color: #888;
-    }
-    #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
+    footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; }
+    footer a:hover { color: #fff; }
 
-    /* ✅ Install Button Styling */
+    #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
     #installBtn {
       margin-top: 15px;
       padding: 10px 25px;
@@ -202,45 +132,38 @@
       border: none;
       border-radius: 25px;
       cursor: pointer;
-      transition: background 0.3s;
       display: none;
     }
     #installBtn:hover { background: #e68900; }
 
-/* If you want to hide just username/password but keep Google button visible */
-#loginBox input#username,
-#loginBox input#password,
-#loginBox .manual-btn,
-#loginBoxModal input#usernameModal,
-#loginBoxModal input#passwordModal,
-#loginBoxModal .manual-btn {
-  display: none !important;
-}
-
+    #loginModal { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:2000; }
+    #loginBoxModal { background:white; padding:2rem; border-radius:10px; width:300px; text-align:center; position:relative; }
+    #loginBoxModal input { margin-top:10px; width:100%; padding:8px; border-radius:5px; border:1px solid #ccc; }
+    #loginBoxModal button { margin-top:10px; width:100%; padding:8px; border:none; border-radius:5px; cursor:pointer; }
+    #loginBoxModal .manual-btn { background: orangered; color:white; }
+    #loginBoxModal .gmail-btn { background: #4285F4; color:white; }
+    #closeModal { position:absolute; top:8px; right:12px; cursor:pointer; font-size:1.2rem; color:#888; }
 
     @media (max-width: 768px) {
       .hero h1 { font-size: 2.2rem; }
       .hero p { font-size: 1rem; }
       header { flex-direction: column; align-items: flex-start; }
-      nav { margin-top: 1rem; }
     }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="logo-section">
     <img src="fcic logo.png" alt="FCIC Logo">
   </div>
 </header>
 
-<!-- MAIN CONTENT -->
 <main>
   <section class="hero">
     <h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
     <div id="loginBox" class="login-box">
-      <input id="username" placeholder="Username"><br>
+      <input id="email" placeholder="Email"><br>
       <input id="password" type="password" placeholder="Password"><br>
       <button class="manual-btn" onclick="manualLogin()">Login</button>
       <button class="gmail-btn" onclick="gmailLogin()">
@@ -249,226 +172,143 @@
       <p id="loginStatus"></p>
     </div>
 
-    <!-- ✅ Manual Install Button -->
     <button id="installBtn">📲 Install App</button>
   </section>
 </main>
 
-<!-- FOOTER -->
 <footer>
   &copy; 2025 Fast Cal Industrial Corp. All rights reserved.<br>
   <a href="/privacy-policy/">Privacy Policy</a> |
   <a href="/terms/">Terms & Conditions</a>
 </footer>
 
-<!-- LOGIN MODAL -->
 <div id="loginModal">
   <div id="loginBoxModal">
     <span id="closeModal">&times;</span>
     <h3>Login</h3>
-    <input id="usernameModal" placeholder="Username"><br>
+    <input id="emailModal" placeholder="Email"><br>
     <input id="passwordModal" type="password" placeholder="Password"><br>
-    <button class="manual-btn" onclick="manualLogin()">Login</button>
+    <button class="manual-btn" onclick="manualLoginModal()">Login</button>
     <hr>
     <button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
-    <p id="loginStatus"></p>
+    <p id="loginStatusModal"></p>
   </div>
 </div>
 
-<!-- SCRIPT -->
 <script>
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxcbv-Pn3_miFI9y2Pehx6tWD1NeYy4iMcusTJW-sXK34b4EGO76_fVu8uuAwIgLs4OHg/exec";
+  // ---------------- FIREBASE CONFIG ----------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyAItDyGgVSzNEKQFNd5N4hrTOLsrPhXXtg",
+    authDomain: "fcic-7f3c1.firebaseapp.com",
+    projectId: "fcic-7f3c1",
+    storageBucket: "fcic-7f3c1.firebasestorage.app",
+    messagingSenderId: "91128961829",
+    appId: "1:91128961829:web:a223dc5400732654cbd8cc"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-const modal = document.getElementById('loginModal');
-const closeModal = document.getElementById('closeModal');
-if (closeModal) closeModal.onclick = () => modal.style.display = 'none';
-window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
-
-// ✅ AUTO SKIP LOGIN IF ALREADY LOGGED IN
-window.addEventListener("DOMContentLoaded", () => {
-  const role = localStorage.getItem("role");
-  const username = localStorage.getItem("username");
-  if (role && username) {
-    console.log("User already logged in as:", username);
-    window.location.href = "/User/";
-  }
-});
-
-async function manualLogin() {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value.trim();
-  const status = document.getElementById('loginStatus');
-  if (!username || !password) {
-    status.style.color = "red";
-    status.textContent = "⚠️ Please enter both username and password.";
-    return;
-  }
-  status.style.color = "black";
-  status.textContent = "⏳ Checking...";
-  try {
-    const res = await fetch(webAppUrl, {
-      method: "POST",
-      body: JSON.stringify({ method: "manual", username, password })
-    });
-    const data = await res.json();
-    handleLoginResponse(data);
-  } catch {
-    status.style.color = "red";
-    status.textContent = "❌ Network error.";
-  }
-}
-
-let googleReady = false;
-window.onload = () => {
-  if (window.google && window.google.accounts) initGoogleSignIn();
-  else {
-    const wait = setInterval(() => {
-      if (window.google && window.google.accounts) {
-        initGoogleSignIn();
-        clearInterval(wait);
-      }
-    }, 300);
-  }
-};
-
-function initGoogleSignIn() {
-  googleReady = true;
-  google.accounts.id.initialize({
-    client_id: "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com",
-    callback: handleCredentialResponse
-  });
-}
-
-async function gmailLogin() {
-  const clientId = "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com";
-  const scope = "email profile openid";
-
-  // Generate a random state to verify the response
-  const state = Math.random().toString(36).substring(2);
-
-  // OAuth URL for popup
-  const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=select_account&state=${state}`;
-
-  // Open popup
-  const width = 500, height = 600;
-  const left = (screen.width / 2) - (width / 2);
-  const top = (screen.height / 2) - (height / 2);
-  const popup = window.open(oauthUrl, "GoogleLogin", `width=${width},height=${height},top=${top},left=${left}`);
-
-  if (!popup) {
-    alert("Popup blocked! Please allow popups and try again.");
-    return;
-  }
-
-  // Poll the popup for the access token
-  const pollInterval = setInterval(async () => {
-    try {
-      if (!popup || popup.closed) {
-        clearInterval(pollInterval);
-        return;
-      }
-
-      const url = popup.location.href;
-      if (url.includes("access_token")) {
-        const hash = popup.location.hash.substring(1);
-        const params = new URLSearchParams(hash);
-        const accessToken = params.get("access_token");
-        const returnedState = params.get("state");
-
-        // Verify state
-        if (returnedState !== state) {
-          console.error("State mismatch. Possible CSRF attack.");
-          popup.close();
-          clearInterval(pollInterval);
-          return;
-        }
-
-        popup.close();
-        clearInterval(pollInterval);
-
-        // Fetch user info from Google
-        const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        const userInfo = await res.json();
-
-        // Send user info to your backend
-        const data = await fetch(webAppUrl, {
-          method: "POST",
-          body: JSON.stringify({ method: "gmail", email: userInfo.email })
-        }).then(r => r.json());
-
-        handleLoginResponse(data);
-      }
-    } catch (err) {
-      // Cross-origin until token is present
+  // ---------------- AUTO LOGIN ----------------
+  auth.onAuthStateChanged(user => {
+    if(user){
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("uid", user.uid);
+      window.location.href = "/User/";
     }
-  }, 500);
-}
-
-
-async function handleCredentialResponse(response) {
-  const userInfo = parseJwt(response.credential);
-  const res = await fetch(webAppUrl, {
-    method: "POST",
-    body: JSON.stringify({ method: "gmail", email: userInfo.email })
   });
-  const data = await res.json();
-  handleLoginResponse(data);
-}
 
-function handleLoginResponse(response) {
-  const status = document.getElementById('loginStatus');
-  if (response.success) {
-    localStorage.setItem("role", response.role);
-    localStorage.setItem("username", response.name);
-    localStorage.setItem("email", response.email);
-    localStorage.setItem("eid", response.eid);
-    localStorage.setItem("full", response.full);
-    localStorage.setItem("photo", response.photo);
-    status.style.color = "green";
-    status.textContent = "✅ Welcome, " + response.name;
-    setTimeout(() => { location.href = "/User/"; }, 1000);
-  } else {
-    status.style.color = "red";
-    status.textContent = response.message || "❌ Invalid login.";
+  // ---------------- EMAIL/PASSWORD LOGIN ----------------
+  async function manualLogin() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const status = document.getElementById('loginStatus');
+
+    if(!email || !password){
+      status.style.color = "red";
+      status.textContent = "⚠️ Please enter email and password.";
+      return;
+    }
+    status.style.color = "black";
+    status.textContent = "⏳ Checking...";
+
+    try{
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("uid", user.uid);
+      status.style.color = "green";
+      status.textContent = `✅ Welcome, ${user.email}`;
+      setTimeout(()=> window.location.href="/User/", 1000);
+    } catch(error){
+      status.style.color = "red";
+      status.textContent = "❌ " + error.message;
+    }
   }
-}
 
-function parseJwt(token) {
-  return JSON.parse(atob(token.split('.')[1]));
-}
+  function manualLoginModal(){
+    document.getElementById('email').value = document.getElementById('emailModal').value;
+    document.getElementById('password').value = document.getElementById('passwordModal').value;
+    manualLogin();
+  }
 
-/* ✅ Manual Install Prompt */
-let deferredPrompt;
-const installBtn = document.getElementById('installBtn');
+  // ---------------- GOOGLE LOGIN ----------------
+  async function gmailLogin(){
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try{
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("uid", user.uid);
+      localStorage.setItem("name", user.displayName);
+      localStorage.setItem("photo", user.photoURL);
+      document.getElementById('loginStatus').style.color = "green";
+      document.getElementById('loginStatus').textContent = `✅ Welcome, ${user.displayName}`;
+      setTimeout(()=> window.location.href="/User/", 1000);
+    } catch(error){
+      document.getElementById('loginStatus').style.color = "red";
+      document.getElementById('loginStatus').textContent = "❌ " + error.message;
+    }
+  }
 
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = 'block';
-});
+  auth.createUserWithEmailAndPassword(email, password)
+  .then(userCredential => { console.log(userCredential.user); })
+  .catch(err => console.error(err.message));
 
-installBtn.addEventListener('click', async () => {
-  installBtn.style.display = 'none';
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  console.log(`User response: ${outcome}`);
-  deferredPrompt = null;
-});
-</script>
+  auth.sendPasswordResetEmail(email)
+  .then(() => alert("Password reset email sent"))
+  .catch(err => console.error(err.message));
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+  // ---------------- MODAL HANDLING ----------------
+  const modal = document.getElementById('loginModal');
+  const closeModal = document.getElementById('closeModal');
+  if(closeModal) closeModal.onclick = ()=> modal.style.display='none';
+  window.onclick = e => { if(e.target==modal) modal.style.display='none'; };
 
-<!-- ✅ Service Worker -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('✅ Service Worker registered', reg))
-      .catch(err => console.error('❌ SW registration failed:', err));
+  // ---------------- INSTALL BUTTON ----------------
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', e=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display='block';
   });
-}
+  installBtn.addEventListener('click', async ()=>{
+    installBtn.style.display='none';
+    deferredPrompt.prompt();
+    const {outcome} = await deferredPrompt.userChoice;
+    console.log(`User response: ${outcome}`);
+    deferredPrompt=null;
+  });
+
+  // ---------------- SERVICE WORKER ----------------
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('✅ SW registered', reg))
+        .catch(err => console.error('❌ SW failed:', err));
+    });
+  }
 </script>
+
 </body>
 </html>
