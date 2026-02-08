@@ -124,10 +124,40 @@ button:disabled {
   background: rgba(0, 0, 0, 0.85);
 }
 
+.caption-group {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  padding: 12px;
+  margin-bottom: 20px;
+  background: rgb(250, 218, 112);
+}
+
+.caption-group .caption {
+  margin-top: 0;
+}
+
 /* Caption text */
 .caption {
+  font-size: 18px;   /* try 20px if you want it bolder */
+  font-weight: 600;  /* slightly stronger than bold */
   font-weight: bold;
   margin: 14px 0 6px;
+  width: 100%;
+}
+
+.caption label {
+  display: inline-flex;
+  align-items: left;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.caption input[type="checkbox"],
+.select-photo {
+  width: auto;
+  padding: 0;
+  margin: 0;
 }
 
 .select-photo {
@@ -260,9 +290,14 @@ function renderAll(data) {
     const cap = document.createElement("div");
 cap.className = "caption";
 
+const label = document.createElement("label");
+label.style.display = "flex";
+label.style.alignItems = "center";
+label.style.gap = "8px";
+label.style.cursor = "pointer";
+
 const selectAll = document.createElement("input");
 selectAll.type = "checkbox";
-selectAll.style.marginRight = "6px";
 
 selectAll.onchange = () => {
   grid.querySelectorAll(".select-photo").forEach(cb => {
@@ -270,7 +305,12 @@ selectAll.onchange = () => {
   });
 };
 
-cap.append(selectAll, document.createTextNode(caption));
+const text = document.createTextNode(caption.toUpperCase());
+
+label.append(selectAll, text);
+cap.appendChild(label);
+
+
 
 
     const grid = document.createElement("div");
@@ -335,7 +375,12 @@ img.addEventListener("touchmove", () => {
     });
 
     // 🔥 THIS WAS MISSING
-    uploads.append(cap, grid);
+    const group = document.createElement("div");
+group.className = "caption-group";
+
+group.append(cap, grid);
+uploads.appendChild(group);
+
   });
 }
 
