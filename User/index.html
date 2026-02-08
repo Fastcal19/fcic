@@ -146,122 +146,55 @@
   border-right: 1px solid #ccc;
 }
 
+/* ===== Messenger Layout ===== */
 #chatMessages {
-  flex: 1 1 auto;
+  flex: 1;
   overflow-y: auto;
+  padding: 10px;
+  background: #f0f2f5;
 }
 
-/* ===== Messenger Style Chat ===== */
 .chat-msg {
   display: flex;
-  margin: 6px 10px;
-  max-width: 80%;
+  margin-bottom: 8px;
 }
 
 .chat-msg.me {
-  margin-left: auto;
   justify-content: flex-end;
 }
 
+.chat-msg.other {
+  justify-content: flex-start;
+}
+
 .chat-bubble {
+  max-width: 65%;
   padding: 10px 14px;
   border-radius: 18px;
   font-size: 14px;
   line-height: 1.4;
-  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .chat-msg.me .chat-bubble {
   background: #0084ff;
   color: #fff;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 6px;
 }
 
 .chat-msg.other .chat-bubble {
-  background: #f0f0f0;
-  color: #000;
-  border-bottom-left-radius: 4px;
-}
-
-.chat-time {
-  font-size: 10px;
-  color: #999;
-  margin-top: 4px;
-}
-
-#chatHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  background: #f5f5f5;
-  border-bottom: 1px solid #ddd;
-  font-weight: bold;
-}
-
-#chatTitle {
-  font-size: 15px;
-}
-
-.chat-user {
-  color: orangered;
-}
-
-#chatInput {
-  display: flex;
-  align-items: center;
-  padding: 6px;
-  border-top: 1px solid #ddd;
   background: #fff;
-}
-
-#chatInput input[type="text"] {
-  flex: 1;
-  border: none;
-  padding: 10px;
-  border-radius: 20px;
-  background: #f1f1f1;
-  margin: 0 6px;
-  outline: none;
-}
-
-#chatInput button {
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-#chatMessages {
-  scroll-behavior: smooth;
-}
-
-#typingIndicator {
-  font-style: italic;
-  padding-left: 12px;
-}
-
-.chat-msg {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  margin: 6px 10px;
-}
-
-.chat-msg.me {
-  flex-direction: row-reverse;
+  color: #000;
+  border-bottom-left-radius: 6px;
 }
 
 .chat-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  object-fit: cover;
+  margin: 0 6px;
 }
 
-.chat-bubble {
-  max-width: 70%;
-}
 
     
     @media (min-width: 769px) {
@@ -338,8 +271,8 @@
   #chatBox {
     bottom: 0;
     right: 0;
-    width: 100%;
-    height: 100%;
+    width: 95%;
+    height: 95%;
     border-radius: 0;
   }
 }
@@ -351,53 +284,75 @@
       .main { height: calc(100vh - 55px); }
     }
 
-    /* CHAT */
-    #chatToggle { position:fixed;bottom:70px;right:10px;background:#333;color:#fff;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:6000;}
-    #chatBadge { background:red;color:#fff;font-size:12px;border-radius:50%;padding:2px 6px;position:absolute;top:8px;right:6px;display:none;}
-    #chatBox { position:fixed;bottom:70px;right:10px;width:95%;height:80%;background:#fff;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.4);display:none;flex-direction:column;z-index:6000;overflow:hidden;}
-    .user-item { cursor:pointer; }
-    .room-item { cursor:pointer; font-weight:bold; }
-  </style>
+    #chatInput {
+  display: flex;
+  padding: 8px;
+  border-top: 1px solid #ccc;
+  background: #fff;
+}
+
+#chatInput input[type="text"] {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-radius: 20px;
+  background: #f0f2f5;
+  outline: none;
+}
+
+#chatInput button {
+  border: none;
+  background: none;
+  font-size: 20px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+#chatHeader {
+  padding: 10px;
+  background: #0084ff;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#typingIndicator {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #555;
+  font-style: italic;
+  background: #f0f2f5;
+}
+
+#fileInput {
+  position: fixed;
+  left: -9999px;
+}
+
+ #chatToggle{position:fixed;bottom:70px;right:10px;background:#333;color:#fff;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:6000}
+#chatBadge{background:red;color:#fff;font-size:12px;border-radius:50%;padding:2px 6px;position:absolute;top:8px;right:6px;display:none}
+#chatBox{position:fixed;bottom:70px;right:10px;width:95%;height:80%;background:#fff;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,.4);display:none;flex-direction:column;z-index:6000;overflow:hidden}
+</style>
 </head>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+<body>
 
-<script>
-firebase.initializeApp({
-  apiKey: "AIzaSyAnulgPqKSI8Y_mMOTCof6joYscT4FLCXg",
-  authDomain: "fcic-7f3c1.firebaseapp.com",
-  projectId: "fcic-7f3c1",
-  storageBucket: "fcic-7f3c1.appspot.com",
-  messagingSenderId: "91128961829",
-  appId: "1:91128961829:web:815baae23a9b5eb3cbd8cc"
-});
 
-const db = firebase.database();
-const storage = firebase.storage();
-</script>
-
-<!-- CHAT UI -->
+<!-- CHAT TOGGLE -->
 <div id="chatToggle">💬 <span id="chatBadge">0</span></div>
 
+<!-- CHAT BOX -->
 <div id="chatBox">
   <div id="chatHeader">
-    <span id="chatTitle">💬 FCIC Chat</span>
-    <span>
-      <button id="addMemberBtn">➕</button>
-      <button id="makeAdminBtn">⭐</button>
-      <button id="deleteGroupBtn">🗑️</button>
-      <button id="leaveGroupBtn">🚪</button>
-      <span id="chatClose">✖</span>
-    </span>
+    <span id="chatTitle">Chat</span>
+    <span id="chatClose" style="cursor:pointer">✖</span>
   </div>
 
   <div id="chatBody">
     <div id="chatUsers">
       <button onclick="createGroup()">➕ Group</button>
-      <hr><b>Users</b><hr><b>Rooms</b>
+      <hr><b>Users</b>
+      <hr><b>Rooms</b>
     </div>
     <div id="chatMessages"></div>
   </div>
@@ -412,9 +367,39 @@ const storage = firebase.storage();
   </div>
 </div>
 
-<script>
-/* ================= CHAT SYSTEM (FIXED) ================= */
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
+<script>
+/* ================= FIREBASE ================= */
+firebase.initializeApp({
+  apiKey:"AIzaSyAnulgPqKSI8Y_mMOTCof6joYscT4FLCXg",
+  authDomain:"fcic-7f3c1.firebaseapp.com",
+  projectId:"fcic-7f3c1",
+  storageBucket:"fcic-7f3c1.appspot.com",
+  messagingSenderId:"91128961829",
+  appId:"1:91128961829:web:815baae23a9b5eb3cbd8cc"
+});
+
+const db = firebase.database();
+const storage = firebase.storage(
+  firebase.app(),
+  "gs://fcic-7f3c1.appspot.com"
+);
+
+const auth = firebase.auth();
+
+auth.signInAnonymously()
+  .then(() => {
+    console.log("Firebase Auth: anonymous user signed in");
+  })
+  .catch(err => {
+    console.error("Auth error:", err);
+  });
+
+/* ================= CHAT ================= */
 const username = localStorage.getItem("username") || "User";
 const role = localStorage.getItem("role") || "Staff";
 
@@ -434,9 +419,7 @@ let unread = 0;
 let chatOpen = false;
 let currentRoom = "global";
 let messageRef = null;
-
-function privateRoom(a,b){ return "private_" + [a,b].sort().join("_"); }
-function groupRoom(n){ return "group_" + n.replace(/\s+/g,"_"); }
+let typingRef = db.ref("typing/" + currentRoom);
 
 /* TOGGLE */
 chatToggle.onclick = () => {
@@ -451,150 +434,162 @@ chatClose.onclick = () => {
 };
 
 /* PRESENCE */
-/* PRESENCE */
 const userRef = db.ref("onlineUsers/"+username);
 userRef.set({name:username,role});
 userRef.onDisconnect().remove();
 
-/* POPULATE USERS & ROOMS */
+/* USERS */
 db.ref("onlineUsers").on("value", snap => {
-  chatUsers.innerHTML = `<button onclick="createGroup()">➕ Group</button>
-    <hr><b>Users</b>`;
-
-  snap.forEach(s => {
-    if (s.key !== username) {
-      const d = document.createElement("div");
-      d.className = "user-item";
-      d.textContent = s.key;
-      d.onclick = () => openPrivateChat(s.key);
+  chatUsers.innerHTML = `<button onclick="createGroup()">➕ Group</button><hr><b>Users</b>`;
+  snap.forEach(s=>{
+    if(s.key!==username){
+      const d=document.createElement("div");
+      d.className="user-item";
+      d.textContent=s.key;
+      d.onclick=()=>openPrivateChat(s.key);
       chatUsers.appendChild(d);
     }
   });
-
   chatUsers.innerHTML += "<hr><b>Rooms</b>";
-
-  db.ref("chatRooms").once("value", rSnap => {
-    rSnap.forEach(r => {
-      if (r.key.startsWith("group_")) {
-        const d = document.createElement("div");
-        d.className = "room-item";
-        d.textContent = r.key.replace("group_","👥 ");
-        d.onclick = () => openRoom(r.key, d.textContent);
-        chatUsers.appendChild(d);
-      }
-    });
-  });
 });
 
+/* ROOMS – FIXED (no duplicates) */
+db.ref("chatRooms").on("child_added", r=>{
+  if(r.key.startsWith("group_")){
+    const d=document.createElement("div");
+    d.className="room-item";
+    d.textContent=r.key.replace("group_","👥 ");
+    d.onclick=()=>openRoom(r.key,d.textContent);
+    chatUsers.appendChild(d);
+  }
+});
 
 /* RENDER MESSAGE */
 function renderMessage(msg, room, msgId){
   const isMe = msg.user === username;
-  const wrap = document.createElement("div");
-  wrap.className = "chat-msg " + (isMe ? "me":"other");
 
-  const avatar = document.createElement("img");
-  avatar.className="chat-avatar";
-  avatar.src = msg.photo || "fcic logo.png";
+  const wrap = document.createElement("div");
+  wrap.className = "chat-msg " + (isMe ? "me" : "other");
 
   const bubble = document.createElement("div");
-  bubble.className="chat-bubble";
+  bubble.className = "chat-bubble";
 
   if(msg.fileUrl){
-    bubble.innerHTML = msg.fileType.startsWith("image")
-      ? `<img src="${msg.fileUrl}" 
-     style="max-width:220px;border-radius:12px;cursor:pointer"
-     onclick="window.open('${msg.fileUrl}','_blank')">
-`
-      : `<a href="${msg.fileUrl}" target="_blank">📎 Download file</a>`;
-  } else bubble.textContent = msg.text;
-
-  if(msg.reactions){
-    bubble.innerHTML += `<div>${Object.values(msg.reactions).join(" ")}</div>`;
+    bubble.innerHTML = msg.fileType?.startsWith("image")
+      ? `<img src="${msg.fileUrl}" style="max-width:220px;border-radius:12px">`
+      : `<a href="${msg.fileUrl}" target="_blank">📎 Download</a>`;
+  } else {
+    bubble.textContent = msg.text;
   }
 
-  bubble.onclick = ()=>{
-    const e = prompt("React ❤️ 😂 👍");
-    if(e) db.ref(`chatRooms/${room}/messages/${msgId}/reactions/${username}`).set(e);
-  };
-
-  wrap.appendChild(avatar);
   wrap.appendChild(bubble);
   chatMessages.appendChild(wrap);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 
-  if (!isMe && !chatOpen) {
-  showDesktopNotification(
-    msg.user,
-    msg.text || "📎 Sent a file"
-  );
-}
-  if(!chatOpen && !isMe){
-    db.ref("userUnread/"+username+"/"+room).transaction(v=>(v||0)+1);
+  /* 🔧 FIX: unread logic */
+  if(!chatOpen && msg.user !== username){
+    unread++;
+    chatBadge.textContent = unread;
+    chatBadge.style.display = "inline-block";
+  }
+
+  /* Seen */
+  if(!isMe){
+    db.ref(`chatRooms/${room}/messages/${msgId}/seen/${username}`).set(true);
   }
 }
 
-/* FILE UPLOAD — FIXED & CLOSED */
-attachBtn.onclick = ()=>fileInput.click();
-fileInput.onchange = async ()=>{
-  const file = fileInput.files[0];
-  if(!file) return;
-
-  const ref = storage.ref(`chat/${currentRoom}/${Date.now()}_${file.name}`);
-  await ref.put(file);
-  const url = await ref.getDownloadURL();
-
-  db.ref("chatRooms/"+currentRoom+"/messages").push({
-    user:username,
-    role,
-    fileType:file.type,
-    fileUrl:url,
-    time:Date.now()
-  });
-
-  fileInput.value="";
-};
-
 /* OPEN ROOM */
 function openRoom(room,title){
-  currentRoom=room;
-  chatTitle.textContent=title;
-  chatMessages.innerHTML="";
-  db.ref("userUnread/"+username+"/"+room).remove();
+  typingRef.child(username).remove(); // 🔧 FIX
+  currentRoom = room;
+  chatTitle.textContent = title;
+  chatMessages.innerHTML = "";
+
+  typingRef = db.ref("typing/"+currentRoom);
+  typingRef.child(username).onDisconnect().remove();
 
   if(messageRef) messageRef.off();
   messageRef = db.ref("chatRooms/"+room+"/messages").limitToLast(100);
   messageRef.on("child_added", s=>renderMessage(s.val(),room,s.key));
+  listenTyping();
 }
 
-/* PRIVATE CHAT */
+/* PRIVATE */
 function openPrivateChat(other){
-  const r = privateRoom(username,other);
-  db.ref("chatRooms/"+r+"/members/"+username).set(true);
-  db.ref("chatRooms/"+r+"/members/"+other).set(true);
+  const r = ["private",username,other].sort().join("_");
   openRoom(r,"Chat with "+other);
 }
 
-/* CREATE GROUP */
+/* GROUP */
 function createGroup(){
-  const name = prompt("Group name:");
-  if(!name) return;
-  const r = groupRoom(name);
-  db.ref("chatRooms/"+r+"/members/"+username).set(true);
-  db.ref("chatRooms/"+r+"/admins/"+username).set(true);
-  openRoom(r,"👥 "+name);
+  const n = prompt("Group name:");
+  if(!n) return;
+  openRoom("group_"+n.replace(/\s+/g,"_"),"👥 "+n);
 }
 
-/* SEND TEXT */
-sendChat.onclick = sendMessage;
-chatText.addEventListener("keypress",e=>{if(e.key==="Enter")sendMessage();});
-function sendMessage(){
+/* SEND */
+sendChat.onclick = ()=>{
   const t = chatText.value.trim();
   if(!t) return;
   db.ref("chatRooms/"+currentRoom+"/messages").push({
-    user:username,role,text:t,time:Date.now()
+    user:username,role,text:t,time:Date.now(),seen:{}
   });
   chatText.value="";
+};
+
+/* FILE */
+attachBtn.onclick=()=>fileInput.click();
+fileInput.onchange = async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  console.log("Uploading:", file.name, file.type, file.size);
+
+  try {
+    const ref = storage.ref(`chat/${currentRoom}/${Date.now()}_${file.name}`);
+    const task = ref.put(file);
+
+    task.on(
+      "state_changed",
+      snap => {
+        const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
+        console.log("Upload progress:", pct.toFixed(0) + "%");
+      },
+      err => {
+        console.error("UPLOAD ERROR:", err);
+        alert(err.message);
+      },
+      async () => {
+        const url = await ref.getDownloadURL();
+        console.log("UPLOAD OK:", url);
+
+        await db.ref("chatRooms/" + currentRoom + "/messages").push({
+          user: username,
+          role,
+          fileType: file.type,
+          fileUrl: url,
+          time: Date.now(),
+          seen: {}
+        });
+      }
+    );
+  } catch (e) {
+    console.error("FATAL:", e);
+  }
+
+  fileInput.value = "";
+};
+
+
+
+/* TYPING */
+function listenTyping(){
+  const ref=db.ref("typing/"+currentRoom);
+  ref.on("value",snap=>{
+    const users=Object.keys(snap.val()||{}).filter(u=>u!==username);
+    document.getElementById("typingIndicator").textContent=users.length?"Typing…":"";
+  });
 }
 
 /* INIT */
