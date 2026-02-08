@@ -733,9 +733,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const role = localStorage.getItem("role");
 
   if (role === "System Admin" || role === "Admin") {
-    iframe.src = "Admin Dashboard.html";
+    iframe.src = "./Admin Dashboard.html";
+
   } else {
-    iframe.src = "dashboard.html";
+    iframe.src = "./dashboard.html";
   }
 
   const fullName = localStorage.getItem("full");
