@@ -212,6 +212,32 @@ button:disabled {
   pointer-events: auto;
 }
 
+.viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  flex-direction: column;
+}
+
+.viewer img {
+  max-width: 95%;
+  max-height: 80%;
+  border-radius: 8px;
+}
+
+.viewer-caption {
+  margin-top: 12px;
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  padding: 8px 16px;
+  opacity: 0.9;
+}
+
 </style>
 </head>
 <body>
@@ -233,10 +259,12 @@ button:disabled {
 </div>
 
 <!-- Fullscreen Viewer -->
-<div id="viewer" class="viewer" onclick="closeViewer()">
-  <span class="close" onclick="event.stopPropagation(); closeViewer()">✕</span>
-  <img id="viewerImg" onclick="event.stopPropagation()">
+<div id="viewer" class="viewer">
+  <span class="close" onclick="closeViewer()">✕</span>
+  <img id="viewerImg">
+  <div id="viewerCaption" class="viewer-caption"></div>
 </div>
+
 
 <div class="layout">
 
@@ -265,6 +293,9 @@ button:disabled {
 </div>
 
 <script>
+  let viewerPhotos = [];
+let currentIndex = 0;
+
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzM4XTiLqwM5QnbOAyT2UktqkII6S5V9tIip9x0nlBAhI0mPat93xe6fvDjFQ4ytGer/exec";
 
 window.onload = loadAll;
@@ -315,10 +346,16 @@ cap.appendChild(label);
 
     const grid = document.createElement("div");
     grid.className = "grid";
+const startIndex = viewerPhotos.length;
 
     data[caption].forEach(item => {
       const photo = document.createElement("div");
       photo.className = "photo";
+      viewerPhotos.push({
+  id: item.id,
+  caption
+});
+
 
       // Checkbox
       const checkbox = document.createElement("input");
@@ -329,10 +366,13 @@ cap.appendChild(label);
       // Thumbnail
       const img = document.createElement("img");
       img.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w600`;
-      img.onclick = (e) => {
-        e.stopPropagation();
-        openViewer(`https://drive.google.com/thumbnail?id=${item.id}&sz=w2000`);
-      };
+      const photoIndex = viewerPhotos.length - 1;
+
+img.onclick = (e) => {
+  e.stopPropagation();
+  openViewer(photoIndex);
+};
+
       
       let pressTimer;
 
@@ -436,17 +476,29 @@ function send(action, payload) {
   });
 }
 
-function openViewer(src) {
-  const viewer = document.getElementById("viewer");
-  document.getElementById("viewerImg").src = src;
-  viewer.classList.add("show");
+function openViewer(index) {
+  currentIndex = index;
+  const photo = viewerPhotos[currentIndex];
+
+  document.getElementById("viewerImg").src =
+    `https://drive.google.com/thumbnail?id=${photo.id}&sz=w2000`;
+
+  document.getElementById("viewerCaption").textContent =
+    photo.caption;
+
+  document.getElementById("viewer").classList.add("show");
 }
+
 
 function closeViewer() {
   const viewer = document.getElementById("viewer");
   viewer.classList.remove("show");
-  setTimeout(() => document.getElementById("viewerImg").src = "", 300);
+  setTimeout(() => {
+    document.getElementById("viewerImg").src = "";
+    document.getElementById("viewerCaption").textContent = "";
+  }, 300);
 }
+
 
 function deleteSelected() {
   const checked = document.querySelectorAll(".select-photo:checked");
@@ -514,6 +566,35 @@ window.addEventListener("touchend", e => {
     }, 800);
   }
 });
+
+let touchStartX = 0;
+
+const viewer = document.getElementById("viewer");
+
+viewer.addEventListener("touchstart", e => {
+  touchStartX = e.touches[0].clientX;
+});
+
+viewer.addEventListener("touchend", e => {
+  const diff = e.changedTouches[0].clientX - touchStartX;
+
+  if (Math.abs(diff) < 50) return;
+
+  if (diff < 0) showNext();
+  else showPrev();
+});
+
+function showNext() {
+  if (currentIndex < viewerPhotos.length - 1) {
+    openViewer(currentIndex + 1);
+  }
+}
+
+function showPrev() {
+  if (currentIndex > 0) {
+    openViewer(currentIndex - 1);
+  }
+}
 
 </script>
 
