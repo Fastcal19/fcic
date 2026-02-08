@@ -263,24 +263,19 @@
   }
 
   // ---------------- GOOGLE LOGIN ----------------
-  async function gmailLogin(){
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try{
-      const result = await auth.signInWithPopup(provider);
-      await loadUserProfile(result.user);
-      const user = result.user;
-      localStorage.setItem("email", user.email);
-      localStorage.setItem("uid", user.uid);
-      localStorage.setItem("name", user.displayName);
-      localStorage.setItem("photo", user.photoURL);
-      document.getElementById('loginStatus').style.color = "green";
-      document.getElementById('loginStatus').textContent = `✅ Welcome, ${user.displayName}`;
-      setTimeout(()=> window.location.href="/User/", 1000);
-    } catch(error){
-      document.getElementById('loginStatus').style.color = "red";
-      document.getElementById('loginStatus').textContent = "❌ " + error.message;
-    }
+  async function gmailLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  const status = document.getElementById('loginStatus');
+
+  try {
+    const result = await auth.signInWithPopup(provider);
+    await loadUserProfile(result.user);
+  } catch (error) {
+    status.style.color = "red";
+    status.textContent = "❌ " + error.message;
   }
+}
+
 
   // ---------------- MODAL HANDLING ----------------
   const modal = document.getElementById('loginModal');
