@@ -339,10 +339,73 @@ function initGoogleSignIn() {
   });
 }
 
-function gmailLogin() {
-  if (googleReady) google.accounts.id.prompt();
-  else alert("Google Sign-In not ready yet. Please wait a moment and try again.");
+async function gmailLogin() {
+  const clientId = "493350203923-o6sm4f7rs1uddeps9qke7figepha2eug.apps.googleusercontent.com";
+  const scope = "email profile openid";
+
+  // Generate a random state to verify the response
+  const state = Math.random().toString(36).substring(2);
+
+  // OAuth URL for popup
+  const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=select_account&state=${state}`;
+
+  // Open popup
+  const width = 500, height = 600;
+  const left = (screen.width / 2) - (width / 2);
+  const top = (screen.height / 2) - (height / 2);
+  const popup = window.open(oauthUrl, "GoogleLogin", `width=${width},height=${height},top=${top},left=${left}`);
+
+  if (!popup) {
+    alert("Popup blocked! Please allow popups and try again.");
+    return;
+  }
+
+  // Poll the popup for the access token
+  const pollInterval = setInterval(async () => {
+    try {
+      if (!popup || popup.closed) {
+        clearInterval(pollInterval);
+        return;
+      }
+
+      const url = popup.location.href;
+      if (url.includes("access_token")) {
+        const hash = popup.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get("access_token");
+        const returnedState = params.get("state");
+
+        // Verify state
+        if (returnedState !== state) {
+          console.error("State mismatch. Possible CSRF attack.");
+          popup.close();
+          clearInterval(pollInterval);
+          return;
+        }
+
+        popup.close();
+        clearInterval(pollInterval);
+
+        // Fetch user info from Google
+        const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const userInfo = await res.json();
+
+        // Send user info to your backend
+        const data = await fetch(webAppUrl, {
+          method: "POST",
+          body: JSON.stringify({ method: "gmail", email: userInfo.email })
+        }).then(r => r.json());
+
+        handleLoginResponse(data);
+      }
+    } catch (err) {
+      // Cross-origin until token is present
+    }
+  }, 500);
 }
+
 
 async function handleCredentialResponse(response) {
   const userInfo = parseJwt(response.credential);
