@@ -231,57 +231,30 @@
   window.location.href = "/User/";
 }
   
-firebase.auth().onAuthStateChanged(async user => {
-  if (!user) {
-    window.location.href = "/";
+  // ---------------- EMAIL/PASSWORD LOGIN ----------------
+  async function manualLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const status = document.getElementById('loginStatus');
+
+  if (!email || !password) {
+    status.style.color = "red";
+    status.textContent = "⚠️ Please enter email and password.";
     return;
   }
 
-  if (!localStorage.getItem("role")) {
-    const db = firebase.firestore();
-    const doc = await db.collection("users").doc(user.uid).get();
+  status.style.color = "black";
+  status.textContent = "⏳ Logging in...";
 
-    if (!doc.exists) {
-      auth.signOut();
-      window.location.href = "/";
-      return;
-    }
-
-    const data = doc.data();
-    localStorage.setItem("role", data.role);
-    localStorage.setItem("full", data.fullName || "");
-    localStorage.setItem("photo", data.photo || "fcic logo.png");
+  try {
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    await loadUserProfile(userCredential.user);
+  } catch (error) {
+    status.style.color = "red";
+    status.textContent = "❌ " + error.message;
   }
-});
+}
 
-  // ---------------- EMAIL/PASSWORD LOGIN ----------------
-  async function manualLogin() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const status = document.getElementById('loginStatus');
-
-    if(!email || !password){
-      status.style.color = "red";
-      status.textContent = "⚠️ Please enter email and password.";
-      return;
-    }
-    status.style.color = "black";
-    status.textContent = "⏳ Checking...";
-
-    try{
-      const userCredential = await auth.signInWithEmailAndPassword(email, password);
-      await loadUserProfile(userCredential.user);
-      const user = userCredential.user;
-      localStorage.setItem("email", user.email);
-      localStorage.setItem("uid", user.uid);
-      status.style.color = "green";
-      status.textContent = `✅ Welcome, ${user.email}`;
-      setTimeout(()=> window.location.href="/User/", 1000);
-    } catch(error){
-      status.style.color = "red";
-      status.textContent = "❌ " + error.message;
-    }
-  }
 
   function manualLoginModal(){
     document.getElementById('email').value = document.getElementById('emailModal').value;
@@ -308,14 +281,6 @@ firebase.auth().onAuthStateChanged(async user => {
       document.getElementById('loginStatus').textContent = "❌ " + error.message;
     }
   }
-
-  auth.createUserWithEmailAndPassword(email, password)
-  .then(userCredential => { console.log(userCredential.user); })
-  .catch(err => console.error(err.message));
-
-  auth.sendPasswordResetEmail(email)
-  .then(() => alert("Password reset email sent"))
-  .catch(err => console.error(err.message));
 
   // ---------------- MODAL HANDLING ----------------
   const modal = document.getElementById('loginModal');
