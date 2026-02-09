@@ -1,601 +1,314 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Photo Gallery</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fast Cal Industrial Corp</title>
 
-<style>
-body {
-  font-family: Arial;
-  margin: 0;
-  padding: 16px;
-}
+  <!-- ✅ PWA Manifest + Theme -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ff9800">
 
-/* Layout */
-.layout {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 20px;
-  max-width: 1200px;
-  margin: auto;
-}
+  <!-- ✅ iOS PWA Support -->
+  <link rel="apple-touch-icon" href="/logo-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-/* Mobile layout */
-@media (max-width: 768px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-  .left {
-    border-right: none;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 16px;
-  }
-}
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-/* Left panel */
-.left {
-  border-right: 1px solid #ddd;
-  padding-right: 16px;
-}
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 
-/* Inputs */
-textarea, input, button {
-  width: 100%;
-  margin-top: 8px;
-  padding: 8px;
-}
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #222;
+      background-color: gray;
+      display: flex;
+      flex-direction: column;
+    }
 
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+    header {
+      background: linear-gradient(90deg, orange, white, orange);
+      color: white;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .logo-section { display: flex; justify-content: center; }
+    .logo-section img { height: 55px; }
 
-/* Spinner */
-.spinner {
-  display: none;
-  margin-top: 10px;
-  text-align: center;
-}
+    main { flex: 1; }
 
-.spinner::after {
-  content: "";
-  width: 24px;
-  height: 24px;
-  border: 3px solid #ccc;
-  border-top-color: #333;
-  border-radius: 50%;
-  display: inline-block;
-  animation: spin 0.8s linear infinite;
-}
+    .hero {
+      position: relative;
+      height: 70vh;
+      background: linear-gradient(1deg, gray, lightgray, gray);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 2rem;
+    }
 
-/* Grid & photos */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-  gap: 8px;
-}
+    .hero h3 {
+      font-size: 1.2rem;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+      animation: flicker 2s infinite;
+    }
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 24%, 55% { opacity: 0.6; }
+    }
 
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  }
-}
+    .hero button {
+      margin-top: 2rem;
+      padding: 0.8rem 2rem;
+      border: none;
+      background: #ff9800;
+      color: white;
+      font-size: 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .hero button:hover { background: #e68900; transform: scale(1.05); }
 
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-}
+    .login-box {
+      display: inline-block;
+      background: linear-gradient(90deg, orange, white, orange);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      text-align: center;
+    }
+    .login-box input {
+      width: 80%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .manual-btn, .gmail-btn {
+      width: 85%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .manual-btn { background: #4CAF50; color: white; }
+    .gmail-btn { background: #DB4437; color: white; }
+    .gmail-btn i { margin-right: 6px; }
 
-.grid img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 8px;
-  cursor: pointer;
-}
+    footer {
+      background: #222;
+      color: #ccc;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+    footer a { color: #ffb74d; text-decoration: none; margin: 0 5px; }
+    footer a:hover { color: #fff; }
 
-/* Photo wrapper */
-.photo {
-  position: relative;
-}
+    #loginStatus { margin-top: 1rem; color: red; font-size: 0.9rem; }
+    #installBtn {
+      margin-top: 15px;
+      padding: 10px 25px;
+      font-size: 1rem;
+      background: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      display: none;
+    }
+    #installBtn:hover { background: #e68900; }
 
-/* Action buttons */
-.actions {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  display: flex;
-  gap: 6px;
-}
+    #loginModal { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:2000; }
+    #loginBoxModal { background:white; padding:2rem; border-radius:10px; width:300px; text-align:center; position:relative; }
+    #loginBoxModal input { margin-top:10px; width:100%; padding:8px; border-radius:5px; border:1px solid #ccc; }
+    #loginBoxModal button { margin-top:10px; width:100%; padding:8px; border:none; border-radius:5px; cursor:pointer; }
+    #loginBoxModal .manual-btn { background: orangered; color:white; }
+    #loginBoxModal .gmail-btn { background: #4285F4; color:white; }
+    #closeModal { position:absolute; top:8px; right:12px; cursor:pointer; font-size:1.2rem; color:#888; }
 
-.actions button {
-  background: rgba(0, 0, 0, 0.65);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 8px;
-  font-size: 14px;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.actions button:hover {
-  background: rgba(0, 0, 0, 0.85);
-}
-
-.caption-group {
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-  padding: 12px;
-  margin-bottom: 20px;
-  background: rgb(250, 218, 112);
-}
-
-.caption-group .caption {
-  margin-top: 0;
-}
-
-/* Caption text */
-.caption {
-  font-size: 18px;   /* try 20px if you want it bolder */
-  font-weight: 600;  /* slightly stronger than bold */
-  font-weight: bold;
-  margin: 14px 0 6px;
-  width: 100%;
-}
-
-.caption label {
-  display: inline-flex;
-  align-items: left;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.caption input[type="checkbox"],
-.select-photo {
-  width: auto;
-  padding: 0;
-  margin: 0;
-}
-
-.select-photo {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  z-index: 5;
-}
-
-/* Spinner animation */
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Fullscreen viewer */
-.viewer {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.9);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.viewer.show {
-  display: flex;
-  opacity: 1;
-}
-
-.viewer img {
-  max-width: 95%;
-  max-height: 95%;
-  border-radius: 8px;
-}
-
-.viewer .close {
-  position: absolute;
-  top: 16px;
-  right: 20px;
-  color: #fff;
-  font-size: 28px;
-  cursor: pointer;
-}
-
-.select-photo {
-  pointer-events: auto;
-}
-
-.viewer {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.9);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  flex-direction: column;
-}
-
-.viewer img {
-  max-width: 95%;
-  max-height: 80%;
-  border-radius: 8px;
-}
-
-.viewer-caption {
-  margin-top: 12px;
-  color: #fff;
-  font-size: 16px;
-  text-align: center;
-  padding: 8px 16px;
-  opacity: 0.9;
-}
-
-</style>
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero p { font-size: 1rem; }
+      header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
 </head>
 <body>
-<div id="pullIndicator" style="
-  position: fixed;
-  top: -50px;
-  left: 0;
-  right: 0;
-  height: 50px;
-  background: #f4f6f8;
-  color: #333;
-  text-align: center;
-  line-height: 50px;
-  font-size: 14px;
-  z-index: 1000;
-  transition: top 0.25s ease;
-">
-  ↓ Pull to refresh
-</div>
 
-<!-- Fullscreen Viewer -->
-<div id="viewer" class="viewer">
-  <span class="close" onclick="closeViewer()">✕</span>
-  <img id="viewerImg">
-  <div id="viewerCaption" class="viewer-caption"></div>
-</div>
-
-
-<div class="layout">
-
-  <!-- LEFT -->
-  <div class="left">
-    <h3>Upload Photos</h3>
-    
-
-
-    <textarea id="caption" placeholder="Enter caption"></textarea>
-    <input type="file" id="photos" multiple accept="image/*">
-
-    <button id="uploadBtn" onclick="upload()">Upload</button>
-    <button onclick="deleteSelected()" style="margin-top:8px;background:#c62828;color:#fff">
-    Delete Selected
-    </button>
-    <div class="spinner" id="spinner"></div>
+<header>
+  <div class="logo-section">
+    <img src="fcic logo.png" alt="FCIC Logo">
   </div>
+</header>
 
-  <!-- RIGHT -->
-  <div class="right">
-    <h3>All Uploaded Photos</h3>
-    <div id="uploads"></div>
+<main>
+  <section class="hero">
+    <h3>⚡WELCOME TO FCIC PORTAL⚡</h3>
+    <div id="loginBox" class="login-box">
+      <input id="email" placeholder="Email"><br>
+      <input id="password" type="password" placeholder="Password"><br>
+      <button class="manual-btn" onclick="manualLogin()">Login</button>
+      <button class="gmail-btn" onclick="gmailLogin()">
+        <i class="fab fa-google"></i> Sign in with Google
+      </button>
+      <p id="loginStatus"></p>
+    </div>
+
+    <button id="installBtn">📲 Install App</button>
+  </section>
+</main>
+
+<footer>
+  &copy; 2025 Fast Cal Industrial Corp. All rights reserved.<br>
+  <a href="/privacy-policy/">Privacy Policy</a> |
+  <a href="/terms/">Terms & Conditions</a>
+</footer>
+
+<div id="loginModal">
+  <div id="loginBoxModal">
+    <span id="closeModal">&times;</span>
+    <h3>Login</h3>
+    <input id="emailModal" placeholder="Email"><br>
+    <input id="passwordModal" type="password" placeholder="Password"><br>
+    <button class="manual-btn" onclick="manualLoginModal()">Login</button>
+    <hr>
+    <button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
+    <p id="loginStatusModal"></p>
   </div>
-
 </div>
 
 <script>
-  let viewerPhotos = [];
-let currentIndex = 0;
+  
+  // ---------------- FIREBASE CONFIG ----------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyAItDyGgVSzNEKQFNd5N4hrTOLsrPhXXtg",
+    authDomain: "fcic-7f3c1.firebaseapp.com",
+    projectId: "fcic-7f3c1",
+    storageBucket: "fcic-7f3c1.firebasestorage.app",
+    messagingSenderId: "91128961829",
+    appId: "1:91128961829:web:a223dc5400732654cbd8cc"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzM4XTiLqwM5QnbOAyT2UktqkII6S5V9tIip9x0nlBAhI0mPat93xe6fvDjFQ4ytGer/exec";
+  async function loadUserProfile(user) {
+  const db = firebase.firestore();
+  const doc = await db.collection("users").doc(user.uid).get();
 
-window.onload = loadAll;
-
-function setUploading(state) {
-  document.getElementById("spinner").style.display = state ? "block" : "none";
-  const btn = document.getElementById("uploadBtn");
-  btn.disabled = state;
-  btn.textContent = state ? "Uploading..." : "Upload";
-}
-
-function loadAll() {
-  fetch(`${WEB_APP_URL}?action=list`)
-    .then(r => r.json())
-    .then(renderAll);
-}
-
-function renderAll(data) {
-  const uploads = document.getElementById("uploads");
-  uploads.innerHTML = "";
-
-  Object.keys(data).forEach(caption => {
-    const cap = document.createElement("div");
-cap.className = "caption";
-
-const label = document.createElement("label");
-label.style.display = "flex";
-label.style.alignItems = "center";
-label.style.gap = "8px";
-label.style.cursor = "pointer";
-
-const selectAll = document.createElement("input");
-selectAll.type = "checkbox";
-
-selectAll.onchange = () => {
-  grid.querySelectorAll(".select-photo").forEach(cb => {
-    cb.checked = selectAll.checked;
-  });
-};
-
-const text = document.createTextNode(caption.toUpperCase());
-
-label.append(selectAll, text);
-cap.appendChild(label);
-
-
-
-
-    const grid = document.createElement("div");
-    grid.className = "grid";
-const startIndex = viewerPhotos.length;
-
-    data[caption].forEach(item => {
-      const photo = document.createElement("div");
-      photo.className = "photo";
-      viewerPhotos.push({
-  id: item.id,
-  caption
-});
-
-
-      // Checkbox
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "select-photo";
-      checkbox.dataset.id = item.id;
-
-      // Thumbnail
-      const img = document.createElement("img");
-      img.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w600`;
-      const photoIndex = viewerPhotos.length - 1;
-
-img.onclick = (e) => {
-  e.stopPropagation();
-  openViewer(photoIndex);
-};
-
-      
-      let pressTimer;
-
-img.addEventListener("touchstart", (e) => {
-  pressTimer = setTimeout(() => {
-    checkbox.checked = !checkbox.checked;
-  }, 500);
-});
-
-img.addEventListener("touchend", () => {
-  clearTimeout(pressTimer);
-});
-
-img.addEventListener("touchmove", () => {
-  clearTimeout(pressTimer);
-});
-
-      // Actions
-      const actions = document.createElement("div");
-      actions.className = "actions";
-
-      const del = document.createElement("button");
-      del.textContent = "🗑";
-      del.onclick = (e) => {
-        e.stopPropagation();
-        if (confirm("Delete this photo?")) modify("delete", item.id);
-      };
-
-      const edit = document.createElement("button");
-      edit.textContent = "✏️";
-      edit.onclick = (e) => {
-        e.stopPropagation();
-        const newCap = prompt("New caption:", caption);
-        if (newCap) modify("edit", item.id, newCap);
-      };
-
-      actions.append(edit, del);
-      photo.append(checkbox, img, actions);
-      grid.appendChild(photo);
-    });
-
-    // 🔥 THIS WAS MISSING
-    const group = document.createElement("div");
-group.className = "caption-group";
-
-group.append(cap, grid);
-uploads.appendChild(group);
-
-  });
-}
-
-
-function upload() {
-  const captionEl = document.getElementById("caption");
-  const filesEl = document.getElementById("photos");
-
-  const caption = captionEl.value.trim();
-  const files = filesEl.files;
-
-  if (!caption || files.length === 0) {
-    alert("Caption + at least 1 photo required");
+  if (!doc.exists) {
+    alert("User not registered. Contact admin.");
+    auth.signOut();
     return;
   }
 
-  setUploading(true);
+  const data = doc.data();
 
-  const uploads = [];
-  let done = 0;
+  localStorage.setItem("uid", user.uid);
+  localStorage.setItem("eid", data.eid);
+  localStorage.setItem("email", user.email);
+  localStorage.setItem("role", data.role);
+  localStorage.setItem("full", data.fullName || "");
+  localStorage.setItem("username", data.nickname || "");
+  localStorage.setItem("photo", data.photo || "fcic logo.png");
 
-  [...files].forEach(f => {
-    const r = new FileReader();
-    r.onload = e => {
-      uploads.push({
-        name: f.name,
-        type: f.type,
-        data: e.target.result.split(",")[1]
-      });
-      if (++done === files.length) send("upload", { caption, files: uploads });
-    };
-    r.readAsDataURL(f);
-  });
+
+  window.location.href = "User.html";
 }
+  
+  // ---------------- EMAIL/PASSWORD LOGIN ----------------
+  async function manualLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const status = document.getElementById('loginStatus');
 
-
-function modify(action, fileId, caption = "") {
-  send(action, { fileId, caption });
-}
-
-function send(action, payload) {
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    body: JSON.stringify({ action, ...payload })
-  })
-  .then(() => {
-    loadAll();
-    if (action === "upload") {
-      document.getElementById("caption").value = "";
-      document.getElementById("photos").value = "";
-      setUploading(false);
-    }
-  });
-}
-
-function openViewer(index) {
-  currentIndex = index;
-  const photo = viewerPhotos[currentIndex];
-
-  document.getElementById("viewerImg").src =
-    `https://drive.google.com/thumbnail?id=${photo.id}&sz=w2000`;
-
-  document.getElementById("viewerCaption").textContent =
-    photo.caption;
-
-  document.getElementById("viewer").classList.add("show");
-}
-
-
-function closeViewer() {
-  const viewer = document.getElementById("viewer");
-  viewer.classList.remove("show");
-  setTimeout(() => {
-    document.getElementById("viewerImg").src = "";
-    document.getElementById("viewerCaption").textContent = "";
-  }, 300);
-}
-
-
-function deleteSelected() {
-  const checked = document.querySelectorAll(".select-photo:checked");
-
-  if (checked.length === 0) {
-    alert("No photos selected");
+  if (!email || !password) {
+    status.style.color = "red";
+    status.textContent = "⚠️ Please enter email and password.";
     return;
   }
 
-  if (!confirm(`Delete ${checked.length} selected photo(s)?`)) return;
+  status.style.color = "black";
+  status.textContent = "⏳ Logging in...";
 
-  let count = 0;
-
-  checked.forEach(cb => {
-    send("delete", { fileId: cb.dataset.id });
-    cb.checked = false; // auto clear
-    count++;
-  });
-
-  setTimeout(() => {
-    loadAll();
-  }, 600);
+  try {
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    await loadUserProfile(userCredential.user);
+  } catch (error) {
+    status.style.color = "red";
+    status.textContent = "❌ " + error.message;
+  }
 }
 
-let startY = 0;
-let pulling = false;
 
-window.addEventListener("touchstart", e => {
-  if (window.scrollY === 0) {
-    startY = e.touches[0].clientY;
-    pulling = true;
+  function manualLoginModal(){
+    document.getElementById('email').value = document.getElementById('emailModal').value;
+    document.getElementById('password').value = document.getElementById('passwordModal').value;
+    manualLogin();
   }
-});
 
-window.addEventListener("touchmove", e => {
-  if (!pulling) return;
+  // ---------------- GOOGLE LOGIN ----------------
+  async function gmailLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  const status = document.getElementById('loginStatus');
 
-  const currentY = e.touches[0].clientY;
-  const diff = currentY - startY;
+  try {
+    const result = await auth.signInWithPopup(provider);
+    await loadUserProfile(result.user);
+  } catch (error) {
+    status.style.color = "red";
+    status.textContent = "❌ " + error.message;
+  }
+}
 
-  if (diff > 0 && diff < 120) {
+
+  // ---------------- MODAL HANDLING ----------------
+  const modal = document.getElementById('loginModal');
+  const closeModal = document.getElementById('closeModal');
+  if(closeModal) closeModal.onclick = ()=> modal.style.display='none';
+  window.onclick = e => { if(e.target==modal) modal.style.display='none'; };
+
+  // ---------------- INSTALL BUTTON ----------------
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', e=>{
     e.preventDefault();
-    document.getElementById("pullIndicator").style.top =
-      Math.min(diff - 50, 10) + "px";
+    deferredPrompt = e;
+    installBtn.style.display='block';
+  });
+  installBtn.addEventListener('click', async ()=>{
+    installBtn.style.display='none';
+    deferredPrompt.prompt();
+    const {outcome} = await deferredPrompt.userChoice;
+    console.log(`User response: ${outcome}`);
+    deferredPrompt=null;
+  });
+
+  // ---------------- SERVICE WORKER ----------------
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('✅ SW registered', reg))
+        .catch(err => console.error('❌ SW failed:', err));
+    });
   }
-});
-
-window.addEventListener("touchend", e => {
-  if (!pulling) return;
-
-  const indicator = document.getElementById("pullIndicator");
-  const finalY = indicator.getBoundingClientRect().top;
-
-  indicator.style.top = "-50px";
-  pulling = false;
-
-  if (finalY > -10) {
-    indicator.textContent = "⟳ Refreshing...";
-    indicator.style.top = "0px";
-    loadAll();
-
-    setTimeout(() => {
-      indicator.textContent = "↓ Pull to refresh";
-      indicator.style.top = "-50px";
-    }, 800);
-  }
-});
-
-let touchStartX = 0;
-
-const viewer = document.getElementById("viewer");
-
-viewer.addEventListener("touchstart", e => {
-  touchStartX = e.touches[0].clientX;
-});
-
-viewer.addEventListener("touchend", e => {
-  const diff = e.changedTouches[0].clientX - touchStartX;
-
-  if (Math.abs(diff) < 50) return;
-
-  if (diff < 0) showNext();
-  else showPrev();
-});
-
-function showNext() {
-  if (currentIndex < viewerPhotos.length - 1) {
-    openViewer(currentIndex + 1);
-  }
-}
-
-function showPrev() {
-  if (currentIndex > 0) {
-    openViewer(currentIndex - 1);
-  }
-}
-
 </script>
 
 </body>
