@@ -170,6 +170,11 @@
         <i class="fab fa-google"></i> Sign in with Google
       </button>
       <p id="loginStatus"></p>
+      <p style="margin-top:8px;">
+  <a href="#" onclick="forgotPassword()" style="color:#d32f2f; font-size:0.9rem;">
+    Forgot password?
+  </a>
+</p>
     </div>
 
     <button id="installBtn">📲 Install App</button>
@@ -192,8 +197,10 @@
     <hr>
     <button class="gmail-btn" onclick="gmailLogin()"><i class="fab fa-google"></i> Sign in with Google</button>
     <p id="loginStatusModal"></p>
+    
   </div>
 </div>
+
 
 <script>
   
@@ -230,7 +237,7 @@
   localStorage.setItem("photo", data.photo || "fcic logo.png");
 
 
-  window.location.href = /User/";
+  window.location.href = "User.html";
 }
   
   // ---------------- EMAIL/PASSWORD LOGIN ----------------
@@ -277,6 +284,33 @@
     status.textContent = "❌ " + error.message;
   }
 }
+
+  async function forgotPassword(isModal = false) {
+    const emailInput = isModal
+      ? document.getElementById('emailModal')
+      : document.getElementById('email');
+
+    const status = isModal
+      ? document.getElementById('loginStatusModal')
+      : document.getElementById('loginStatus');
+
+    const email = emailInput.value.trim();
+
+    if (!email) {
+      status.style.color = "red";
+      status.textContent = "⚠️ Please enter your email first.";
+      return;
+    }
+
+    try {
+      await auth.sendPasswordResetEmail(email);
+      status.style.color = "green";
+      status.textContent = "✅ Password reset email sent. Check your inbox.";
+    } catch (error) {
+      status.style.color = "red";
+      status.textContent = "❌ " + error.message;
+    }
+  }
 
 
   // ---------------- MODAL HANDLING ----------------
