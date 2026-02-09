@@ -1,108 +1,602 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pages — Under Development</title>
-  <style>
-    :root{
-      --bg1:#0f172a; --bg2:#071330; --accent:#ffb86b; --muted:#94a3b8; --glass: rgba(255,255,255,0.06);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,'Helvetica Neue',Arial}
-    body{
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(255,184,107,0.05), transparent),
-                  radial-gradient(900px 400px at 90% 90%, rgba(6,182,212,0.03), transparent),
-                  linear-gradient(180deg,var(--bg1),var(--bg2));
-      color: #e6eef8;
-      display:flex;align-items:center;justify-content:center;padding:32px;overflow:hidden;
-    }
+<meta charset="UTF-8">
+<title>Photo Gallery</title>
 
-    .floaters{position:absolute;inset:0;pointer-events:none}
-    .floater{position:absolute;opacity:0.14;filter:blur(6px);transform-origin:center;mix-blend-mode:screen}
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  padding: 16px;
+}
 
-    .card{
-      width:min(920px,96vw);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius:18px;padding:28px;backdrop-filter: blur(6px);box-shadow: 0 10px 40px rgba(2,6,23,0.6);
-      display:flex;flex-direction:column;align-items:flex-start;gap:20px;position:relative;overflow:hidden
-    }
+/* Layout */
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
 
-    .left h1{font-size:clamp(28px,4.2vw,40px);margin:0 0 8px}
-    .left p{margin:0 0 18px;color:var(--muted)}
+/* Mobile layout */
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .left {
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 16px;
+  }
+}
 
-    .progress-wrap{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px;width:100%}
-    .progress{height:14px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden}
-    .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#06b6d4);border-radius:999px;transition:width 1.4s cubic-bezier(.2,.9,.2,1)}
+/* Left panel */
+.left {
+  border-right: 1px solid #ddd;
+  padding-right: 16px;
+}
 
-    .gear{width:84px;height:84px;display:inline-block}
-    .gear svg{width:100%;height:100%}
-    .gear.spin{animation:spin 6s linear infinite}
-    .gear.spin-rev{animation:spin 8s linear infinite reverse}
-    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+/* Inputs */
+textarea, input, button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+}
 
-    .btn{padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#06b6d4);color:#041022;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(6,182,212,0.1);transition:transform .18s ease}
-    .btn:active{transform:translateY(2px)}
-    .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
-    .card{transform:translateY(10px);opacity:0;animation:intro .7s cubic-bezier(.2,.9,.2,1) forwards}
-    @keyframes intro{to{transform:none;opacity:1}}
+/* Spinner */
+.spinner {
+  display: none;
+  margin-top: 10px;
+  text-align: center;
+}
 
-    .under {display:inline-block;color:var(--accent);font-weight:700;animation:bounce 2s ease-in-out infinite}
-    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.spinner::after {
+  content: "";
+  width: 24px;
+  height: 24px;
+  border: 3px solid #ccc;
+  border-top-color: #333;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
 
-    .shimmer{position:relative;overflow:hidden}
-    .shimmer::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);transform:translateX(-120%);animation:shm 2.6s linear infinite}
-    @keyframes shm{to{transform:translateX(120%)}}
+/* Grid & photos */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+}
 
-    footer{position:absolute;left:18px;bottom:12px;color:rgba(255,255,255,0.06);font-size:12px}
-  </style>
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+.grid img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Photo wrapper */
+.photo {
+  position: relative;
+}
+
+/* Action buttons */
+.actions {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+.actions button {
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.actions button:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.caption-group {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  padding: 12px;
+  margin-bottom: 20px;
+  background: rgb(250, 218, 112);
+}
+
+.caption-group .caption {
+  margin-top: 0;
+}
+
+/* Caption text */
+.caption {
+  font-size: 18px;   /* try 20px if you want it bolder */
+  font-weight: 600;  /* slightly stronger than bold */
+  font-weight: bold;
+  margin: 14px 0 6px;
+  width: 100%;
+}
+
+.caption label {
+  display: inline-flex;
+  align-items: left;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.caption input[type="checkbox"],
+.select-photo {
+  width: auto;
+  padding: 0;
+  margin: 0;
+}
+
+.select-photo {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  z-index: 5;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Fullscreen viewer */
+.viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.viewer.show {
+  display: flex;
+  opacity: 1;
+}
+
+.viewer img {
+  max-width: 95%;
+  max-height: 95%;
+  border-radius: 8px;
+}
+
+.viewer .close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.select-photo {
+  pointer-events: auto;
+}
+
+.viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  flex-direction: column;
+}
+
+.viewer img {
+  max-width: 95%;
+  max-height: 80%;
+  border-radius: 8px;
+}
+
+.viewer-caption {
+  margin-top: 12px;
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  padding: 8px 16px;
+  opacity: 0.9;
+}
+
+</style>
 </head>
 <body>
-  <div class="floaters" aria-hidden>
-    <svg class="floater" style="left:6%;top:10%;width:240px;" viewBox="0 0 200 200">
-      <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#ffb86b"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
-      <circle cx="100" cy="100" r="80" fill="url(#g1)" />
-    </svg>
-    <svg class="floater" style="right:4%;bottom:6%;width:180px;" viewBox="0 0 200 200">
-      <rect x="10" y="10" width="180" height="180" rx="20" fill="#06b6d4"/>
-    </svg>
+<div id="pullIndicator" style="
+  position: fixed;
+  top: -50px;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: #f4f6f8;
+  color: #333;
+  text-align: center;
+  line-height: 50px;
+  font-size: 14px;
+  z-index: 1000;
+  transition: top 0.25s ease;
+">
+  ↓ Pull to refresh
+</div>
+
+<!-- Fullscreen Viewer -->
+<div id="viewer" class="viewer">
+  <span class="close" onclick="closeViewer()">✕</span>
+  <img id="viewerImg">
+  <div id="viewerCaption" class="viewer-caption"></div>
+</div>
+
+
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="left">
+    <h3>Upload Photos</h3>
+    
+
+
+    <textarea id="caption" placeholder="Enter caption"></textarea>
+    <input type="file" id="photos" multiple accept="image/*">
+
+    <button id="uploadBtn" onclick="upload()">Upload</button>
+    <button onclick="deleteSelected()" style="margin-top:8px;background:#c62828;color:#fff">
+    Delete Selected
+    </button>
+    <div class="spinner" id="spinner"></div>
   </div>
 
-  <main class="card">
-    <section class="left">
-      <h1 class="shimmer">Pages — <span class="under">Under Development</span></h1>
-      <p>Stay tuned for updates and improvements rolling out soon.</p>
+  <!-- RIGHT -->
+  <div class="right">
+    <h3>All Uploaded Photos</h3>
+    <div id="uploads"></div>
+  </div>
 
-      <div style="display:flex;gap:16px;align-items:center;margin-top:8px;flex-wrap:wrap">
-        <div class="progress-wrap">
-          <small style="color:var(--muted)">On Progress</small>
-          <div class="progress"><div class="bar" id="progBar"></div></div>
-        </div>
+</div>
 
-        <div style="display:flex;gap:10px;align-items:center">
-          <div class="gear spin" title="working"><svg viewBox="0 0 100 100"><g transform="translate(50,50)"><path d="M-6-34 L6-34 L10-20 L22-12 L18 2 L28 18 L18 34 L2 36 L-12 24 L-28 26 L-34 10 L-22 -4 L-28 -20 Z" fill="#ffd6a8"/></g></svg></div>
-          <div class="gear spin-rev"><svg viewBox="0 0 100 100"><g transform="translate(50,50)"><circle r="18" fill="#bdefff"/></g></svg></div>
-        </div>
-      </div>
+<script>
+  let viewerPhotos = [];
+let currentIndex = 0;
 
-    </section>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzM4XTiLqwM5QnbOAyT2UktqkII6S5V9tIip9x0nlBAhI0mPat93xe6fvDjFQ4ytGer/exec";
 
-    <footer>Made with care • Animated status • {2025}</footer>
-  </main>
+window.onload = loadAll;
 
-  <script>
-    const progEl = document.getElementById('progBar');
-    let progress = 64;
-    function setProgress(p){ progEl.style.width = p + '%'; }
-    setProgress(progress);
+function setUploading(state) {
+  document.getElementById("spinner").style.display = state ? "block" : "none";
+  const btn = document.getElementById("uploadBtn");
+  btn.disabled = state;
+  btn.textContent = state ? "Uploading..." : "Upload";
+}
 
-    let grow = true;
-    setInterval(()=>{
-      if (grow){ progress += Math.random()*2; if (progress>86) grow=false }
-      else { progress -= Math.random()*0.8; if (progress<62) grow=true }
-      progress = Math.min(98, Math.max(12, Math.round(progress*10)/10));
-      setProgress(progress);
-    }, 2200);
-  </script>
+function loadAll() {
+  fetch(`${WEB_APP_URL}?action=list`)
+    .then(r => r.json())
+    .then(renderAll);
+}
+
+function renderAll(data) {
+  const uploads = document.getElementById("uploads");
+  uploads.innerHTML = "";
+
+  Object.keys(data).forEach(caption => {
+    const cap = document.createElement("div");
+cap.className = "caption";
+
+const label = document.createElement("label");
+label.style.display = "flex";
+label.style.alignItems = "center";
+label.style.gap = "8px";
+label.style.cursor = "pointer";
+
+const selectAll = document.createElement("input");
+selectAll.type = "checkbox";
+
+selectAll.onchange = () => {
+  grid.querySelectorAll(".select-photo").forEach(cb => {
+    cb.checked = selectAll.checked;
+  });
+};
+
+const text = document.createTextNode(caption.toUpperCase());
+
+label.append(selectAll, text);
+cap.appendChild(label);
+
+
+
+
+    const grid = document.createElement("div");
+    grid.className = "grid";
+const startIndex = viewerPhotos.length;
+
+    data[caption].forEach(item => {
+      const photo = document.createElement("div");
+      photo.className = "photo";
+      viewerPhotos.push({
+  id: item.id,
+  caption
+});
+
+
+      // Checkbox
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "select-photo";
+      checkbox.dataset.id = item.id;
+
+      // Thumbnail
+      const img = document.createElement("img");
+      img.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w600`;
+      const photoIndex = viewerPhotos.length - 1;
+
+img.onclick = (e) => {
+  e.stopPropagation();
+  openViewer(photoIndex);
+};
+
+      
+      let pressTimer;
+
+img.addEventListener("touchstart", (e) => {
+  pressTimer = setTimeout(() => {
+    checkbox.checked = !checkbox.checked;
+  }, 500);
+});
+
+img.addEventListener("touchend", () => {
+  clearTimeout(pressTimer);
+});
+
+img.addEventListener("touchmove", () => {
+  clearTimeout(pressTimer);
+});
+
+      // Actions
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const del = document.createElement("button");
+      del.textContent = "🗑";
+      del.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm("Delete this photo?")) modify("delete", item.id);
+      };
+
+      const edit = document.createElement("button");
+      edit.textContent = "✏️";
+      edit.onclick = (e) => {
+        e.stopPropagation();
+        const newCap = prompt("New caption:", caption);
+        if (newCap) modify("edit", item.id, newCap);
+      };
+
+      actions.append(edit, del);
+      photo.append(checkbox, img, actions);
+      grid.appendChild(photo);
+    });
+
+    // 🔥 THIS WAS MISSING
+    const group = document.createElement("div");
+group.className = "caption-group";
+
+group.append(cap, grid);
+uploads.appendChild(group);
+
+  });
+}
+
+
+function upload() {
+  const captionEl = document.getElementById("caption");
+  const filesEl = document.getElementById("photos");
+
+  const caption = captionEl.value.trim();
+  const files = filesEl.files;
+
+  if (!caption || files.length === 0) {
+    alert("Caption + at least 1 photo required");
+    return;
+  }
+
+  setUploading(true);
+
+  const uploads = [];
+  let done = 0;
+
+  [...files].forEach(f => {
+    const r = new FileReader();
+    r.onload = e => {
+      uploads.push({
+        name: f.name,
+        type: f.type,
+        data: e.target.result.split(",")[1]
+      });
+      if (++done === files.length) send("upload", { caption, files: uploads });
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+
+function modify(action, fileId, caption = "") {
+  send(action, { fileId, caption });
+}
+
+function send(action, payload) {
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({ action, ...payload })
+  })
+  .then(() => {
+    loadAll();
+    if (action === "upload") {
+      document.getElementById("caption").value = "";
+      document.getElementById("photos").value = "";
+      setUploading(false);
+    }
+  });
+}
+
+function openViewer(index) {
+  currentIndex = index;
+  const photo = viewerPhotos[currentIndex];
+
+  document.getElementById("viewerImg").src =
+    `https://drive.google.com/thumbnail?id=${photo.id}&sz=w2000`;
+
+  document.getElementById("viewerCaption").textContent =
+    photo.caption;
+
+  document.getElementById("viewer").classList.add("show");
+}
+
+
+function closeViewer() {
+  const viewer = document.getElementById("viewer");
+  viewer.classList.remove("show");
+  setTimeout(() => {
+    document.getElementById("viewerImg").src = "";
+    document.getElementById("viewerCaption").textContent = "";
+  }, 300);
+}
+
+
+function deleteSelected() {
+  const checked = document.querySelectorAll(".select-photo:checked");
+
+  if (checked.length === 0) {
+    alert("No photos selected");
+    return;
+  }
+
+  if (!confirm(`Delete ${checked.length} selected photo(s)?`)) return;
+
+  let count = 0;
+
+  checked.forEach(cb => {
+    send("delete", { fileId: cb.dataset.id });
+    cb.checked = false; // auto clear
+    count++;
+  });
+
+  setTimeout(() => {
+    loadAll();
+  }, 600);
+}
+
+let startY = 0;
+let pulling = false;
+
+window.addEventListener("touchstart", e => {
+  if (window.scrollY === 0) {
+    startY = e.touches[0].clientY;
+    pulling = true;
+  }
+});
+
+window.addEventListener("touchmove", e => {
+  if (!pulling) return;
+
+  const currentY = e.touches[0].clientY;
+  const diff = currentY - startY;
+
+  if (diff > 0 && diff < 120) {
+    e.preventDefault();
+    document.getElementById("pullIndicator").style.top =
+      Math.min(diff - 50, 10) + "px";
+  }
+});
+
+window.addEventListener("touchend", e => {
+  if (!pulling) return;
+
+  const indicator = document.getElementById("pullIndicator");
+  const finalY = indicator.getBoundingClientRect().top;
+
+  indicator.style.top = "-50px";
+  pulling = false;
+
+  if (finalY > -10) {
+    indicator.textContent = "⟳ Refreshing...";
+    indicator.style.top = "0px";
+    loadAll();
+
+    setTimeout(() => {
+      indicator.textContent = "↓ Pull to refresh";
+      indicator.style.top = "-50px";
+    }, 800);
+  }
+});
+
+let touchStartX = 0;
+
+const viewer = document.getElementById("viewer");
+
+viewer.addEventListener("touchstart", e => {
+  touchStartX = e.touches[0].clientX;
+});
+
+viewer.addEventListener("touchend", e => {
+  const diff = e.changedTouches[0].clientX - touchStartX;
+
+  if (Math.abs(diff) < 50) return;
+
+  if (diff < 0) showNext();
+  else showPrev();
+});
+
+function showNext() {
+  if (currentIndex < viewerPhotos.length - 1) {
+    openViewer(currentIndex + 1);
+  }
+}
+
+function showPrev() {
+  if (currentIndex > 0) {
+    openViewer(currentIndex - 1);
+  }
+}
+
+</script>
+
 </body>
 </html>
