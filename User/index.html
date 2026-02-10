@@ -678,7 +678,7 @@ openRoom("global","Global Chat");
       <a id="btnCs" onclick="showPage('cs')">Client & Supplier Profile</a>
       
       <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
-      <a id="btnPayslip" onclick="showPage('photos')">Photos</a> 
+      <a id="btnPhotos" onclick="showPage('photos')">Photos</a> 
       <div id="btnInventory">
         <a class="expandable" onclick="toggleMenu('invMenu')">Inventory</a>
         <div class="submenu" id="invMenu">
@@ -752,7 +752,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "system admin": ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnLeave", "btnProjects", "btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"]
   };
 
-  const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btnLeave","btnProjectCosting","btnApplications","btnRequests","btnCs","btnPayslip","btnInventory","btnPortals"];
+  const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btnLeave","btnProjectCosting","btnApplications","btnRequests","btnCs","btnPhotos","btnPayslip","btnInventory","btnPortals"];
   allIds.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
