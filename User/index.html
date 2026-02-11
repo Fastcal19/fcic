@@ -924,11 +924,6 @@ function showDesktopNotification(title, body) {
 }
 
 
-function logout() {
-  localStorage.clear();
-  window.location.href = "/";
-}
-
 // ✅ Mobile bottom nav toggle
 const mobileMenuToggle = document.getElementById('mobileMenuToggle');
 mobileMenuToggle.addEventListener('click', () => {
@@ -936,7 +931,63 @@ mobileMenuToggle.addEventListener('click', () => {
   overlay.classList.toggle('active');
 });
 
+
+/* ================================
+   🔐 AUTO LOGOUT AFTER 1 HOUR INACTIVITY
+================================= */
+
+const SESSION_TIMEOUT = 15 * 60 * 1000; // 1 hour in milliseconds
+let inactivityTimer;
+
+// --- Manual Logout ---
+function logout() {
+  localStorage.clear();
+  window.location.href = "/";
+}
+
+// --- Auto Logout (called when session expires) ---
+function forceLogout(message) {
+  alert(message); // optional notification
+  logout();
+}
+
+// --- Start / Reset Timer ---
+function startInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    forceLogout("Session expired due to inactivity.");
+  }, SESSION_TIMEOUT);
+}
+
+// --- Track User Activity ---
+function resetInactivityTimer() {
+  localStorage.setItem("lastActivity", Date.now());
+  startInactivityTimer();
+}
+
+// Track common events that count as activity
+["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(event => {
+  document.addEventListener(event, resetInactivityTimer, true);
+});
+
+// --- Cross-tab sync ---
+window.addEventListener("storage", (event) => {
+  if (event.key === "lastActivity") {
+    startInactivityTimer(); // reset timer from another tab
+  } else if (event.key === null || event.newValue === null) {
+    // localStorage cleared from another tab
+    logout();
+  }
+});
+
+
+// --- Init session ---
+if (!localStorage.getItem("lastActivity")) {
+  localStorage.setItem("lastActivity", Date.now());
+}
+startInactivityTimer();
 </script>
+
 
 </body>
 </html>
