@@ -648,7 +648,7 @@ openRoom("global","Global Chat");
           <a onclick="showPage('salesreport')">Sales</a>
           <a onclick="showPage('ar')">Receivables</a>
           <a onclick="showPage('ap')">Payables</a>
-          <a onclick="showPage('pc')">Costing</a>
+          <a onclick="showPage('com')">Commission</a>
           <a onclick="showPage('is')">Income Statement</a>
         </div>
       </div>
@@ -814,7 +814,8 @@ function showPage(page) {
     cs: ["Client & Supplier List", "Supplier-Client.html"],
     payslip: ["Pay Slips", "Payslip.html"],
     photos: ["Photos", "Photos.html"],
-    portals: ["Portals", "Portals.html"]
+    portals: ["Portals", "Portals.html"],
+    com: ["Commission", /Commission/"]
   };
 
   if (page === "dashboard") {
