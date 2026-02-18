@@ -114,6 +114,37 @@ thead th {
     text-align: center;
 }
 
+/* ===== TABLE WRAPPER ===== */
+.table-wrapper {
+    position: relative;
+}
+
+/* ===== CENTER LOADER OVERLAY ===== */
+.table-loader {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.95);
+    z-index: 10;
+}
+
+/* Spinner */
+.spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #0b5c7d;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 </style>
 <script>
 function openTab(tabId) {
@@ -155,20 +186,26 @@ function openTab(tabId) {
         </table>
     </div>
     <div class="right">
-        <table border="1" width="100%" style="table-layout: fixed;">
-  <thead>
-    <tr>
-      <th style="width:25%;">Date</th>
-      <th style="width:10%;">Time In</th>
-      <th style="width:10%;">Time Out</th>
-      <th style="width:10%;">No of Hours</th>
-      <th style="width:10%;">Late</th>
-      <th style="width:10%;">Undertime</th>
-      <th style="width:25%;">Remarks</th>
-    </tr>
-  </thead>
-  <tbody id="attendanceBody"></tbody>
-</table>
+        <div class="table-wrapper">
+  <div id="tableLoader" class="table-loader">
+    <div class="spinner"></div>
+  </div>
+
+  <table border="1" width="100%" style="table-layout: fixed;">
+    <thead>
+      <tr>
+        <th style="width:25%;">Date</th>
+        <th style="width:10%;">Time In</th>
+        <th style="width:10%;">Time Out</th>
+        <th style="width:10%;">No of Hours</th>
+        <th style="width:10%;">Late</th>
+        <th style="width:10%;">Undertime</th>
+        <th style="width:25%;">Remarks</th>
+      </tr>
+    </thead>
+    <tbody id="attendanceBody"></tbody>
+  </table>
+</div>
 
 <script>
 
@@ -177,6 +214,8 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxGCpauRlOwZRV-Isc
 let selectedEmployee = null; // ✅ global
 
 async function loadAttendance(en) {
+  const loader = document.getElementById("tableLoader");
+  loader.style.display = "flex";
 
   const year = parseInt(document.getElementById("yearSelect").value);
   const month = parseInt(document.getElementById("monthSelect").value);
@@ -230,18 +269,23 @@ async function loadAttendance(en) {
 
   const hours = computeHours(timeInDate, timeOutDate);
   const late = computeLate(timeInDate);
+  
+  loader.style.display = "none";
 
+  
   return `
     <td>${hours}</td>
     <td>${late}</td>
   `;
 })()}
-
+    
       <td>${record.undertime || ""}</td>
       <td>${record.remarks || ""}</td>
     </tr>
     `;
+    
   }
+    
 }
 
 async function loadEmployees() {
