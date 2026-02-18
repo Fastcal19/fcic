@@ -697,7 +697,14 @@ openRoom("global","Global Chat");
     <iframe id="mainFrame"></iframe>
   </div>
 
-  <footer>© 2026 Fast Cal Industrial Corp — All Rights Reserved</footer>
+  <footer>
+  © <span id="year"></span> Fast Cal Industrial Corp — All Rights Reserved
+</footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
 
   <!-- ✅ MOBILE BOTTOM NAVIGATION -->
   <nav class="bottom-nav" id="bottomNav">
