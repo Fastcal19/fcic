@@ -182,10 +182,15 @@
 </main>
 
 <footer>
-  &copy; 2026 Fast Cal Industrial Corp. All rights reserved.<br>
+  &copy; <span id="year"></span> Fast Cal Industrial Corp. All rights reserved.<br>
   <a href="/privacy-policy/">Privacy Policy</a> |
   <a href="/terms/">Terms & Conditions</a>
 </footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
 
 <div id="loginModal">
   <div id="loginBoxModal">
