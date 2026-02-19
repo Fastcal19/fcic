@@ -157,9 +157,14 @@ th { background: #e9ecef; text-align: left; }
  
 <div class="main-container">
   <div class="cards">
-    <div class="card"><h2>Credits</h2><div class="value" id="totalCredits"></div></div>
-    <div class="card"><h2>Used</h2><div class="value" id="leaveApplied"></div></div>
-    <div class="card"><h2>Remaining</h2><div class="value" id="remainingLeave"></div></div>
+    <div class="card"><h2>VL Credits</h2><div class="value" id="totalVLCredits"></div></div>
+    <div class="card"><h2>Used VL</h2><div class="value" id="leaveApplied"></div></div>
+    <div class="card"><h2>Remaining</h2><div class="value" id="remainingVL"></div></div>
+  </div>
+  <div class="cards">
+    <div class="card"><h2>SL Credits</h2><div class="value" id="totalSLCredits"></div></div>
+    <div class="card"><h2>Used SL</h2><div class="value" id="slApplied"></div></div>
+    <div class="card"><h2>Remaining</h2><div class="value" id="remainingSL"></div></div>
   </div>
 
   <button class="new" onclick="openModal()">Apply</button>
@@ -187,6 +192,11 @@ th { background: #e9ecef; text-align: left; }
     <input type="text" id="name" readonly>
     <input type="text" id="email" readonly>
     <input type="text" id="dateFiled" readonly>
+    <select id="leaveType">
+<option value="VL">Vacation Leave</option>
+<option value="SL">Sick Leave</option>
+</select>
+
     <textarea id="reason" placeholder="Reason"></textarea>
     <input type="date" id="fromDate">
     <input type="date" id="toDate">
@@ -204,7 +214,7 @@ th { background: #e9ecef; text-align: left; }
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbzqy543sJH4FAEDuu5MnMo9FDrq2COuAGCnaWIfekvzEwANRt4DQ4PgwBPm1Z4wCFFF/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbzy5mFvd1b_sAeruwLaNHSJLS0N9immp6vUq-KjKelBTfyH-NPO2qEFKmlANExJxPi8Xw/exec";
 
 let applicantName = localStorage.getItem('full');
 let applicantEID = localStorage.getItem('eid');
@@ -227,28 +237,52 @@ function formatDateOnly(v){ const d=new Date(v); return isNaN(d)?v: `${pad(d.get
 function formatDateTime(v){ const d=new Date(v); if(isNaN(d)) return v; let h=d.getHours(),ampm=h>=12?'PM':'AM'; h=h%12||12; return `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()} ${pad(h)}:${pad(d.getMinutes())} ${ampm}`;}
 
 function openModal(){
+
   currentLID=null;
-  document.getElementById('eid').style.display="none";
-  document.getElementById('name').style.display="none";
-  document.getElementById('email').style.display="none";
+
   document.getElementById('eid').value=applicantEID;
   document.getElementById('name').value=applicantName;
   document.getElementById('email').value=applicantEmail;
+
   document.getElementById('dateFiled').value=formatDateTime(new Date());
-  ['reason','fromDate','toDate','days'].forEach(id=>document.getElementById(id).value="");
-  
+
+  ['reason','fromDate','toDate','days'].forEach(id=>
+    document.getElementById(id).value=""
+  );
+
   cancelBtn.style.display="none";
   updateBtn.style.display="none";
   submitBtn.style.display="inline-block";
+
   refreshSaveState();
+
+  updateRemainingLeaveModal();
+
   modalBg.style.display='flex';
 
-  const remaining = parseFloat(document.getElementById("remainingLeave").textContent) || 0;
-  document.getElementById("remainingLeaveModal").value = remaining;
-
-  modalBg.style.display = 'flex';
 }
 
+
+function updateRemainingLeaveModal(){
+
+const type = document.getElementById("leaveType").value;
+
+if(type==="VL"){
+
+document.getElementById("remainingLeaveModal").value =
+document.getElementById("remainingVL").textContent;
+
+}
+else{
+
+document.getElementById("remainingLeaveModal").value =
+document.getElementById("remainingSL").textContent;
+
+}
+
+}
+document.getElementById("leaveType")
+.addEventListener("change", updateRemainingLeaveModal);
 
 function openEditModal(record,index){
   currentLID = record.LID;
@@ -261,6 +295,9 @@ function openEditModal(record,index){
   document.getElementById('fromDate').value = record.From;
   document.getElementById('toDate').value = record.To;
   document.getElementById('days').value = record["# of Days"];
+  document.getElementById('leaveType').value = record["Leave Type"] || "VL";
+updateRemainingLeaveModal();
+
 
   const status = (record.Status || "").toLowerCase();
 
@@ -379,6 +416,7 @@ async function submitLeave() {
     name: localStorage.getItem("full"),
     email: localStorage.getItem("email"),
     dateFiled,
+    leaveType: document.getElementById("leaveType").value,
     reason,
     fromDate: fromVal,
     toDate: toVal,
@@ -440,13 +478,15 @@ async function updateLeave(){
   updateBtn.disabled = true;
 
   const payload = {
-    method: "editLeave",   // 🔹 distinct method for editing
-    LID: currentLID,
-    reason,
-    fromDate: fromVal,
-    toDate: toVal,
-    days
-  };
+  method: "editLeave",
+  LID: currentLID,
+  leaveType: document.getElementById("leaveType").value, // ✅ ADD
+  reason,
+  fromDate: fromVal,
+  toDate: toVal,
+  days
+};
+
 
   try {
     const res = await fetch(API_BASE, {
@@ -473,58 +513,53 @@ async function updateLeave(){
 }
 
 
-async function cancelLeave(){
-  if(!currentLID || !currentRow) return;
-  if(!confirm("Are you sure you want to cancel this leave?")) return;
-
-  cancelBtn.disabled = true;
-  const payload = { 
-    method: "updateLeave",  // existing backend method for status updates
-    LID: currentLID, 
-    status: "Cancelled" 
-  };
-
-  try {
-    const res = await fetch(API_BASE, {
-      method: "POST",
-      headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
-      body: 'payload=' + encodeURIComponent(JSON.stringify(payload))
-    });
-    const data = await res.json();
-
-    if(res.ok && data.status === "success"){
-      showToast("Leave cancelled", "success");
-      closeModal();
-      await loadLeaves();
-      await loadEmployeeCredits();
-    } else {
-      showToast("Failed: " + (data.message || "Unknown error"), "error");
-    }
-  } catch(err) {
-    showToast("Network error", "error");
-  } finally {
-    cancelBtn.disabled = false;
-  }
-}
-
-
 /* ✅ Other helper functions */
 async function loadEmployeeCredits(){
   try{
-    const res=await fetch(API_BASE+"?action=getEmployees");
-    const employees=await res.json();
-    const myEID=(localStorage.getItem("eid")||"").trim().replace(/^0+/,"");
-    const me=employees.find(e =>
-      String(e.EID || e["Employee ID"] || "").trim().replace(/^0+/,"") === myEID
+
+    const res = await fetch(API_BASE+"?action=getEmployees");
+    const employees = await res.json();
+
+    const myEID = (localStorage.getItem("eid")||"")
+      .trim().replace(/^0+/,"");
+
+    const me = employees.find(e =>
+      String(e.EID || e["Employee ID"] || "")
+      .trim().replace(/^0+/,"") === myEID
     );
-    if(me){
-      const credits=parseFloat(me["Leave Credits"]||0);
-      document.getElementById("totalCredits").textContent=credits;
-      const used=parseFloat(document.getElementById("leaveApplied").textContent)||0;
-      document.getElementById("remainingLeave").textContent=Math.max(0, credits - used);
-    }
-  }catch(err){ showToast("Error loading credits","error"); }
+
+    if(!me) return;
+
+    const vlCredits = parseFloat(me["VL Credits"] || 0);
+    const slCredits = parseFloat(me["SL Credits"] || 0);
+
+    document.getElementById("totalVLCredits").textContent = vlCredits;
+    document.getElementById("totalSLCredits").textContent = slCredits;
+
+
+    const usedVL =
+      parseFloat(document.getElementById("leaveApplied").textContent) || 0;
+
+    const usedSL =
+      parseFloat(document.getElementById("slApplied").textContent) || 0;
+
+
+    document.getElementById("remainingVL").textContent =
+      Math.max(0, vlCredits - usedVL);
+
+
+    document.getElementById("remainingSL").textContent =
+      Math.max(0, slCredits - usedSL);
+
+    updateRemainingLeaveModal();
+
+  }catch(err){
+
+    showToast("Error loading credits","error");
+
+  }
 }
+
 
 async function loadLeaves(){
   const tbody=document.querySelector("tbody");
@@ -546,8 +581,28 @@ const approved = myLeaves.filter(r => {
   return fromDate.getFullYear() === currentYear;
 });
 
-    const usedDays=approved.reduce((sum,r)=>sum+(parseFloat(r["# of Days"]||0)||0),0);
-    document.getElementById("leaveApplied").textContent=usedDays;
+   let usedVL = 0;
+let usedSL = 0;
+
+approved.forEach(r=>{
+
+const days = parseFloat(r["# of Days"]||0)||0;
+
+let type = (r["Leave Type"] || "").toUpperCase().trim();
+
+if(type==="VL" || type==="VACATION LEAVE")
+usedVL += days;
+
+if(type==="SL" || type==="SICK LEAVE")
+usedSL += days;
+
+});
+
+
+document.getElementById("leaveApplied").textContent = usedVL;
+
+document.getElementById("slApplied").textContent = usedSL;
+
 
     myLeaves.sort((a, b) => new Date(b["Date Filed"]) - new Date(a["Date Filed"]));
     localStorage.setItem("myLeaves", JSON.stringify(myLeaves));
