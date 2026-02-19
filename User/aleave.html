@@ -144,22 +144,39 @@ button.close-btn { background: #6c757d; }
 <div class="main-container">
 
   <!-- LEFT SIDE - EMPLOYEE LIST -->
-  <div class="section">
-    <h2>Employee Leave Credits</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Employee Name</th>
-          <th>Leave Credits</th>
-          <th>Used</th>
-          <th>Balance</th>
-        </tr>
-      </thead>
-      <tbody id="employeeTableBody">
-        <tr><td colspan="4" style="text-align:center">Loading...</td></tr>
-      </tbody>
-    </table>
-  </div>
+<div class="section">
+  <h2>Vacation Leave</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Employee Name</th>
+        <th>Leave Credits</th>
+        <th>Used</th>
+        <th>Balance</th>
+      </tr>
+    </thead>
+    <tbody id="vacationTableBody">
+      <tr><td colspan="4" style="text-align:center">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <br><br>
+
+  <h2>Sick Leave</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Employee Name</th>
+        <th>Leave Credits</th>
+        <th>Used</th>
+        <th>Balance</th>
+      </tr>
+    </thead>
+    <tbody id="sickTableBody">
+      <tr><td colspan="4" style="text-align:center">Loading...</td></tr>
+    </tbody>
+  </table>
+</div>
 
   <!-- RIGHT SIDE - LEAVE APPLICATIONS -->
   <div class="section">
@@ -213,7 +230,7 @@ button.close-btn { background: #6c757d; }
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbzyhSp6WZJ3fmomXZSU1n3hCkCOvBZV_FwUyMLd5VOD08O21hFJsUnjYgl6Q5s2WU3v/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbzy5mFvd1b_sAeruwLaNHSJLS0N9immp6vUq-KjKelBTfyH-NPO2qEFKmlANExJxPi8Xw/exec";
 let currentLeave = null;
 let allLeaves = [];
 
@@ -265,48 +282,79 @@ allLeaves.sort((a, b) => {
 }
 
 async function loadEmployees() {
-  const tbody = document.getElementById('employeeTableBody');
-  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center">Loading...</td></tr>`;
+
+  const vacationBody = document.getElementById('vacationTableBody');
+  const sickBody = document.getElementById('sickTableBody');
+
+  vacationBody.innerHTML = `<tr><td colspan="4" style="text-align:center">Loading...</td></tr>`;
+  sickBody.innerHTML = `<tr><td colspan="4" style="text-align:center">Loading...</td></tr>`;
 
   try {
     const resEmp = await fetch(API_BASE + "?action=getEmployees");
     const employees = await resEmp.json();
 
-    const usedByName = {};
+    const currentYear = new Date().getFullYear();
+
+    // Clear loading
+    vacationBody.innerHTML = "";
+    sickBody.innerHTML = "";
+
     employees.forEach(emp => {
+
       const name = emp.Name || emp["Employee Name"];
-      const credits = parseFloat(emp["Leave Credits"] || 0);
-      const currentYear = new Date().getFullYear();
-const empLeaves = allLeaves.filter(l => {
-  const leaveYear = new Date(l.From).getFullYear();
-  return (l.Status||"").toLowerCase() === "approved"
-      && (l.Name||l["Employee Name"]) === name
-      && leaveYear === currentYear;
-});
+      const vacationCredits = parseFloat(emp["VL Credits"] || emp["Vacation Credits"] || 0);
+      const sickCredits = parseFloat(emp["SL Credits"] || emp["Sick Credits"] || 0);
 
-      const used = empLeaves.reduce((sum,l)=>sum+parseFloat(l["# of Days"]||0),0);
-      usedByName[name]=used;
-    });
+      // Filter approved leaves THIS YEAR
+      const empLeaves = allLeaves.filter(l => {
+        const leaveYear = new Date(l.From).getFullYear();
+        return (l.Status || "").toLowerCase() === "approved"
+          && (l.Name || l["Employee Name"]) === name
+          && leaveYear === currentYear;
+      });
 
-    tbody.innerHTML = employees.map(e => {
-      const name = e.Name || e["Employee Name"];
-      const credits = parseFloat(e["Leave Credits"] || 0);
-      const used = usedByName[name] || 0;
-      const balance = Math.max(credits - used, 0);
-      return `
+      // Separate by type
+      const vacationUsed = empLeaves
+        .filter(l => (l["Leave Type"] || "").toLowerCase() === "vl")
+        .reduce((sum, l) => sum + parseFloat(l["# of Days"] || 0), 0);
+
+      const sickUsed = empLeaves
+        .filter(l => (l["Leave Type"] || "").toLowerCase() === "sl")
+        .reduce((sum, l) => sum + parseFloat(l["# of Days"] || 0), 0);
+
+      const vacationBalance = Math.max(vacationCredits - vacationUsed, 0);
+      const sickBalance = Math.max(sickCredits - sickUsed, 0);
+
+      // Vacation row
+      vacationBody.innerHTML += `
         <tr onclick="showApprovedLeaves('${name.replace(/'/g,"&#39;")}')">
           <td style="color:blue;text-decoration:underline">${name}</td>
-          <td style="text-align:center">${credits}</td>
-          <td style="text-align:center">${used}</td>
-          <td style="text-align:center">${balance}</td>
+          <td style="text-align:center">${vacationCredits}</td>
+          <td style="text-align:center">${vacationUsed}</td>
+          <td style="text-align:center;color:${vacationBalance <= 2 ? 'red' : 'black'}">
+            ${vacationBalance}
+          </td>
         </tr>`;
-    }).join("");
+
+      // Sick row
+      sickBody.innerHTML += `
+        <tr onclick="showApprovedLeaves('${name.replace(/'/g,"&#39;")}')">
+          <td style="color:blue;text-decoration:underline">${name}</td>
+          <td style="text-align:center">${sickCredits}</td>
+          <td style="text-align:center">${sickUsed}</td>
+          <td style="text-align:center;color:${sickBalance <= 2 ? 'red' : 'black'}">
+            ${sickBalance}
+          </td>
+        </tr>`;
+    });
 
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Error loading employees</td></tr>`;
+    vacationBody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Error loading</td></tr>`;
+    sickBody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Error loading</td></tr>`;
   }
 }
+
 
 function showApprovedLeaves(empName){
   const modal=document.getElementById('employeeModalBg');
