@@ -243,7 +243,16 @@ async function loadLeaves(){
   tbody.innerHTML=`<tr><td colspan="8" style="text-align:center">Loading...</td></tr>`;
   try{
     const res=await fetch(API_BASE+"?action=getLeaves");
-    allLeaves=await res.json();
+    allLeaves = await res.json();
+
+const currentYear = new Date().getFullYear();
+
+// ✅ FILTER: Show only leaves from current year
+allLeaves = allLeaves.filter(l => {
+  const leaveYear = new Date(l["Date Filed"]).getFullYear();
+  return leaveYear === currentYear;
+});
+
 
     // Sort so PENDING appears first
 allLeaves.sort((a, b) => {
@@ -327,7 +336,7 @@ async function loadEmployees() {
 
       // Vacation row
       vacationBody.innerHTML += `
-        <tr onclick="showApprovedLeaves('${name.replace(/'/g,"&#39;")}')">
+  <tr onclick="showApprovedLeaves('${name.replace(/'/g,"&#39;")}', 'vl')">
           <td style="color:blue;text-decoration:underline">${name}</td>
           <td style="text-align:center">${vacationCredits}</td>
           <td style="text-align:center">${vacationUsed}</td>
@@ -338,7 +347,7 @@ async function loadEmployees() {
 
       // Sick row
       sickBody.innerHTML += `
-        <tr onclick="showApprovedLeaves('${name.replace(/'/g,"&#39;")}')">
+  <tr onclick="showApprovedLeaves('${name.replace(/'/g,"&#39;")}', 'sl')">
           <td style="color:blue;text-decoration:underline">${name}</td>
           <td style="text-align:center">${sickCredits}</td>
           <td style="text-align:center">${sickUsed}</td>
@@ -356,25 +365,39 @@ async function loadEmployees() {
 }
 
 
-function showApprovedLeaves(empName){
-  const modal=document.getElementById('employeeModalBg');
-  document.getElementById('empModalName').textContent=empName;
-  const list=document.getElementById('approvedLeavesList');
-  const approved=allLeaves.filter(l=>(l.Status||"").toLowerCase()==="approved" && (l.Name||l["Employee Name"])===empName);
-  
-  if(approved.length===0){
-    list.innerHTML="<p style='text-align:center'>No approved leaves.</p>";
-  }else{
-    list.innerHTML="<table style='width:100%;border-collapse:collapse;font-size:13px'><tr><th>Reason</th><th>From</th><th>To</th><th>Days</th></tr>"+approved.map(l=>`
-      <tr>
-        <td>${l.Reason||""}</td>
-        <td>${formatDateOnly(l.From)}</td>
-        <td>${formatDateOnly(l.To)}</td>
-        <td style='text-align:center'>${l["# of Days"]||""}</td>
-      </tr>`).join("")+"</table>";
+function showApprovedLeaves(empName, leaveType){
+  const modal = document.getElementById('employeeModalBg');
+  document.getElementById('empModalName').textContent =
+    empName + " - " + leaveType.toUpperCase();
+
+  const list = document.getElementById('approvedLeavesList');
+
+  const approved = allLeaves.filter(l =>
+    (l.Status || "").toLowerCase() === "approved" &&
+    (l.Name || l["Employee Name"]) === empName &&
+    (l["Leave Type"] || "").toLowerCase() === leaveType
+  );
+
+  if(approved.length === 0){
+    list.innerHTML = "<p style='text-align:center'>No approved leaves.</p>";
+  } else {
+    list.innerHTML =
+      "<table style='width:100%;border-collapse:collapse;font-size:13px'>" +
+      "<tr><th>Reason</th><th>From</th><th>To</th><th>Days</th></tr>" +
+      approved.map(l => `
+        <tr>
+          <td>${l.Reason || ""}</td>
+          <td>${formatDateOnly(l.From)}</td>
+          <td>${formatDateOnly(l.To)}</td>
+          <td style='text-align:center'>${l["# of Days"] || ""}</td>
+        </tr>
+      `).join("") +
+      "</table>";
   }
-  modal.style.display="flex";
+
+  modal.style.display = "flex";
 }
+
 
 function closeEmployeeModal(){ document.getElementById('employeeModalBg').style.display="none"; }
 
