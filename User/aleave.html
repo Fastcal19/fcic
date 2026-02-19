@@ -116,6 +116,34 @@ button.close-btn { background: #6c757d; }
   display: inline-block;
   width: 110px;
 }
+/* ===== LOADER ===== */
+#loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(126, 124, 124, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  display: none; /* hidden by default */
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #ff6600;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 .modal .actions { display: flex; gap: 8px; justify-content: center; margin-top: 15px; }
 
@@ -140,6 +168,10 @@ button.close-btn { background: #6c757d; }
 </style>
 </head>
 <body>
+<!-- GLOBAL LOADER -->
+<div id="loader">
+  <div class="spinner"></div>
+</div>
 
 <div class="main-container">
 
@@ -230,7 +262,15 @@ button.close-btn { background: #6c757d; }
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbws461sKx5AFF45ah9oMtbOeDngJvPXk-iIHfwBz1D3XiVhK0CoqmGqAbfRTIBducomvQ/exec";
+  function showLoader() {
+  document.getElementById("loader").style.display = "flex";
+}
+
+function hideLoader() {
+  document.getElementById("loader").style.display = "none";
+}
+
+const API_BASE = "https://script.google.com/macros/s/AKfycbyQzH9cHrR8VJx-s1BA4aB-I3VkELKdM-G7E0iz5byPXAfv5C4uJTGsQDtuykwY_tNgLw/exec";
 let currentLeave = null;
 let allLeaves = [];
 
@@ -448,9 +488,12 @@ function showToast(msg,type){
 }
 
 (async()=>{
+  showLoader();
   await loadLeaves();
   await loadEmployees();
+  hideLoader();
 })();
+
 </script>
 </body>
 </html>
