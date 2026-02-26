@@ -2,8 +2,10 @@
 <html>
 <head>
 <title>Accounting Dashboard</title>
+
 <script src="firebase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <style>
 body {
@@ -16,45 +18,83 @@ body {
   display:flex;
 }
 
+/* ===== SIDEBAR ===== */
 .sidebar {
-  width:250px;
-  background:rgb(97, 94, 94);
+  width:260px;
+  background:#39393a;
   color:white;
   height:100vh;
-  padding:20px;
+  padding:20px 15px;
+  position:fixed;
+  display:flex;
+  flex-direction:column;
 }
 
-.sidebar h2 {
-  font-size:18px;
+.logo {
+  font-size:16px;
+  font-weight:bold;
   margin-bottom:30px;
+  padding-left:10px;
 }
 
-.sidebar a {
-  display:block;
-  color:white;
+.menu {
+  flex:1;
+}
+
+.menu a {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#cbd5e1;
   text-decoration:none;
-  padding:10px;
-  border-radius:6px;
-  margin-bottom:5px;
+  padding:12px 14px;
+  border-radius:8px;
+  margin-bottom:6px;
+  font-size:14px;
+  transition:0.2s ease;
 }
 
-.sidebar a:hover {
+.menu a i {
+  width:18px;
+  text-align:center;
+}
+
+.menu a:hover {
+  background:#1f2937;
+  color:white;
+  transform:translateX(4px);
+}
+
+.menu a.active {
   background:orange;
   color:white;
 }
 
+/* ===== MAIN ===== */
 .main {
+  margin-left:260px;
   flex:1;
-  padding:25px;
+  padding:30px;
 }
 
 .topbar {
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:20px;
+  margin-bottom:25px;
 }
 
+.topbar h2 {
+  margin:0;
+}
+
+.topbar select {
+  padding:6px 10px;
+  border-radius:6px;
+  border:1px solid #ddd;
+}
+
+/* ===== CARDS ===== */
 .cards {
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -78,10 +118,11 @@ body {
   margin:10px 0 0;
 }
 
+/* ===== SECTION ===== */
 .section {
   background:white;
-  margin-top:25px;
-  padding:20px;
+  margin-top:30px;
+  padding:25px;
   border-radius:12px;
   box-shadow:0 4px 12px rgba(0,0,0,0.05);
 }
@@ -92,17 +133,58 @@ body {
 
 <div class="layout">
 
+  <!-- SIDEBAR -->
   <div class="sidebar">
-    <h2>FAST CAL INDUSTRIAL CORP</h2>
-    <a href="#">Dashboard</a>
-    <a href="#">Chart of Accounts</a>
-    <a href="#">Journal Entries</a>
-    <a href="#">Trial Balance</a>
-    <a href="#">Income Statement</a>
-    <a href="#">Balance Sheet</a>
-    <a href="#">Cash Flow</a>
+
+    <div class="logo">
+      FAST CAL INDUSTRIAL CORP
+    </div>
+
+    <div class="menu">
+      <a href="#" class="active">
+        <i class="fa-solid fa-chart-pie"></i> Dashboard
+      </a>
+
+      <a href="#">
+        <i class="fa-solid fa-book"></i> Chart of Accounts
+      </a>
+
+      <a href="#">
+        <i class="fa-solid fa-receipt"></i> Journal Entries
+      </a>
+
+      <a href="#">
+        <i class="fa-solid fa-file-invoice-dollar"></i> Sales
+      </a>
+
+      <a href="#">
+        <i class="fa-solid fa-box"></i> Purchases
+      </a>
+
+      <a href="#">
+        <i class="fa-solid fa-scale-balanced"></i> Trial Balance
+      </a>
+
+      <a href="#">
+        <i class="fa-solid fa-chart-line"></i> Income Statement
+      </a>
+
+      <a href="#">
+        <i class="fa-solid fa-file-lines"></i> Balance Sheet
+      </a>
+
+      <a href="#">
+        <i class="fa-solid fa-money-bill-transfer"></i> Cash Flow
+      </a>
+
+      <a href="#">
+        <i class="fa-solid fa-gear"></i> Settings
+      </a>
+    </div>
+
   </div>
 
+  <!-- MAIN CONTENT -->
   <div class="main">
 
     <div class="topbar">
@@ -128,34 +210,7 @@ body {
       </div>
     </div>
 
-    <div class="section">
-      <h3>Revenue vs Expenses</h3>
-      <canvas id="revChart"></canvas>
-    </div>
-
-  </div>
-</div>
-
-<script>
-const ctx = document.getElementById('revChart');
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ['Jan','Feb','Mar','Apr','May','Jun'],
-    datasets: [
-      {
-        label:'Revenue',
-        data:[120000,150000,130000,170000,160000,200000],
-        borderColor:'#16a34a'
-      },
-      {
-        label:'Expenses',
-        data:[80000,90000,85000,95000,100000,120000],
-        borderColor:'#dc2626'
-      }
-    ]
-  }
-});
+    
 </script>
 
 </body>
