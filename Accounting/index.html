@@ -1,26 +1,162 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+<title>Accounting Dashboard</title>
+<script src="firebase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<title>Accounting System</title>
+<style>
+body {
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background:#f8fafc;
+}
 
+.layout {
+  display:flex;
+}
+
+.sidebar {
+  width:250px;
+  background:rgb(97, 94, 94);
+  color:white;
+  height:100vh;
+  padding:20px;
+}
+
+.sidebar h2 {
+  font-size:18px;
+  margin-bottom:30px;
+}
+
+.sidebar a {
+  display:block;
+  color:white;
+  text-decoration:none;
+  padding:10px;
+  border-radius:6px;
+  margin-bottom:5px;
+}
+
+.sidebar a:hover {
+  background:orange;
+  color:white;
+}
+
+.main {
+  flex:1;
+  padding:25px;
+}
+
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.cards {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+
+.card {
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card h4 {
+  color:gray;
+  font-size:14px;
+  margin:0;
+}
+
+.card h1 {
+  margin:10px 0 0;
+}
+
+.section {
+  background:white;
+  margin-top:25px;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+</style>
 </head>
 
 <body>
 
-<h2>Accounting System</h2>
+<div class="layout">
 
-<a href="chart.html">Chart of Accounts</a><br><br>
+  <div class="sidebar">
+    <h2>FAST CAL INDUSTRIAL CORP</h2>
+    <a href="#">Dashboard</a>
+    <a href="#">Chart of Accounts</a>
+    <a href="#">Journal Entries</a>
+    <a href="#">Trial Balance</a>
+    <a href="#">Income Statement</a>
+    <a href="#">Balance Sheet</a>
+    <a href="#">Cash Flow</a>
+  </div>
 
-<a href="journal.html">Journal Entries</a><br><br>
+  <div class="main">
 
-<a href="ledger.html">General Ledger</a><br><br>
+    <div class="topbar">
+      <h2>Dashboard</h2>
+      <select>
+        <option>This Month</option>
+        <option>This Year</option>
+      </select>
+    </div>
 
-<a href="trialBalance.html">Trial Balance</a><br><br>
+    <div class="cards">
+      <div class="card">
+        <h4>Total Revenue</h4>
+        <h1 id="revenue">0</h1>
+      </div>
+      <div class="card">
+        <h4>Total Expenses</h4>
+        <h1 id="expenses">0</h1>
+      </div>
+      <div class="card">
+        <h4>Net Income</h4>
+        <h1 id="netIncome">0</h1>
+      </div>
+    </div>
 
-<a href="financial.html">Financial Statements</a>
+    <div class="section">
+      <h3>Revenue vs Expenses</h3>
+      <canvas id="revChart"></canvas>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ctx = document.getElementById('revChart');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+    datasets: [
+      {
+        label:'Revenue',
+        data:[120000,150000,130000,170000,160000,200000],
+        borderColor:'#16a34a'
+      },
+      {
+        label:'Expenses',
+        data:[80000,90000,85000,95000,100000,120000],
+        borderColor:'#dc2626'
+      }
+    ]
+  }
+});
+</script>
 
 </body>
-
 </html>
