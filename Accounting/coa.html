@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chart of Accounts</title>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: "Courier New", monospace;
+      margin: 10px;
+      
+    }
+
+    .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.header h2 {
+  margin: 0;
+}
+
+#addAccountBtn {
+  background-color: greenyellow;
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#saveBtn{
+  background-color: greenyellow;
+  border-radius: 8px;
+}
+
+#toggleStatusBtn{
+  background-color: lightcoral;
+  border-radius: 8px;
+}
+    .type { font-weight: bold; font-size: 18px; margin-top: 20px; }
+    .subtype { margin-left: 20px; font-weight: bold; }
+    .account { margin-left: 40px; }
+    .inactive { color: red; }
+
+    /* Modal Styles */
+    .modal {
+      display: none; 
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 500px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #000;
+    }
+    .close {
+      color: red;
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover { color: black; }
+    input, select { width: 80%; padding: 5px; margin: 5px 0 10px 0; }
+    button { padding: 8px 15px; cursor: pointer; }
+
+    .form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.form-row label {
+  width: 180px;
+  font-weight: bold;
+}
+
+.form-row input,
+.form-row select {
+  flex: 1;
+  padding: 5px;
+}
+
+.account {
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.account:hover {
+  background-color: #fff3e6;
+  color: orangered;
+}
+
+
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h2>Chart of Accounts</h2>
+  <button id="addAccountBtn">+ Add New</button>
+</div>
+<div id="coaContainer"></div>
+
+<!-- Modal -->
+<div id="coaModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3>Add Chart of Accounts Entry</h3>
+    <form id="coaForm">
+
+  <div class="form-row">
+    <label>Account Code:</label>
+    <input type="text" id="code" required />
+  </div>
+
+  <div class="form-row">
+    <label>Account Name:</label>
+    <input type="text" id="name" required />
+  </div>
+
+  <div class="form-row">
+    <label>Account Type:</label>
+    <select id="type" required>
+      <option value="Asset">Asset</option>
+      <option value="Liability">Liability</option>
+      <option value="Equity">Equity</option>
+      <option value="Revenue">Revenue</option>
+      <option value="Cost of Sales">Cost of Sales</option>
+      <option value="Expense">Expense</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label>Sub Type:</label>
+    <input type="text" id="subType" />
+  </div>
+
+  <div class="form-row">
+    <label>Normal Balance:</label>
+    <select id="normalBalance" required>
+      <option value="Debit">Debit</option>
+      <option value="Credit">Credit</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label>Parent Account Code:</label>
+    <input type="text" id="parentId" />
+  </div>
+
+  <div style="display:flex; justify-content:space-between; margin-top:15px;">
+  <button type="button" id="toggleStatusBtn" style="background:#ccc;">
+    Disable
+  </button>
+
+  <button type="submit" id="saveBtn">
+    Save
+  </button>
+</div>
+
+</form>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAItDyGgVSzNEKQFNd5N4hrTOLsrPhXXtg",
+  authDomain: "fcic-7f3c1.firebaseapp.com",
+  projectId: "fcic-7f3c1",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Display COA
+const container = document.getElementById("coaContainer");
+const typeOrder = ["Asset", "Liability", "Equity", "Revenue","Cost of Sales", "Expense"];
+
+db.collection("chartOfAccounts").onSnapshot(snapshot => {
+  container.innerHTML = "";
+  const accounts = {};
+
+  // Map accounts by code
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    accounts[d.code] = { ...d, children: [] };
+  });
+
+  // Build parent-child relationships
+  Object.values(accounts).forEach(acc => {
+    if (acc.parentId && accounts[acc.parentId]) {
+      accounts[acc.parentId].children.push(acc);
+    }
+  });
+
+  // Group top-level accounts by type → subtype
+  const grouped = {};
+  Object.values(accounts).forEach(acc => {
+    if (acc.parentId) return; // skip children
+    const type = acc.type || "Uncategorized";
+    const sub = acc.subType || "";
+    if (!grouped[type]) grouped[type] = {};
+    if (!grouped[type][sub]) grouped[type][sub] = [];
+    grouped[type][sub].push(acc);
+  });
+
+  // Recursive function to create nested divs for children
+  function createAccountDiv(acc, level = 1) {
+  const wrapper = document.createElement("div");
+
+  // 👉 ROW (hover applies only here)
+  const row = document.createElement("div");
+  row.className = "account";
+  row.style.marginLeft = `${15 * level}px`;
+  row.style.cursor = "pointer";
+
+  if (!acc.isActive) row.classList.add("inactive");
+
+  row.innerText = acc.code + " " + acc.name;
+
+  row.addEventListener("click", function(e) {
+    e.stopPropagation();
+    openEditModal(acc);
+  });
+
+  wrapper.appendChild(row);
+
+  // 👉 CHILDREN CONTAINER (separate from row)
+  const childrenContainer = document.createElement("div");
+
+  acc.children
+    .sort((a,b) => a.code.localeCompare(b.code))
+    .forEach(child => {
+      childrenContainer.appendChild(createAccountDiv(child, level + 1));
+    });
+
+  wrapper.appendChild(childrenContainer);
+
+  return wrapper;
+}
+
+  // Build tree
+  typeOrder.forEach(type => {
+    if (!grouped[type]) return;
+    const typeDiv = document.createElement("div");
+    typeDiv.className = "type";
+    typeDiv.innerText = type.toUpperCase();
+    container.appendChild(typeDiv);
+
+    Object.keys(grouped[type]).sort().forEach(sub => {
+      const subDiv = document.createElement("div");
+      subDiv.className = "subtype";
+      subDiv.innerText = sub || "";
+      container.appendChild(subDiv);
+
+      grouped[type][sub].sort((a,b) => a.code.localeCompare(b.code))
+                        .forEach(acc => {
+                          container.appendChild(createAccountDiv(acc, 1));
+                        });
+    });
+  });
+});
+
+let editingMode = false;
+let editingCode = null;
+
+function openEditModal(acc) {
+  editingMode = true;
+  editingCode = acc.code;
+
+  document.getElementById('code').value = acc.code;
+  document.getElementById('code').disabled = true;
+  document.getElementById('name').value = acc.name;
+  document.getElementById('type').value = acc.type;
+  document.getElementById('subType').value = acc.subType || "";
+  document.getElementById('normalBalance').value = acc.normalBalance;
+  document.getElementById('parentId').value = acc.parentId || "";
+
+  // Set toggle button text
+  const toggleBtn = document.getElementById("toggleStatusBtn");
+  toggleBtn.innerText = acc.isActive ? "Disable Account" : "Enable Account";
+
+  toggleBtn.onclick = async () => {
+    await toggleAccountStatus(acc.code, acc.isActive);
+    modal.style.display = "none";
+  };
+
+  modal.style.display = "block";
+}
+
+async function toggleAccountStatus(code, currentStatus) {
+  try {
+    await db.collection("chartOfAccounts").doc(code).update({
+      isActive: !currentStatus
+    });
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update status.");
+  }
+}
+
+// Modal logic
+const modal = document.getElementById("coaModal");
+const btn = document.getElementById("addAccountBtn");
+const span = document.querySelector(".close");
+
+btn.onclick = () => modal.style.display = "block";
+span.onclick = () => modal.style.display = "none";
+window.onclick = e => { if(e.target == modal) modal.style.display = "none"; }
+
+// Add account form
+document.getElementById('coaForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const code = document.getElementById('code').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const type = document.getElementById('type').value;
+  const subType = document.getElementById('subType').value.trim() || null;
+  const normalBalance = document.getElementById('normalBalance').value;
+  const parentId = document.getElementById('parentId').value.trim() || null;
+
+  try {
+
+    if (editingMode) {
+
+      // 🔹 UPDATE MODE (No level recalculation unless parent changed)
+      const updateData = {
+        name,
+        type,
+        subType,
+        normalBalance,
+        parentId
+      };
+
+      await db.collection('chartOfAccounts').doc(editingCode).update(updateData);
+
+      alert("Account updated successfully!");
+
+    } else {
+
+      // 🔹 ADD MODE
+      let level = 1;
+
+      if (parentId) {
+        const parentDoc = await db.collection('chartOfAccounts').doc(parentId).get();
+        if (!parentDoc.exists) {
+          alert("Parent account does not exist");
+          return;
+        }
+        level = (parentDoc.data().level || 1) + 1;
+      }
+
+      const data = {
+        code,
+        name,
+        type,
+        subType,
+        normalBalance,
+        parentId,
+        level,
+        allowPosting: true,
+        isActive: true,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      await db.collection('chartOfAccounts').doc(code).set(data);
+
+      alert("Account added successfully!");
+    }
+
+    editingMode = false;
+    editingCode = null;
+    modal.style.display = "none";
+    document.getElementById('coaForm').reset();
+    document.getElementById('code').disabled = false;
+
+  } catch (err) {
+    console.error(err);
+    alert("Operation failed.");
+  }
+});
+</script>
+
+</body>
+</html>
