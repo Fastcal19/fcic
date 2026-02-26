@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Journal Entries</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+font-family:"Courier New", monospace;
+margin:30px;
+background:#f4f4f4;
+}
+
+button{
+padding:6px 14px;
+cursor:pointer;
+border-radius:6px;
+border:1px solid orange;
+background:orange;
+color:white;
+}
+button:hover{ background:orangered; }
+
+.header-row{
+display:grid;
+grid-template-columns:130px 130px 1fr 150px 150px 120px;
+font-weight:bold;
+border-bottom:2px solid black;
+padding:6px 0;
+margin-top:20px;
+}
+
+.header-row div {
+    flex: 1;
+    padding: 5px;
+}
+
+.header-row div:nth-child(1),
+.header-row div:nth-child(2),
+.header-row div:nth-child(3),
+.row div:nth-child(1),
+.row div:nth-child(2)
+.row div:nth-child(3){
+text-align:left;
+}
+
+.header-row div:nth-child(4),
+.header-row div:nth-child(5),
+.header-row div:nth-child(6),
+.row div:nth-child(4),
+.row div:nth-child(5),
+.row div:nth-child(6){
+text-align:right;
+}
+.journal-block{
+background:#f3d88e;
+border-radius:16px;
+padding:15px 20px;
+margin-top:15px;
+}
+
+.row{
+display:grid;
+grid-template-columns:130px 130px 1fr 150px 150px 120px;
+align-items:center;
+margin:2px 0;
+}
+
+.amount{text-align:right;}
+.je-number{font-weight:bold;cursor:pointer;}
+.status{padding-left:10px;}
+
+.modal{
+display:none;
+position:fixed;
+z-index:1100;
+left:0; top:0;
+width:100%; height:100%;
+background:rgba(0,0,0,0.5);
+}
+
+.modal-content{
+background:white;
+margin:5% auto;
+padding:25px;
+width:900px;
+max-height:85%;
+overflow:auto;
+border-radius:10px;
+}
+.close{float:right;font-size:22px;cursor:pointer;}
+
+.amount{
+    text-align:right;
+    font-variant-numeric: tabular-nums;
+}
+
+.top-bar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:15px;
+}
+
+.top-bar input{
+width:350px;
+padding:6px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.sticky-header{
+
+position:sticky;
+top:0;
+
+background:#f4f4f4;
+
+padding-top:10px;
+padding-bottom:5px;
+
+z-index:1000;
+
+
+}
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+
+<h2>Journal Entries</h2>
+
+<div class="top-bar">
+<button onclick="startNewEntry()">+ Add New</button>
+
+<input type="text"
+id="searchInput"
+placeholder="Search Date, JE Number, Description..."
+oninput="filterEntries()">
+</div>
+
+<div class="header-row">
+<div>DATE</div>
+<div>JE NUMBER</div>
+<div>PARTICULARS</div>
+<div>DEBIT</div>
+<div>CREDIT</div>
+<div>STATUS</div>
+</div>
+
+</div>
+
+<div id="journalContainer"></div>
+
+<!-- NEW JE MODAL -->
+<div id="newJEModal" class="modal">
+<div class="modal-content">
+<span class="close" onclick="closeNewJE()">&times;</span>
+
+<h3 id="modalTitle">New Journal Entry</h3>
+
+<label>Date</label><br>
+<input type="date" id="jeDate"><br><br>
+
+<label>Description</label><br>
+<input type="text" id="jeDescription" style="width:100%"><br><br>
+
+<table border="1" width="100%">
+<thead>
+<tr><th>Account</th><th>Debit</th><th>Credit</th><th></th></tr>
+</thead>
+<tbody id="linesBody"></tbody>
+</table>
+
+<br>
+<button onclick="addLine()">+ Add Line</button>
+
+<div style="text-align:right;margin-top:10px;">
+Total Debit: <span id="totalDebit">0.00</span> |
+Total Credit: <span id="totalCredit">0.00</span>
+</div>
+
+<br>
+<button id="saveBtn" onclick="saveJournalEntry()">Save</button>
+<button onclick="cancelJournalEntry()">Cancel</button>
+
+</div>
+</div>
+
+<!-- DETAILS MODAL -->
+<div id="detailsModal" class="modal">
+<div class="modal-content">
+<span class="close" onclick="closeDetails()">&times;</span>
+<div id="detailsContent"></div>
+</div>
+</div>
+
+<script>
+const firebaseConfig = {
+apiKey:"AIzaSyAItDyGgVSzNEKQFNd5N4hrTOLsrPhXXtg",
+  authDomain:"fcic-7f3c1.firebaseapp.com",
+  projectId:"fcic-7f3c1"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+
+const container=document.getElementById("journalContainer");
+const modalTitle = document.getElementById("modalTitle");
+const saveBtn = document.getElementById("saveBtn");
+const jeDate = document.getElementById("jeDate");
+const jeDescription = document.getElementById("jeDescription");
+const linesBody = document.getElementById("linesBody");
+const totalDebit = document.getElementById("totalDebit");
+const totalCredit = document.getElementById("totalCredit");
+const detailsContent = document.getElementById("detailsContent");
+
+let accountsMap={};
+let currentID=null;
+let isEditMode=false;
+
+function formatAmount(value){
+    return Number(value).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+/* LOAD ACCOUNTS */
+async function loadAccounts(){
+const snap=await db.collection("chartOfAccounts")
+.where("isActive","==",true).get();
+snap.forEach(doc=>{
+const d=doc.data();
+accountsMap[d.code]=d.name;
+});
+}
+
+function startNewEntry(){
+    currentID = null;
+    openNewJE();
+}
+
+/* OPEN NEW */
+function openNewJE(){
+isEditMode=false;
+
+modalTitle.innerText="New Journal Entry";
+saveBtn.innerText="Save";
+
+jeDate.value="";
+jeDescription.value="";
+linesBody.innerHTML="";
+totalDebit.innerText="0.00";
+totalCredit.innerText="0.00";
+
+newJEModal.style.display="block";
+}
+const newJEModal = document.getElementById("newJEModal");
+const detailsModal = document.getElementById("detailsModal");
+function closeNewJE(){ newJEModal.style.display="none"; }
+
+function cancelJournalEntry(){
+if(confirm("Discard changes?")){
+closeNewJE();
+}
+}
+
+function formatDate(dateStr){
+    if(!dateStr) return "";
+
+    const d = new Date(dateStr);
+
+    return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+    });
+}
+
+function closeDetails(){
+    detailsModal.style.display = "none";
+}
+
+/* ADD LINE */
+function addLine(){
+const tr=document.createElement("tr");
+tr.innerHTML=`
+<td>
+<select>
+${Object.keys(accountsMap).map(code=>
+`<option value="${code}">${code} - ${accountsMap[code]}</option>`).join("")}
+</select>
+</td>
+<td><input type="number" step="0.01" oninput="calculateTotals()"></td>
+<td><input type="number" step="0.01" oninput="calculateTotals()"></td>
+<td><button onclick="this.closest('tr').remove();calculateTotals()">X</button></td>
+`;
+linesBody.appendChild(tr);
+}
+
+function calculateTotals(){
+let debit=0,credit=0;
+document.querySelectorAll("#linesBody tr").forEach(tr=>{
+debit+=parseFloat(tr.cells[1].querySelector("input").value)||0;
+credit+=parseFloat(tr.cells[2].querySelector("input").value)||0;
+});
+totalDebit.innerText=debit.toFixed(2);
+totalCredit.innerText=credit.toFixed(2);
+}
+
+/* SAVE OR UPDATE */
+async function saveJournalEntry(){
+
+const date=jeDate.value.trim();
+const description=jeDescription.value.trim();
+const rows=document.querySelectorAll("#linesBody tr");
+
+if(!date||!description||rows.length===0){
+alert("Complete all fields."); return;
+}
+
+let totalD=0,totalC=0;
+for(const row of rows){
+const debit=parseFloat(row.cells[1].querySelector("input").value)||0;
+const credit=parseFloat(row.cells[2].querySelector("input").value)||0;
+
+if(debit>0&&credit>0){ alert("Invalid line."); return; }
+if(debit===0&&credit===0){ alert("Enter amount."); return; }
+
+totalD+=debit; totalC+=credit;
+}
+if(totalD.toFixed(2)!==totalC.toFixed(2)){
+alert("Journal not balanced."); return;
+}
+
+let headerRef;
+let journalNumber;
+
+if(isEditMode){
+journalNumber=currentID;
+headerRef=db.collection("journalEntries").doc(journalNumber);
+
+await headerRef.update({
+date,description,totalDebit:totalD,totalCredit:totalC,status:"Draft"
+});
+
+const oldLines=await headerRef.collection("lines").get();
+for(const doc of oldLines.docs){ await doc.ref.delete(); }
+
+}else{
+
+const counterRef=db.collection("counters").doc("journalEntries");
+const next=await db.runTransaction(async t=>{
+const doc=await t.get(counterRef);
+const num=(doc.data()?.lastNumber||0)+1;
+t.set(counterRef,{lastNumber:num},{merge:true});
+return num;
+});
+
+journalNumber="JE"+next.toString().padStart(4,"0");
+headerRef=db.collection("journalEntries").doc(journalNumber);
+
+await headerRef.set({
+journalNumber,date,description,
+totalDebit:totalD,totalCredit:totalC,
+status:"Draft",
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+});
+}
+
+for(const row of rows){
+await headerRef.collection("lines").add({
+accountCode:row.cells[0].querySelector("select").value,
+debit:parseFloat(row.cells[1].querySelector("input").value)||0,
+credit:parseFloat(row.cells[2].querySelector("input").value)||0
+});
+}
+
+listenEntries();
+}
+
+function listenEntries(){
+
+db.collection("journalEntries")
+.orderBy("date","desc")
+.limit(50)
+.onSnapshot(async snap=>{
+
+container.innerHTML="";
+
+for(const doc of snap.docs){
+
+const data=doc.data();
+const linesSnap=await doc.ref.collection("lines").get();
+
+let lines=[];
+linesSnap.forEach(d=>lines.push(d.data()));
+
+lines.sort((a,b)=>{
+if(a.debit>0 && b.credit>0) return -1;
+if(a.credit>0 && b.debit>0) return 1;
+return 0;
+});
+
+let block=document.createElement("div");
+block.className="journal-block";
+
+let html="";
+let first=true;
+
+lines.forEach(line=>{
+html+=`
+<div class="row">
+${first?`<div>${formatDate(data.date)}</div>`:`<div></div>`}
+${first?`<div class="je-number" onclick="loadDetails('${doc.id}')">${data.journalNumber}</div>`:`<div></div>`}
+<div>${line.accountCode} - ${accountsMap[line.accountCode]}</div>
+<div class="amount">${line.debit?formatAmount(line.debit):""}</div>
+<div class="amount">${line.credit?formatAmount(line.credit):""}</div>
+${first?`<div class="status">${data.status}</div>`:`<div></div>`}
+</div>`;
+first=false;
+});
+
+html+=`
+<div class="row">
+<div></div>
+<div></div>
+<div style="font-style:italic;color:#444;padding-left:20px;">
+${data.description}
+</div>
+<div></div>
+<div></div>
+<div></div>
+</div>`;
+
+block.innerHTML=html;
+container.appendChild(block);
+
+}
+
+});
+
+}
+
+/* DETAILS */
+async function loadDetails(id){
+currentID=id;
+
+const ref=db.collection("journalEntries").doc(id);
+const header=await ref.get();
+const data=header.data();
+
+const linesSnap = await ref.collection("lines").get();
+
+let lines = [];
+let totalDebit = 0;
+let totalCredit = 0;
+
+linesSnap.forEach(doc => {
+    const line = doc.data();
+    lines.push(line);
+
+    totalDebit += line.debit || 0;
+    totalCredit += line.credit || 0;
+});
+
+// Sort Debit first
+lines.sort((a, b) => {
+    if (a.debit > 0 && b.credit > 0) return -1;
+    if (a.credit > 0 && b.debit > 0) return 1;
+    return 0;
+});
+
+let html = `
+<h3>${data.journalNumber}</h3>
+<p><b>Date:</b> ${data.date}</p>
+<p><b>Description:</b> ${data.description}</p>
+<p><b>Status:</b> ${data.status}</p>
+`;
+
+if(data.status!=="Posted"){
+html+=`
+<button onclick="editEntry()">Edit</button>
+<button onclick="deleteEntry()">Delete</button>
+<button onclick="postEntry()">Post</button>
+`;
+}
+
+html+=`
+<table border="1" width="100%" style="margin-top:15px;">
+<tr>
+<th>Account</th>
+<th>Debit</th>
+<th>Credit</th>
+</tr>
+`;
+
+// Lines
+lines.forEach(line => {
+html+=`
+<tr>
+<td>${line.accountCode} - ${accountsMap[line.accountCode]}</td>
+<td align="right">${line.debit ? formatAmount(line.debit) : ""}</td>
+<td align="right">${line.credit ? formatAmount(line.credit) : ""}</td>
+</tr>
+`;
+});
+
+// ✅ ADD TOTAL ROW HERE
+html+=`
+<tr style="font-weight:bold;">
+<td align="right">TOTAL</td>
+<td align="right">${formatAmount(totalDebit)}</td>
+<td align="right">${formatAmount(totalCredit)}</td>
+</tr>
+`;
+
+html+=`</table>`;
+
+detailsContent.innerHTML=html;
+detailsModal.style.display="block";
+}
+
+/* EDIT */
+async function editEntry(){
+
+    const ref = db.collection("journalEntries").doc(currentID);
+    const header = await ref.get();
+    const data = header.data();
+
+    if(data.status === "Posted"){
+        alert("Cannot edit posted entry.");
+        return;
+    }
+
+    closeDetails();
+
+    // SET EDIT MODE FIRST
+    isEditMode = true;
+
+    modalTitle.innerText = "Edit Journal Entry";
+    saveBtn.innerText = "Update";
+
+    // Open modal WITHOUT resetting edit state
+    newJEModal.style.display = "block";
+
+    jeDate.value = data.date;
+    jeDescription.value = data.description;
+
+    linesBody.innerHTML = "";
+
+    const linesSnap = await ref.collection("lines").get();
+
+    linesSnap.forEach(doc => {
+        const line = doc.data();
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+        <td>
+        <select>
+        ${Object.keys(accountsMap).map(code =>
+        `<option value="${code}" ${code===line.accountCode?"selected":""}>
+        ${code} - ${accountsMap[code]}
+        </option>`).join("")}
+        </select>
+        </td>
+
+        <td><input type="number" step="0.01" value="${line.debit||""}" oninput="calculateTotals()"></td>
+        <td><input type="number" step="0.01" value="${line.credit||""}" oninput="calculateTotals()"></td>
+        <td><button onclick="this.closest('tr').remove();calculateTotals()">X</button></td>
+        `;
+
+        linesBody.appendChild(tr);
+    });
+
+    calculateTotals();
+}
+
+/* DELETE */
+async function deleteEntry(){
+if(!confirm("Delete this entry?")) return;
+const ref=db.collection("journalEntries").doc(currentID);
+const lines=await ref.collection("lines").get();
+for(const doc of lines.docs){ await doc.ref.delete(); }
+await ref.delete();
+closeDetails();
+await loadEntries();
+}
+
+function filterEntries(){
+
+const search = document.getElementById("searchInput").value.toLowerCase();
+
+const blocks = document.querySelectorAll(".journal-block");
+
+blocks.forEach(block=>{
+
+const text = block.innerText.toLowerCase();
+
+if(text.includes(search)){
+block.style.display = "block";
+}else{
+block.style.display = "none";
+}
+
+});
+
+}
+
+/* FULLY TRANSACTIONAL POST */
+async function postEntry(){
+if(!confirm("Post this entry?")) return;
+
+const ref=db.collection("journalEntries").doc(currentID);
+
+await db.runTransaction(async t=>{
+const snap=await t.get(ref);
+const data=snap.data();
+if(!data||data.status==="Posted") throw "Invalid";
+
+const linesSnap=await ref.collection("lines").get();
+linesSnap.forEach(doc=>{
+const line=doc.data();
+const glRef=db.collection("generalLedger").doc();
+t.set(glRef,{
+date:data.date,
+journalNumber:data.journalNumber,
+description:data.description,
+accountCode:line.accountCode,
+debit:line.debit,
+credit:line.credit,
+posted:true,
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+});
+});
+
+t.update(ref,{status:"Posted",
+postedAt:firebase.firestore.FieldValue.serverTimestamp()});
+});
+
+alert("Posted successfully");
+closeDetails();
+await loadEntries();
+}
+
+/* INIT */
+(async()=>{
+await loadAccounts();
+listenEntries();
+})();
+</script>
+</body>
+</html>
