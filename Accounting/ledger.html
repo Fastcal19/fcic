@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>General Ledger</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+  font-family:"Courier New", monospace;
+  margin:20px;
+}
+
+table{
+  border-collapse:collapse;
+  width:100%;
+  margin-top:15px;
+}
+
+th,td{
+  border:1px solid black;
+  padding:6px;
+}
+
+th{
+  background:#eee;
+}
+
+.right{
+  text-align:right;
+}
+
+.description{
+  background:#f9f9f9;
+  padding:10px;
+  border-left:4px solid #007BFF;
+  margin-bottom:15px;
+}
+#accountFilter{
+    border-radius: 8px;
+    width: 350px;
+    height: 30px;
+    font-family: 'Courier New', Courier, monospace;
+}
+</style>
+</head>
+<body>
+
+<h2>General Ledger</h2>
+
+<div class="description">
+  The General Ledger displays all accounting transactions for each account. 
+  You can filter the entries by account to see detailed debits, credits, 
+  running balances, and descriptions of transactions. The balance calculation 
+  respects the normal balance type of each account (debit or credit).
+</div>
+
+Account:
+<input type="text" id="accountFilter" list="accountList"
+       placeholder="Type code or name"
+       onchange="loadLedger()">
+<datalist id="accountList"></datalist>
+
+<table>
+<thead>
+<tr>
+  <th>Date</th>
+  <th>Journal</th>
+  <th>Description</th>
+  <th>Debit</th>
+  <th>Credit</th>
+  <th>Balance</th>
+</tr>
+</thead>
+<tbody id="ledgerBody"></tbody>
+</table>
+
+<script>
+// 🔹 Firebase Config
+const firebaseConfig = {
+  apiKey:"AIzaSyAItDyGgVSzNEKQFNd5N4hrTOLsrPhXXtg",
+  authDomain:"fcic-7f3c1.firebaseapp.com",
+  projectId:"fcic-7f3c1"
+};
+
+// 🔹 Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// 🔹 DOM References
+const accountFilter = document.getElementById("accountFilter");
+const accountList = document.getElementById("accountList");
+const ledgerBody = document.getElementById("ledgerBody");
+
+let accounts = {}; // Store accounts with code as key
+
+// =============================
+// LOAD ACCOUNTS
+// =============================
+async function loadAccounts(){
+  try{
+    const snap = await db.collection("chartOfAccounts")
+      .where("isActive","==",true)
+      .get();
+
+    accountList.innerHTML = "";
+    accounts = {};
+
+    snap.forEach(doc=>{
+      const a = doc.data();
+      accounts[a.code] = a;
+
+      // Add option for datalist (dropdown while typing)
+      accountList.innerHTML += `<option value="${a.code} - ${a.name}">`;
+    });
+
+  }catch(error){
+    console.error("Error loading accounts:", error);
+    alert("Error loading accounts. Check console.");
+  }
+}
+
+// =============================
+// LOAD LEDGER
+// =============================
+async function loadLedger() {
+  try {
+    ledgerBody.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
+
+    let query = db.collection("generalLedger")
+      .orderBy("date")
+      .orderBy("createdAt");
+
+    let selectedCode = accountFilter.value.trim();
+
+    // If user typed "1010 - Cash", extract the code
+    if (selectedCode.includes("-")) {
+      selectedCode = selectedCode.split("-")[0].trim();
+    }
+
+    if (selectedCode) {
+      query = query.where("accountCode", "==", selectedCode);
+    }
+
+    const snap = await query.get();
+    ledgerBody.innerHTML = "";
+
+    if (snap.empty) {
+      ledgerBody.innerHTML = "<tr><td colspan='6'>No records found</td></tr>";
+      return;
+    }
+
+    const selectedAccount = accounts[selectedCode];
+    const isCreditNormal = selectedAccount && selectedAccount.normalBalance
+      ? selectedAccount.normalBalance.trim().toLowerCase() === "credit"
+      : false;
+
+    let balance = 0;
+    const rows = [];
+
+    snap.forEach(doc => {
+      const l = doc.data();
+
+      const debit = Number(l.debit) || 0;
+      const credit = Number(l.credit) || 0;
+
+      if (isCreditNormal) {
+        balance -= debit;
+        balance += credit;
+      } else {
+        balance += debit;
+        balance -= credit;
+      }
+
+      let displayDate = "";
+      if (l.date) {
+        displayDate = typeof l.date.toDate === "function" ? l.date.toDate().toLocaleDateString() : l.date;
+      }
+
+      rows.push(`
+        <tr>
+          <td>${displayDate}</td>
+          <td>${l.journalNumber || ""}</td>
+          <td>${l.description || ""}</td>
+          <td class="right">${debit ? debit.toLocaleString(undefined, {minimumFractionDigits:2}) : ""}</td>
+          <td class="right">${credit ? credit.toLocaleString(undefined, {minimumFractionDigits:2}) : ""}</td>
+          <td class="right">${(isCreditNormal ? Math.abs(balance) : balance).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        </tr>
+      `);
+    });
+
+    ledgerBody.innerHTML = rows.join("");
+
+  } catch (error) {
+    console.error("Error loading ledger:", error);
+    ledgerBody.innerHTML = "<tr><td colspan='6'>Error loading data. Check console.</td></tr>";
+  }
+}
+
+// =============================
+// INITIAL LOAD
+// =============================
+loadAccounts();
+loadLedger();
+
+</script>
+
+</body>
+</html>
