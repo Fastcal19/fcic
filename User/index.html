@@ -724,11 +724,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const iframe = document.getElementById("mainFrame");
   const role = localStorage.getItem("role");
 
-  if (role === "system admin" || role === "admin") {
-    iframe.src = "Admin Dashboard.html";
-  } else {
-    iframe.src = "dashboard.html";
-  }
+  if (!role) {
+  iframe.src = "Payslip.html";   // 👈 no role = payslip only
+} 
+else if (role === "system admin" || role === "admin") {
+  iframe.src = "Admin Dashboard.html";
+} 
+else {
+  iframe.src = "dashboard.html";
+}
 
   const fullName = localStorage.getItem("full");
   const photo = localStorage.getItem("photo");
