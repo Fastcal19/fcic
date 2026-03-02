@@ -829,8 +829,11 @@ function showPage(page) {
     portals: ["Portals", "Portals.html"],
     com: ["Commission", "/Commission/"]
   };
-
+  
   if (page === "dashboard") {
+    if (!role) {
+      iframe.src = "Payslip.html";   // 👈 no role = payslip only
+    } 
     if (role === "system admin" || role === "admin") {
       iframe.src = "Admin Dashboard.html";
       header.textContent = "Fast Cal Industrial Corp";
