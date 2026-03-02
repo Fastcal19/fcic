@@ -366,8 +366,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
 <script>
-const role = localStorage.getItem("role") || "";
-const isPayslipPortal = !role;
+window.role = localStorage.getItem("role") || "";
+window.isPayslipPortal = !window.role;
 
 let db = null;
 let storage = null;
@@ -840,9 +840,7 @@ function toggleMenu(id) {
 
 function showPage(page) {
 
-  if (!window.isPayslipPortal) {
-
-  if (!role && page !== "payslip") {
+  if (window.isPayslipPortal) {
     document.getElementById("mainFrame").src = "Payslip.html";
     return;
   }
@@ -859,7 +857,7 @@ function showPage(page) {
     je: ["Journal Entries", "JE.html"],
     voucher: ["Vouchers", "Updating.html"],
     salesdata: ["Sales", "Updating.html"],
-    projects: ["Projects", "Projects.html"]
+    projects: ["Projects", "Projects.html"],
     salesreport: ["Sales Report", "Sales.html"],
     ar: ["Accounts Receivable", "Accounts Receivable.html"],
     ap: ["Accounts Payable", "AP.html"],
