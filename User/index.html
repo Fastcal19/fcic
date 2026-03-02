@@ -721,18 +721,44 @@ if (!localStorage.getItem("username")) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const iframe = document.getElementById("mainFrame");
-  const role = localStorage.getItem("role");
 
-  if (!role) {
-  iframe.src = "Payslip.html";   // 👈 no role = payslip only
-} 
-else if (role === "system admin" || role === "admin") {
-  iframe.src = "Admin Dashboard.html";
-} 
-else {
-  iframe.src = "dashboard.html";
-}
+  const role = localStorage.getItem("role") || "";
+  const isPayslipPortal = !role;
+  const iframe = document.getElementById("mainFrame");
+
+  /* =========================
+     🔒 PURE PAYSLIP PORTAL MODE
+  ========================== */
+  if (isPayslipPortal) {
+
+    iframe.src = "Payslip.html";
+
+    // Hide UI
+    document.getElementById("sidebar").style.display = "none";
+    document.getElementById("pageHeader").style.display = "none";
+    document.querySelector("footer").style.display = "none";
+    document.getElementById("menuToggle").style.display = "none";
+
+    const bottomNav = document.getElementById("bottomNav");
+    if (bottomNav) bottomNav.style.display = "none";
+
+    // Expand full screen
+    const main = document.getElementById("mainContent");
+    main.style.margin = "0";
+    main.style.height = "100vh";
+
+    return; // 🚨 STOP everything else from running
+  }
+
+  /* =========================
+     NORMAL SYSTEM LOAD
+  ========================== */
+
+  if (role === "system admin" || role === "admin") {
+    iframe.src = "Admin Dashboard.html";
+  } else {
+    iframe.src = "dashboard.html";
+  }
 
   const fullName = localStorage.getItem("full");
   const photo = localStorage.getItem("photo");
@@ -831,9 +857,7 @@ function showPage(page) {
   };
   
   if (page === "dashboard") {
-    if (!role) {
-      iframe.src = "Payslip.html";   // 👈 no role = payslip only
-    } 
+  
     if (role === "system admin" || role === "admin") {
       iframe.src = "Admin Dashboard.html";
       header.textContent = "Fast Cal Industrial Corp";
