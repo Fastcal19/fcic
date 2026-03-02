@@ -366,17 +366,26 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
 <script>
-firebase.initializeApp({
-  apiKey: "AIzaSyAnulgPqKSI8Y_mMOTCof6joYscT4FLCXg",
-  authDomain: "fcic-7f3c1.firebaseapp.com",
-  projectId: "fcic-7f3c1",
-  storageBucket: "fcic-7f3c1.appspot.com",
-  messagingSenderId: "91128961829",
-  appId: "1:91128961829:web:815baae23a9b5eb3cbd8cc"
-});
+const role = localStorage.getItem("role") || "";
+const isPayslipPortal = !role;
 
-const db = firebase.database();
-const storage = firebase.storage();
+let db = null;
+let storage = null;
+
+if (!isPayslipPortal) {
+
+  firebase.initializeApp({
+    apiKey: "AIzaSyAnulgPqKSI8Y_mMOTCof6joYscT4FLCXg",
+    authDomain: "fcic-7f3c1.firebaseapp.com",
+    projectId: "fcic-7f3c1",
+    storageBucket: "fcic-7f3c1.appspot.com",
+    messagingSenderId: "91128961829",
+    appId: "1:91128961829:web:815baae23a9b5eb3cbd8cc"
+  });
+
+  db = firebase.database();
+  storage = firebase.storage();
+}
 </script>
 
 <!-- CHAT UI -->
@@ -825,7 +834,7 @@ function toggleMenu(id) {
 }
 
 function showPage(page) {
-  function showPage(page) {
+
   const role = localStorage.getItem("role") || "";
 
   if (!role && page !== "payslip") {
@@ -849,7 +858,6 @@ function showPage(page) {
     salesreport: ["Sales Report", "Sales.html"],
     ar: ["Accounts Receivable", "Accounts Receivable.html"],
     ap: ["Accounts Payable", "AP.html"],
-    pc: ["Costing Report", "Updating.html"],
     is: ["Income Statement", "Updating.html"],
     inventoryGallery: ["Inventory Gallery", "/inventory/"],
     inventoryList: ["Inventory List", "InventoryList.html"],
@@ -865,19 +873,12 @@ function showPage(page) {
     portals: ["Portals", "Portals.html"],
     com: ["Commission", "/Commission/"]
   };
-  
+
   if (page === "dashboard") {
-  
-    if (role === "system admin" || role === "admin") {
-      iframe.src = "Admin Dashboard.html";
-      header.textContent = "Fast Cal Industrial Corp";
-    } else if (role === "hr") {
-      iframe.src = "dashboard.html";
-      header.textContent = "Fast Cal Industrial Corp";
-    } else {
-      iframe.src = "dashboard.html";
-      header.textContent = "Fast Cal Industrial Corp";
-    }
+    iframe.src = (role === "admin" || role === "system admin")
+      ? "Admin Dashboard.html"
+      : "dashboard.html";
+    header.textContent = "Fast Cal Industrial Corp";
     return;
   }
 
