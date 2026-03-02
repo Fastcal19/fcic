@@ -774,16 +774,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-  /* =========================
-     NORMAL SYSTEM LOAD
-  ========================== */
-
-  if (role === "system admin" || role === "admin") {
-    iframe.src = "Admin Dashboard.html";
-  } else {
-    iframe.src = "dashboard.html";
-  }
-
   const fullName = localStorage.getItem("full");
   const photo = localStorage.getItem("photo");
   const email = localStorage.getItem("email");
@@ -852,9 +842,6 @@ function showPage(page) {
     return;
   }
 
-  const iframe = document.getElementById("mainFrame");
-  const header = document.getElementById("pageHeader");
-
   if (page === "dashboard") {
     iframe.src = (window.role === "admin" || window.role === "system admin")
       ? "Admin Dashboard.html"
@@ -896,7 +883,7 @@ function showPage(page) {
   };
 
   if (page === "dashboard") {
-    iframe.src = (role === "admin" || role === "system admin")
+    iframe.src = (window.role === "admin" || window.role === "system admin")
       ? "Admin Dashboard.html"
       : "dashboard.html";
     header.textContent = "Fast Cal Industrial Corp";
