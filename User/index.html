@@ -366,8 +366,14 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
 <script>
-window.role = localStorage.getItem("role") || "";
-window.isPayslipPortal = !window.role;
+/* ===== GLOBAL ROLE CONTROL ===== */
+window.role = localStorage.getItem("role");
+
+if (!window.role || window.role === "undefined" || window.role === "null") {
+  window.role = "";
+}
+
+window.isPayslipPortal = window.role === "";
 
 let db = null;
 let storage = null;
@@ -734,38 +740,39 @@ if (!localStorage.getItem("username")) {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const role = localStorage.getItem("role") || "";
-  const isPayslipPortal = !role;
   const iframe = document.getElementById("mainFrame");
 
-  /* =========================
-     🔒 PURE PAYSLIP PORTAL MODE
-  ========================== */
- if (isPayslipPortal) {
+  if (window.isPayslipPortal) {
 
-  // Load Payslip page
-  iframe.src = "Payslip.html";
+    iframe.src = "Payslip.html";
 
-  // Hide ALL system UI
-  document.getElementById("sidebar")?.remove();
-  document.getElementById("pageHeader")?.remove();
-  document.querySelector("footer")?.remove();
-  document.getElementById("menuToggle")?.remove();
-  document.getElementById("bottomNav")?.remove();
-  document.getElementById("chatToggle")?.remove();
-  document.getElementById("chatBox")?.remove();
+    document.getElementById("sidebar")?.remove();
+    document.getElementById("pageHeader")?.remove();
+    document.querySelector("footer")?.remove();
+    document.getElementById("menuToggle")?.remove();
+    document.getElementById("bottomNav")?.remove();
+    document.getElementById("chatToggle")?.remove();
+    document.getElementById("chatBox")?.remove();
 
-  // Expand iframe full screen
-  const main = document.getElementById("mainContent");
-  main.style.margin = "0";
-  main.style.padding = "0";
-  main.style.height = "100vh";
-  main.style.width = "100vw";
+    const main = document.getElementById("mainContent");
+    main.style.margin = "0";
+    main.style.padding = "0";
+    main.style.height = "100vh";
+    main.style.width = "100vw";
 
-  document.body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
 
-  return; // 🚨 STOP everything else
-}
+    return; // 🚨 STOP EVERYTHING
+  }
+
+  /* NORMAL SYSTEM LOAD */
+  if (window.role === "admin" || window.role === "system admin") {
+    iframe.src = "Admin Dashboard.html";
+  } else {
+    iframe.src = "dashboard.html";
+  }
+
+});
 
   /* =========================
      NORMAL SYSTEM LOAD
@@ -842,6 +849,17 @@ function showPage(page) {
 
   if (window.isPayslipPortal) {
     document.getElementById("mainFrame").src = "Payslip.html";
+    return;
+  }
+
+  const iframe = document.getElementById("mainFrame");
+  const header = document.getElementById("pageHeader");
+
+  if (page === "dashboard") {
+    iframe.src = (window.role === "admin" || window.role === "system admin")
+      ? "Admin Dashboard.html"
+      : "dashboard.html";
+    header.textContent = "Fast Cal Industrial Corp";
     return;
   }
 
