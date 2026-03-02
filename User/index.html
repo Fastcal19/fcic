@@ -741,26 +741,31 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================
      🔒 PURE PAYSLIP PORTAL MODE
   ========================== */
-  if (isPayslipPortal) {
+ if (isPayslipPortal) {
 
-    iframe.src = "Payslip.html";
+  // Load Payslip page
+  iframe.src = "Payslip.html";
 
-    // Hide UI
-    document.getElementById("sidebar").style.display = "none";
-    document.getElementById("pageHeader").style.display = "none";
-    document.querySelector("footer").style.display = "none";
-    document.getElementById("menuToggle").style.display = "none";
+  // Hide ALL system UI
+  document.getElementById("sidebar")?.remove();
+  document.getElementById("pageHeader")?.remove();
+  document.querySelector("footer")?.remove();
+  document.getElementById("menuToggle")?.remove();
+  document.getElementById("bottomNav")?.remove();
+  document.getElementById("chatToggle")?.remove();
+  document.getElementById("chatBox")?.remove();
 
-    const bottomNav = document.getElementById("bottomNav");
-    if (bottomNav) bottomNav.style.display = "none";
+  // Expand iframe full screen
+  const main = document.getElementById("mainContent");
+  main.style.margin = "0";
+  main.style.padding = "0";
+  main.style.height = "100vh";
+  main.style.width = "100vw";
 
-    // Expand full screen
-    const main = document.getElementById("mainContent");
-    main.style.margin = "0";
-    main.style.height = "100vh";
+  document.body.style.overflow = "hidden";
 
-    return; // 🚨 STOP everything else from running
-  }
+  return; // 🚨 STOP everything else
+}
 
   /* =========================
      NORMAL SYSTEM LOAD
@@ -835,7 +840,7 @@ function toggleMenu(id) {
 
 function showPage(page) {
 
-  const role = localStorage.getItem("role") || "";
+  if (!window.isPayslipPortal) {
 
   if (!role && page !== "payslip") {
     document.getElementById("mainFrame").src = "Payslip.html";
@@ -854,7 +859,7 @@ function showPage(page) {
     je: ["Journal Entries", "JE.html"],
     voucher: ["Vouchers", "Updating.html"],
     salesdata: ["Sales", "Updating.html"],
-    projects: ["Projects", "Projects.html"],
+    projects: ["Projects", "Projects.html"]
     salesreport: ["Sales Report", "Sales.html"],
     ar: ["Accounts Receivable", "Accounts Receivable.html"],
     ap: ["Accounts Payable", "AP.html"],
