@@ -416,7 +416,10 @@ const storage = firebase.storage();
 /* ================= CHAT SYSTEM (FIXED) ================= */
 
 const username = localStorage.getItem("username") || "User";
-const role = localStorage.getItem("role") || "Staff";
+const role = localStorage.getItem("role") || "";
+const isPayslipPortal = !role;
+
+if (!isPayslipPortal) {
 
 const chatToggle = document.getElementById("chatToggle");
 const chatBox = document.getElementById("chatBox");
@@ -822,14 +825,16 @@ function toggleMenu(id) {
 }
 
 function showPage(page) {
+  function showPage(page) {
   const role = localStorage.getItem("role") || "";
-if (!role && page !== "payslip") {
-  document.getElementById("mainFrame").src = "Payslip.html";
-  return;
-}
+
+  if (!role && page !== "payslip") {
+    document.getElementById("mainFrame").src = "Payslip.html";
+    return;
+  }
+
   const iframe = document.getElementById("mainFrame");
   const header = document.getElementById("pageHeader");
-  const role = localStorage.getItem("role") || "";
 
   const pages = {
     employee: ["Employee Profile", "Employee Profile.html"],
