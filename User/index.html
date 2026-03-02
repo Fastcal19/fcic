@@ -810,7 +810,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!el) return;
     el.style.display = visible[role]?.includes(id) ? "block" : "none";
   });
-});
 
 // Sidebar logic
 const sidebar = document.getElementById('sidebar');
@@ -842,6 +841,9 @@ function showPage(page) {
     return;
   }
 
+  const iframe = document.getElementById("mainFrame");
+  const header = document.getElementById("pageHeader");
+
   if (page === "dashboard") {
     iframe.src = (window.role === "admin" || window.role === "system admin")
       ? "Admin Dashboard.html"
@@ -849,9 +851,6 @@ function showPage(page) {
     header.textContent = "Fast Cal Industrial Corp";
     return;
   }
-
-  const iframe = document.getElementById("mainFrame");
-  const header = document.getElementById("pageHeader");
 
   const pages = {
     employee: ["Employee Profile", "Employee Profile.html"],
@@ -881,14 +880,6 @@ function showPage(page) {
     portals: ["Portals", "Portals.html"],
     com: ["Commission", "/Commission/"]
   };
-
-  if (page === "dashboard") {
-    iframe.src = (window.role === "admin" || window.role === "system admin")
-      ? "Admin Dashboard.html"
-      : "dashboard.html";
-    header.textContent = "Fast Cal Industrial Corp";
-    return;
-  }
 
   if (pages[page]) {
     const [label, url] = pages[page];
