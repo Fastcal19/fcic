@@ -416,23 +416,24 @@ function preparePrint(month) {
       </tr>`;
 
     rows.forEach(r => {
-      empTotal += r.empShare;
-      emprTotal += r.emprShare;
-      tot += r.total;
-      html += `<tr>
-        <td>${r.employee}</td>
-        <td class="right">${formatAmount(amt)}</td>
-        <td class="right">${formatAmount(r.empShare)}</td>
-        <td class="right">${formatAmount(r.total)}</td>
-      </tr>`;
-    });
+  empTotal += r.empShare;
+  emprTotal += r.emprShare;
+  tot += r.total;
 
-    html += `<tr class="total">
-      <td>TOTAL</td>
-      <td class="right">${formatAmount(amt)}</td>
-      <td class="right">${formatAmount(r.empShare)}</td>
-      <td class="right">${formatAmount(r.total)}</td>
-    </tr></table>`;
+  html += `<tr>
+    <td>${r.employee}</td>
+    <td class="right">${formatAmount(r.emprShare)}</td>
+    <td class="right">${formatAmount(r.empShare)}</td>
+    <td class="right">${formatAmount(r.total)}</td>
+  </tr>`;
+});
+
+html += `<tr class="total">
+  <td>TOTAL</td>
+  <td class="right">${formatAmount(emprTotal)}</td>
+  <td class="right">${formatAmount(empTotal)}</td>
+  <td class="right">${formatAmount(tot)}</td>
+</tr></table>`;
 
     // Add signature lines **per agency**
     html += `<div class="signatures">
