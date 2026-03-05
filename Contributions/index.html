@@ -105,6 +105,79 @@ th {
 #printDetails {
   display: none;
 }
+
+/* ================= MOBILE STYLES ================= */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .container {
+    padding: 12px;
+  }
+
+  h2, h3, h4 {
+    font-size: 16px;
+  }
+
+  /* Stack unpaid section */
+#pendingSection,
+#paidSection,
+.tabs,
+button {
+  display: none !important;
+}
+
+  /* Reduce table font size */
+  table {
+    font-size: 12px;
+  }
+
+  th, td {
+    padding: 6px;
+  }
+
+  /* Make tables scrollable instead of squished */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Buttons full width on mobile */
+  button {
+    width: 100%;
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  /* Print meta spacing */
+  .print-meta {
+    font-size: 11px;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.tab{
+  padding:8px 16px;
+  border:none;
+  background:#ddd;
+  cursor:pointer;
+  border-radius:4px;
+}
+
+.tab.active{
+  background:#2c3e50;
+  color:white;
+}
+
 </style>
 </head>
 
@@ -112,8 +185,18 @@ th {
 <div class="container">
   <h2></h2>
 
+  <div class="tabs">
+  <button class="tab active" onclick="switchTab('pending')">Unpaid / Pending</button>
+  <button class="tab" onclick="switchTab('paid')">Paid</button>
+</div>
+
+
+<button onclick="window.print()" style="margin-bottom:15px">
+🖨 Print Selected Contributions
+</button>
+
   <!-- Unpaid section (screen only) -->
-  <div class="unpaid-section" style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
+  <div id="pendingSection" class="unpaid-section" style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
     <div>
       <h4>UNPAID CONTRIBUTIONS</h4>
       <table>
@@ -129,7 +212,27 @@ th {
     </div>
   </div>
 
-  <button onclick="window.print()" style="margin-bottom:15px">🖨 Print Selected Contributions</button>
+
+<div id="paidSection" style="display:none; grid-template-columns: 280px 1fr; gap:20px;">
+
+  <!-- LEFT SIDE : Month List -->
+  <div>
+    <h4>PAID CONTRIBUTIONS</h4>
+    <table>
+      <tr>
+        <th>Month</th>
+        <th class="right">Amount</th>
+      </tr>
+      <tbody id="paidList"></tbody>
+    </table>
+  </div>
+
+  <!-- RIGHT SIDE : Details -->
+  <div id="paidDetails">
+    <p style="color:green">Click a paid month to view details</p>
+  </div>
+
+</div>
 
   <!-- Selected unpaid contributions for printing -->
   <div id="printDetails"></div>
@@ -140,33 +243,79 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxAIPmW-Es-gNkUSfVtVotU
 
 let data = [];
 let selectedMonth = null;
+let currentStatus = "pending";
 
 fetch(API_URL)
   .then(res => res.json())
   .then(json => {
     data = json;
-    loadUnpaid();
+    loadMonths();
   });
 
-/* Load unpaid contributions (screen only) */
-function loadUnpaid() {
-  const pending = data.filter(d => d.status?.toLowerCase() === "pending");
-  const unpaidList = document.getElementById("unpaidList");
+function switchTab(status){
 
-  if (!pending.length) {
-    unpaidList.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#999">No unpaid contributions</td></tr>`;
+  currentStatus = status;
+
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+
+  if(status==="pending"){
+    document.querySelectorAll(".tab")[0].classList.add("active");
+    document.getElementById("pendingSection").style.display="grid";
+    document.getElementById("paidSection").style.display="none";
+  }else{
+    document.querySelectorAll(".tab")[1].classList.add("active");
+    document.getElementById("pendingSection").style.display="none";
+    document.getElementById("paidSection").style.display="grid";
+  }
+
+  loadMonths();
+}
+
+/* Load unpaid contributions (screen only) */
+function loadMonths(){
+
+  const filtered = data.filter(d => d.status?.toLowerCase() === currentStatus);
+  const list = currentStatus==="pending"
+    ? document.getElementById("unpaidList")
+    : document.getElementById("paidList");
+
+  if (!filtered.length) {
+    list.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#999">No records</td></tr>`;
     return;
   }
 
   const months = {};
-  pending.forEach(r => months[r.month] = (months[r.month] || 0) + Number(r.total));
+  filtered.forEach(r => months[r.month] = (months[r.month] || 0) + Number(r.total));
 
-  unpaidList.innerHTML = Object.entries(months).map(([m, amt]) =>
+  list.innerHTML = Object.entries(months).map(([m, amt]) =>
     `<tr onclick="selectMonth('${m}')" style="cursor:pointer">
       <td>${m}</td>
-      <td class="right">${amt.toLocaleString()}</td>
+      <td class="right">${formatAmount(amt)}</td>
     </tr>`
   ).join("");
+
+}
+
+function loadPaid(){
+
+  const paid = data.filter(d => d.status?.toLowerCase() === "paid");
+  const paidList = document.getElementById("paidList");
+
+  if(!paid.length){
+    paidList.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#999">No paid contributions</td></tr>`;
+    return;
+  }
+
+  const months = {};
+  paid.forEach(r => months[r.month] = (months[r.month] || 0) + Number(r.total));
+
+  paidList.innerHTML = Object.entries(months).map(([m, amt]) =>
+    `<tr>
+      <td>${m}</td>
+      <td class="right">${formatAmount(amt)}</td>
+    </tr>`
+  ).join("");
+
 }
 
 /* When user clicks a month */
@@ -176,53 +325,78 @@ function selectMonth(month) {
   preparePrint(month);
 }
 
+function formatAmount(val){
+  return Number(val || 0).toLocaleString("en-PH",{
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+  });
+}
+
 /* Render unpaid details for screen */
 function renderDetails(month) {
-  const filtered = data.filter(d => d.month === month && d.status?.toLowerCase() === "pending");
+
+  const filtered = data.filter(d =>
+    d.month === month &&
+    d.status?.toLowerCase() === currentStatus
+  );
+
   const agencies = [...new Set(filtered.map(d => d.agency))];
 
   let html = `<div class="print-meta"><div><strong>Month:</strong> ${month}</div></div>`;
 
   agencies.forEach((agency, idx) => {
+
     if (idx > 0) html += `<div class="page-break"></div>`;
+
     const rows = filtered.filter(r => r.agency === agency);
-    let empTotal = 0, emprTotal = 0, tot = 0;
+
+    let empTotal = 0,
+        emprTotal = 0,
+        tot = 0;
 
     html += `<table>
       <tr class="agency"><td colspan="4">${agency}</td></tr>
       <tr>
         <th>Employee</th>
-        <th>Employee Share</th>
         <th>Employer Share</th>
+        <th>Employee Share</th>
         <th>Total</th>
       </tr>`;
 
     rows.forEach(r => {
+
       empTotal += r.empShare;
       emprTotal += r.emprShare;
       tot += r.total;
+
       html += `<tr>
         <td>${r.employee}</td>
-        <td class="right">${r.emprShare.toLocaleString()}</td>
-        <td class="right">${r.empShare.toLocaleString()}</td>
-        <td class="right">${r.total.toLocaleString()}</td>
+        <td class="right">${formatAmount(r.emprShare)}</td>
+        <td class="right">${formatAmount(r.empShare)}</td>
+        <td class="right">${formatAmount(r.total)}</td>
       </tr>`;
     });
 
     html += `<tr class="total">
       <td>TOTAL</td>
-      <td class="right">${emprTotal.toLocaleString()}</td>
-      <td class="right">${empTotal.toLocaleString()}</td>
-      <td class="right">${tot.toLocaleString()}</td>
+      <td class="right">${formatAmount(emprTotal)}</td>
+<td class="right">${formatAmount(empTotal)}</td>
+<td class="right">${formatAmount(tot)}</td>
     </tr></table>`;
   });
 
-  document.getElementById("details").innerHTML = html;
+  if(currentStatus === "pending"){
+    document.getElementById("details").innerHTML = html;
+  }else{
+    document.getElementById("paidDetails").innerHTML = html;
+  }
+
 }
+
 
 /* Prepare selected month for printing (each agency has its own signature) */
 function preparePrint(month) {
-  const filtered = data.filter(d => d.month === month && d.status?.toLowerCase() === "pending");
+  const filtered = data.filter(d => d.month === month && d.status?.toLowerCase() === currentStatus);
   const agencies = [...new Set(filtered.map(d => d.agency))];
   let html = `<div class="print-header"><h3>Monthly Contribution</h3></div>`;
   html += `<div class="print-meta"><div><strong>Month:</strong> ${month}</div></div>`;
@@ -247,17 +421,17 @@ function preparePrint(month) {
       tot += r.total;
       html += `<tr>
         <td>${r.employee}</td>
-        <td class="right">${r.emprShare.toLocaleString()}</td>
-        <td class="right">${r.empShare.toLocaleString()}</td>
-        <td class="right">${r.total.toLocaleString()}</td>
+        <td class="right">${formatAmount(amt)}</td>
+        <td class="right">${formatAmount(r.empShare)}</td>
+        <td class="right">${formatAmount(r.total)}</td>
       </tr>`;
     });
 
     html += `<tr class="total">
       <td>TOTAL</td>
-      <td class="right">${emprTotal.toLocaleString()}</td>
-      <td class="right">${empTotal.toLocaleString()}</td>
-      <td class="right">${tot.toLocaleString()}</td>
+      <td class="right">${formatAmount(amt)}</td>
+      <td class="right">${formatAmount(r.empShare)}</td>
+      <td class="right">${formatAmount(r.total)}</td>
     </tr></table>`;
 
     // Add signature lines **per agency**
