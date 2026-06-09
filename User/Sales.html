@@ -16,12 +16,14 @@
     table{width:100%;border-collapse:collapse;font-size:14px;border:1px solid #ccc}
     th,td{padding:10px;border:1px solid #ccc;word-break:break-word}
     th{position:sticky;top:0;background:var(--accent);color:#fff;text-align:center}
-    td:nth-child(1){text-align:center;width:110px;}
-    td:nth-child(2){text-align:center;width:120px;}
-    td:nth-child(3){width:250px;}
-    td:nth-child(4){text-align:center;width:150px;}
-    td:nth-child(5){width:auto;}
-    td:nth-child(6){text-align:right;width:130px;}
+    td:nth-child(1){text-align:center;width:8%;}
+    td:nth-child(2){text-align:center;width:5%;}
+    td:nth-child(3){width:10%;}
+    td:nth-child(4){text-align:center;width:10%px;}
+    td:nth-child(5){width:40%;}
+    td:nth-child(6){text-align:right;width:8%;}
+    td:nth-child(7){text-align:right;width:8%;}
+    td:nth-child(8){text-align:right;width:8%;}
     .total-row{font-weight:700;background:#f1f3f5}
     .loading{padding:30px 0;text-align:center;color:var(--muted)}
     .spinner{display:inline-block;width:28px;height:28px;border:4px solid #e9eef5;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px}
@@ -67,7 +69,9 @@
           <th>CUSTOMER</th>
           <th>PURCHASE ORDER NO</th>
           <th>DESCRIPTION</th>
-          <th>AMOUNT</th>
+          <th>SALES</th>
+          <th>VAT</th>
+          <th>TOTAL</th>
         </tr>
       </thead>
       <tbody id="srBody"></tbody>
@@ -166,13 +170,30 @@ async function loadSales(forceRefresh=false){
       return true;
     });
 
-    const grouped={};
-    rows.forEach(r=>{
-      const inv=String(r.INVOICE||"NO-INVOICE");
-      if(!grouped[inv]){
-        grouped[inv]={DATE:r.DATE,INVOICE:inv,CUSTOMER:r.CUSTOMER||"",PO:r.PO||"",DESC:[],TOTAL:0};
-      }
-      if(r.DESCRIPTION) grouped[inv].DESC.push(r.DESCRIPTION);
+    const grouped = {};
+
+rows.forEach(r => {
+  const inv = String(r.INVOICE || "NO-INVOICE");
+
+  if (!grouped[inv]) {
+    grouped[inv] = {
+      DATE: r.DATE,
+      INVOICE: inv,
+      CUSTOMER: r.CUSTOMER || "",
+      PO: r.PO || "",
+      DESC: [],
+      SALES: 0,
+      VAT: 0,
+      TOTAL: 0
+    };
+  }
+
+  if (r.DESCRIPTION) {
+    grouped[inv].DESC.push(r.DESCRIPTION);
+  }
+
+      grouped[inv].SALES += safeNum(r.SALES);
+      grouped[inv].VAT += safeNum(r.VAT);
       grouped[inv].TOTAL+=safeNum(r[detectAmountKey(r)]);
     });
 
@@ -181,30 +202,40 @@ async function loadSales(forceRefresh=false){
     });
 
     tbody.innerHTML="";
-    let total=0;
+    let totalSales = 0;
+    let totalVat = 0;
+    let totalAmount = 0;
 
     sorted.forEach(r=>{
-      total+=r.TOTAL;
-      tbody.insertAdjacentHTML("beforeend",`
-        <tr>
-          <td>${fmtDate(r.DATE)}</td>
-          <td>${r.INVOICE}</td>
-          <td>${escapeHtml(r.CUSTOMER)}</td>
-          <td>${escapeHtml(r.PO)}</td>
-          <td>${escapeHtml(r.DESC.join(', '))}</td>
-          <td>${numberFormat(r.TOTAL)}</td>
-        </tr>
-      `);
-    });
+
+  totalSales += r.SALES;
+  totalVat += r.VAT;
+  totalAmount += r.TOTAL;
+
+  tbody.insertAdjacentHTML("beforeend",`
+    <tr>
+      <td>${fmtDate(r.DATE)}</td>
+      <td>${r.INVOICE}</td>
+      <td>${escapeHtml(r.CUSTOMER)}</td>
+      <td>${escapeHtml(r.PO)}</td>
+      <td>${escapeHtml(r.DESC.join(', '))}</td>
+      <td>${numberFormat(r.SALES)}</td>
+      <td>${numberFormat(r.VAT)}</td>
+      <td>${numberFormat(r.TOTAL)}</td>
+    </tr>
+  `);
+});
 
     tbody.insertAdjacentHTML("beforeend",`
       <tr class="total-row">
         <td colspan="5" style="text-align:right">TOTAL</td>
-        <td>${numberFormat(total)}</td>
+        <td style="text-align:right">${numberFormat(totalSales)}</td>
+        <td style="text-align:right">${numberFormat(totalVat)}</td>
+        <td style="text-align:right">${numberFormat(totalAmount)}</td>
       </tr>
     `);
 
-    hdrTotal.textContent="Total: "+numberFormat(total);
+    hdrTotal.textContent = "Total: " + numberFormat(totalAmount);
     loading.style.display="none";
     table.style.display="table";
 
