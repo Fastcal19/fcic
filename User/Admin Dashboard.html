@@ -272,7 +272,7 @@
     padding: 0;
     overflow: hidden;
   }
-
+  
   /* Hide desktop-only sections */
   .header,
   .cards,
@@ -335,7 +335,7 @@
 <body>
   <div class="main">
 
-    <div class="cards">
+    <div class="cards" style="display:none;">
       <div class="card"><h3>Cash Balance</h3><p>0.00</p></div>
       <div class="card"><h3>Advances</h3><p>Php 0.00</p></div>
       <div class="card" id="receivablesCard" style="cursor:pointer;">
@@ -352,11 +352,11 @@
       <!-- Left side: two equal containers -->
       <div class="notes-columns">
         <div class="notes-section">
-          <h2>FOR APPROVAL</h2>
+          <h2>RECEIVABLES</h2>
           <div class="notes-list" id="approvalList"></div>
         </div>
         <div class="notes-section">
-          <h2>REMINDERS</h2>
+          <h2>PAYABLES</h2>
           <div class="notes-list" id="remindersList"></div>
         </div>
       </div>
