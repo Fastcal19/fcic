@@ -204,6 +204,33 @@
 .save-btn { background: #228b22; }
 .close-btn { background: #b22222; }
 
+  .list-header,
+.list-row {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  gap: 10px;
+  align-items: center;
+}
+
+.list-header {
+  font-weight: bold;
+  background: #FFC107;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.list-row {
+  background: #f5deb3;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+}
+
+.amount {
+  text-align: right;
+  font-weight: bold;
+}
 /* ============================
    FULLSCREEN OVERLAY SPINNER
    ============================ */
@@ -325,6 +352,7 @@
     font-size: 0.8em;
   }
 
+
   </style>
 </head>
 <!-- Fullscreen Overlay Spinner -->
@@ -348,18 +376,34 @@
     </div>
      </div>
 
-    <div class="calendar-notes">
-      <!-- Left side: two equal containers -->
-      <div class="notes-columns">
-        <div class="notes-section">
-          <h2>RECEIVABLES</h2>
-          <div class="notes-list" id="approvalList"></div>
-        </div>
-        <div class="notes-section">
-          <h2>PAYABLES</h2>
-          <div class="notes-list" id="remindersList"></div>
-        </div>
-      </div>
+     <div class="calendar-notes">
+    <div class="notes-columns">
+
+  <!-- Receivables -->
+  <div class="notes-section">
+    <h2>RECEIVABLES</h2>
+
+    <div class="list-header">
+      <span>Customer</span>
+      <span>Amount</span>
+    </div>
+
+    <div class="notes-list" id="receivablesList"></div>
+  </div>
+
+  <!-- Payables -->
+  <div class="notes-section">
+    <h2>PAYABLES</h2>
+
+    <div class="list-header">
+      <span>Supplier</span>
+      <span>Amount</span>
+    </div>
+
+    <div class="notes-list" id="payablesList"></div>
+  </div>
+
+</div>
 
       <!-- Right side: calendar -->
       <div class="calendar-container">
@@ -429,8 +473,8 @@
     const noteModal = document.getElementById("noteModal");
     const modalDate = document.getElementById("modalDate");
     const noteText = document.getElementById("noteText");
-    const remindersList = document.getElementById("remindersList");
-    const approvalList = document.getElementById("approvalList");
+    const receivablesList = document.getElementById("receivablesList");
+    const payablesList = document.getElementById("payablesList");
 
     const approvalModal = document.getElementById("approvalModal");
     const approvalDetails = document.getElementById("approvalDetails");
@@ -609,70 +653,7 @@
       }
     }
 
-    async function loadReminders() {
-      try {
-        const res = await fetch(API_URL + "?type=reminders");
-        const json = await res.json();
-        const nowMonth = currentDate.toLocaleString("default", { month: "long" }).toLowerCase();
-        remindersList.innerHTML = "";
-        const filtered = json.filter(r => String(r[Object.keys(r)[0]]).toLowerCase() === nowMonth);
-        if (filtered.length > 0) {
-          filtered.forEach(r => {
-            const reminderText = r[Object.keys(r)[1]];
-            if (reminderText) {
-              const div = document.createElement("div");
-              div.className = "note-item";
-              div.textContent = reminderText;
-              remindersList.appendChild(div);
-            }
-          });
-        } else {
-          remindersList.innerHTML = "<div class='note-item'>No reminders</div>";
-        }
-      } catch (err) {
-        console.error("Error loading reminders:", err);
-      }
-    }
-
-    // ---------------- approvals list & modal ----------------
-    async function loadApprovals() {
-      try {
-        const res = await fetch(API_URL + "?type=requests");
-        let json = await res.json();
-
-        json = json.filter(r => String((r.Status || r.status || '')).toLowerCase() === "pending");
-
-        json.sort((a, b) => {
-          const da = extractRequestData(a).date;
-          const db = extractRequestData(b).date;
-          const ta = new Date(da || 0).getTime();
-          const tb = new Date(db || 0).getTime();
-          return ta - tb;
-        });
-
-        approvalList.innerHTML = "";
-
-        if (json.length > 0) {
-          json.forEach(r => {
-            const extracted = extractRequestData(r);
-            const displayName = extracted.name || (r[Object.keys(r)[1]] || 'Unknown');
-            const displayType = (extracted.type || (r[Object.keys(r)[2]] || 'Request')).toString();
-            const div = document.createElement("div");
-            div.className = "note-item";
-            // include formatted date for quick glance if available
-            const smallDate = extracted.date ? ` (${formatDateShort(extracted.date)})` : '';
-            div.textContent = `${displayName} - ${displayType}${smallDate}`;
-            div.onclick = () => openApprovalModal(r);
-            approvalList.appendChild(div);
-          });
-        } else {
-          approvalList.innerHTML = "<div class='note-item'>No pending requests</div>";
-        }
-      } catch (err) {
-        console.error("Error loading approvals:", err);
-      }
-    }
-
+    
     // short date for list: e.g., Sep 17
     function formatDateShort(d) {
       try {
@@ -741,6 +722,64 @@
       currentRequest = null;
       currentRequestExtract = null;
     }
+
+    async function loadReceivablesList() {
+  try {
+    const res = await fetch(RECEIVABLES_URL + "?sheet=sales");
+    const data = await res.json();
+
+    receivablesList.innerHTML = "";
+
+    data
+      .filter(r =>
+        String(r.STATUS || "").toUpperCase() === "PENDING"
+      )
+      .forEach(item => {
+        const row = document.createElement("div");
+        row.className = "list-row";
+
+        row.innerHTML = `
+          <span>${item.CUSTOMER || ""}</span>
+          <span class="amount">
+            ₱${Number(item.TOTAL || 0).toLocaleString()}
+          </span>
+        `;
+
+        receivablesList.appendChild(row);
+      });
+
+  } catch (err) {
+    console.error("Receivables list error:", err);
+  }
+}
+
+async function loadPayablesList() {
+  try {
+    const res = await fetch(PAYABLES_URL + "?type=summary");
+    const data = await res.json();
+
+    payablesList.innerHTML = "";
+
+    data
+      .filter(item => Number(item.AMOUNT || 0) > 0)
+      .forEach(item => {
+        const row = document.createElement("div");
+        row.className = "list-row";
+
+        row.innerHTML = `
+          <span>${item.SUPPLIER || item.NAME || ""}</span>
+          <span class="amount">
+            ₱${Number(item.AMOUNT || 0).toLocaleString()}
+          </span>
+        `;
+
+        payablesList.appendChild(row);
+      });
+
+  } catch (err) {
+    console.error("Payables list error:", err);
+  }
+}
 
     // ---------------- Approve/Reject -> send to Apps Script ----------------
     async function handleApproval(action) {
@@ -941,8 +980,8 @@
 
     // ---------------- initial load ----------------
     loadNotes();
-    loadReminders();
-    loadApprovals();
+    loadReceivablesList();
+    loadPayablesList();
     loadReceivables();
     loadPayables();
 
