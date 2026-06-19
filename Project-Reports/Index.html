@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Project Reports</title>
+
+  <style>
+    :root {
+      --orange: #ff7a00;
+      --dark: #2f2f2f;
+      --mid: #444;
+      --light: #f2f2f2;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: var(--light);
+    }
+
+    .header {
+      background: var(--dark);
+      color: white;
+      padding: 15px;
+      border-bottom: 4px solid var(--orange);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .controls {
+      padding: 15px;
+      background: var(--mid);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input {
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+    }
+
+    button {
+      background: var(--orange);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #e86f00;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border: 1px solid #ccc;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: var(--dark);
+      color: white;
+      border-bottom: 3px solid var(--orange);
+    }
+
+    tr:hover {
+      background: #fff3e6;
+      cursor: pointer;
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      width: 420px;
+      padding: 20px;
+      border-radius: 8px;
+      border-top: 5px solid var(--orange);
+    }
+
+    .modal-content input {
+      width: 100%;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .close-btn {
+      background: #777;
+    }
+
+    #dateDisplay {
+      border: 1px solid #ddd;
+      padding: 8px;
+      border-radius: 4px;
+      background: #f9f9f9;
+      margin-bottom: 8px;
+    }
+
+    #fileLink {
+      margin-top: 8px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+
+    #desc {
+  width: 100%;
+}
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>PROJECT REPORTS</h2>
+</div>
+
+<div class="controls">
+  <button onclick="openCreateModal()">NEW</button>
+  <input type="text" id="search" placeholder="Search..." onkeyup="filterTable()">
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>DATE</th>
+      <th>PO</th>
+      <th>PROJECT DESCRIPTION</th>
+      <th>STATUS</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+
+    <h3 id="modalTitle">DETAILS</h3>
+
+    <div id="dateDisplay" style="display:none;"></div>
+    <input type="date" id="date">
+
+    <input type="text" id="po" placeholder="Purchase Order Number">
+    <textarea id="desc" rows="10" placeholder="Project description"></textarea>
+
+    <div id="fileLink"></div>
+
+    <label id="fileLabel">Attachment</label>
+    <input type="file" id="file">
+
+    <div class="modal-actions">
+      <button id="saveBtn" onclick="saveData()">Save</button>
+
+<div id="viewActions" style="display:none;">
+  <button onclick="editRecord()">Edit</button>
+  <button onclick="deleteRecord()" style="background:#d9534f;">Delete</button>
+  <button onclick="approveRecord()" style="background:#28a745;">Approve</button>
+</div>
+
+<button class="close-btn" onclick="closeModal()">Close</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+const API_URL = "https://script.google.com/macros/s/AKfycbwQCT-hHwSQUHIxE24KZm0CkjNmjMJDYQOy3_cOoB6EDXuNDx8M5M3aPEybaxb6Jot0-A/exec";
+
+let currentMode = "create";
+let selectedRecord = null;
+
+// ================= OPEN CREATE =================
+function openCreateModal() {
+  currentMode = "create";
+
+  document.getElementById("modalTitle").innerText = "NEW PROJECT REPORT";
+
+  document.getElementById("dateDisplay").style.display = "none";
+  document.getElementById("date").style.display = "block";
+
+  document.getElementById("date").disabled = false;
+  document.getElementById("po").disabled = false;
+  document.getElementById("desc").disabled = false;
+
+  document.getElementById("date").value = "";
+  document.getElementById("po").value = "";
+  document.getElementById("desc").value = "";
+
+  document.getElementById("file").style.display = "block";
+  document.getElementById("file").value = "";
+
+  document.getElementById("fileLink").innerHTML = "";
+
+  document.getElementById("saveBtn").style.display = "inline-block";
+  document.getElementById("fileLink").style.display = "none";
+  document.getElementById("modal").style.display = "flex";
+  document.getElementById("fileLabel").style.display = "block";
+  document.getElementById("file").style.display = "block";
+  document.getElementById("viewActions").style.display = "none";
+  document.getElementById("viewActions").style.display = "none";
+
+document.getElementById("saveBtn").innerText = "Save";
+document.getElementById("saveBtn").style.display = "inline-block";
+}
+
+// ================= OPEN VIEW =================
+function openViewModal(r) {
+  currentMode = "view";
+  selectedRecord = r;
+
+  document.getElementById("modalTitle").innerText = "PROJECT DETAILS";
+
+  document.getElementById("dateDisplay").style.display = "block";
+  document.getElementById("dateDisplay").innerText = formatDate(r.date);
+
+  document.getElementById("date").style.display = "none";
+
+  document.getElementById("po").value = r.po || "";
+  document.getElementById("desc").value = r.desc || "";
+
+  document.getElementById("po").disabled = true;
+  document.getElementById("desc").disabled = true;
+
+  document.getElementById("file").style.display = "none";
+
+  document.getElementById("fileLink").innerHTML = r.file
+    ? `<a href="${r.file}" target="_blank">Open File</a>`
+    : "No file attached";
+
+  document.getElementById("saveBtn").style.display = "none";
+  document.getElementById("fileLink").style.display = "block";
+  document.getElementById("modal").style.display = "flex";
+  document.getElementById("fileLabel").style.display = "none";
+  document.getElementById("file").style.display = "none";
+  document.getElementById("saveBtn").style.display = "none";
+if (r.status === "For Submission") {
+  document.getElementById("viewActions").style.display = "none";
+} else {
+  document.getElementById("viewActions").style.display = "block";
+}
+if (r.status === "For Submission") {
+
+  document.getElementById("saveBtn").style.display = "none";
+  document.getElementById("viewActions").style.display = "none";
+
+} else {
+
+  document.getElementById("saveBtn").style.display = "none";
+  document.getElementById("viewActions").style.display = "block";
+
+}
+const editableStatuses = [
+  "For Approval",
+  "For Revision"
+];
+
+document.getElementById("viewActions").style.display =
+  editableStatuses.includes(r.status)
+    ? "block"
+    : "none";
+}
+
+// ================= CLOSE =================
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+// ================= LOAD DATA =================
+async function loadData() {
+  let res = await fetch(API_URL);
+  let data = await res.json();
+
+  let tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+
+  data.forEach((r) => {
+    const encoded = encodeURIComponent(JSON.stringify(r));
+
+    tbody.innerHTML += `
+      <tr onclick="openRow('${encoded}')">
+        <td>${formatDate(r.date)}</td>
+        <td>${r.po}</td>
+        <td>${r.desc}</td>
+        <td>${r.status || ""}</td>
+      </tr>
+    `;
+  });
+}
+
+function openRow(encoded) {
+  const r = JSON.parse(decodeURIComponent(encoded));
+  openViewModal(r);
+}
+
+// ================= SAVE =================
+async function saveData() {
+    
+
+  let date = document.getElementById("date").value;
+  let po = document.getElementById("po").value;
+  let desc = document.getElementById("desc").value;
+  let file = document.getElementById("file").files[0];
+
+  let fileBase64 = "";
+  let fileType = "";
+  let fileName = "";
+
+  if (file) {
+    let base64 = await toBase64(file);
+    fileBase64 = base64.split(",")[1];
+    fileType = file.type;
+    fileName = file.name;
+  }
+
+  let payload = {
+  date,
+  po,
+  desc,
+  fileBase64,
+  fileType,
+  fileName
+};
+
+if (currentMode === "edit") {
+  payload.action = "update";
+  payload.row = selectedRecord.row;
+}
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  closeModal();
+  loadData();
+}
+
+// ================= BASE64 =================
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ================= SEARCH =================
+function filterTable() {
+  let input = document.getElementById("search").value.toLowerCase();
+  let rows = document.querySelectorAll("#tbody tr");
+
+  rows.forEach(r => {
+    r.style.display = r.innerText.toLowerCase().includes(input)
+      ? ""
+      : "none";
+  });
+}
+
+function editRecord() {
+
+  currentMode = "edit";
+
+  document.getElementById("date").style.display = "block";
+  document.getElementById("date").value = selectedRecord.date;
+
+  document.getElementById("dateDisplay").style.display = "none";
+
+  document.getElementById("po").disabled = false;
+  document.getElementById("desc").disabled = false;
+
+  document.getElementById("fileLabel").style.display = "block";
+  document.getElementById("file").style.display = "block";
+
+  document.getElementById("fileLink").style.display = "none";
+
+  document.getElementById("viewActions").style.display = "none";
+
+  document.getElementById("saveBtn").innerText = "Update";
+  document.getElementById("saveBtn").style.display = "inline-block";
+
+  document.getElementById("modalTitle").innerText = "EDIT PROJECT";
+}
+
+function deleteRecord() {
+
+  if (!confirm("Delete this project report?")) return;
+
+  console.log("DELETE:", selectedRecord);
+
+  // call API here
+}
+
+async function approveRecord() {
+
+  if (!confirm("Approve this project report?")) return;
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "approve",
+      row: selectedRecord.row
+    })
+  });
+
+  closeModal();
+  loadData();
+}
+
+// ================= FORMAT DATE =================
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "2-digit"
+  });
+}
+
+window.onclick = function(e) {
+  if (e.target === document.getElementById("modal")) {
+    closeModal();
+  }
+};
+
+loadData();
+
+</script>
+
+</body>
+</html>
