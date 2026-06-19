@@ -30,6 +30,28 @@
     #lastUpdated{font-size:12px;color:#444;margin-left:auto}
     @keyframes spin{to{transform:rotate(360deg)}}
     @media(max-width:600px){th,td{padding:8px;font-size:13px}}
+    tbody tr {
+  transition: all 0.2s ease;
+}
+
+tbody tr:hover {
+  background-color: #f4a856;
+  transform: scale(1.002);
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+}
+
+.invoice-link{
+  color: orangered;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s ease;
+}
+
+.invoice-link:hover{
+  text-decoration: underline;
+  color: #d84315;
+}
   </style>
 </head>
 <body>
@@ -81,6 +103,10 @@
 
 <script>
 const webAppSales = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
+const invoiceApi = "https://script.google.com/macros/s/AKfycbyTTMk1fg6Cl3hwkgEkEigcuZzTfl9IvgO5gKzR4eagqq3o-7b1F3qCNj7uE0jS5rs9/exec";
+
+let invoiceFiles = {};
+let poFiles = {};
 
 function safeNum(v){
   if(v===null||v===undefined||v==="") return 0;
@@ -119,6 +145,11 @@ async function loadSales(forceRefresh=false){
   const tbody=document.getElementById('srBody');
   const hdrTotal=document.getElementById('hdrTotal');
   const lastUpdated=document.getElementById('lastUpdated');
+  const res = await fetch(invoiceApi);
+  const data = await res.json();
+
+  invoiceFiles = data.invoices;
+  poFiles = data.po;
 
   loading.style.display='block';
   table.style.display='none';
@@ -215,9 +246,19 @@ rows.forEach(r => {
   tbody.insertAdjacentHTML("beforeend",`
     <tr>
       <td>${fmtDate(r.DATE)}</td>
-      <td>${r.INVOICE}</td>
+      <td>
+      <span class="invoice-link"
+        onclick="openInvoice('${r.INVOICE || ''}')">
+        ${r.INVOICE}
+        </span>
+      </td>
       <td>${escapeHtml(r.CUSTOMER)}</td>
-      <td>${escapeHtml(r.PO)}</td>
+      <td>
+      <span class="invoice-link"
+        onclick="openPO('${r.PO}')">
+        ${r.PO}
+        </span>
+      </td>
       <td>${escapeHtml(r.DESC.join(', '))}</td>
       <td>${numberFormat(r.SALES)}</td>
       <td>${numberFormat(r.VAT)}</td>
@@ -243,6 +284,30 @@ rows.forEach(r => {
     console.error(e);
     loading.textContent="Failed to load sales data.";
   }
+}
+
+function openInvoice(invoice){
+
+  const url = invoiceFiles[invoice];
+
+  if(!url){
+    alert("Invoice attachment not found.");
+    return;
+  }
+
+  window.open(url, "_blank");
+}
+
+function openPO(po){
+
+  const url = poFiles[po];
+
+  if(!url){
+    alert("PO attachment not found.");
+    return;
+  }
+
+  window.open(url, "_blank");
 }
 
 function numberFormat(n){
