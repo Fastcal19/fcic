@@ -55,30 +55,65 @@
       background: #e86f00;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border: 1px solid #ccc;
-    }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid #ccc;
+  table-layout: fixed;
+}
 
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+  vertical-align: top;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-    th {
-      background: var(--dark);
-      color: white;
-      border-bottom: 3px solid var(--orange);
-    }
+th {
+  background: var(--dark);
+  color: white;
+  border-bottom: 3px solid var(--orange);
+}
+
+/* DATE */
+th:nth-child(1),
+td:nth-child(1) {
+  width: 10%;
+  white-space: nowrap;
+}
+
+/* PO */
+th:nth-child(2),
+td:nth-child(2) {
+  width: 10%;
+  white-space: nowrap;
+}
+
+/* DESCRIPTION */
+th:nth-child(3),
+td:nth-child(3) {
+  width: calc(100% - 380px);
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* STATUS */
+th:nth-child(4),
+td:nth-child(4) {
+  width: 20%;
+  text-align: center;
+  white-space: nowrap;
+}
 
     tr:hover {
       background: #fff3e6;
       cursor: pointer;
     }
 
+    
     /* MODAL */
     .modal {
       display: none;
