@@ -184,6 +184,7 @@ td:nth-child(4) {
 
 <div class="controls">
   <button onclick="openCreateModal()">NEW</button>
+
   <input type="text" id="search" placeholder="Search..." onkeyup="filterTable()">
 </div>
 
@@ -221,22 +222,228 @@ td:nth-child(4) {
 
 <div id="viewActions" style="display:none;">
   <button onclick="editRecord()">Edit</button>
+  <button onclick="checkRecord()" style="background:#4f84d9;">Checked</button>
+  <button onclick="approveRecord()" style="background:#28a745;">Approved</button>
   <button onclick="deleteRecord()" style="background:#d9534f;">Delete</button>
-  <button onclick="approveRecord()" style="background:#28a745;">Approve</button>
 </div>
 
 <button class="close-btn" onclick="closeModal()">Close</button>
     </div>
 
   </div>
+  
 </div>
 
+
+</div>
 <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwQCT-hHwSQUHIxE24KZm0CkjNmjMJDYQOy3_cOoB6EDXuNDx8M5M3aPEybaxb6Jot0-A/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzB52qCy6RuizHLQaetxYOyGxoWOcmWYRQUXwv4gJIV4KdqPP-cBDeLWst0nPxEOIO18g/exec";
 
 let currentMode = "create";
 let selectedRecord = null;
+let currentUser = null;
+
+// ================= ROLE ACCESS =================
+
+function applyRoleAccess() {
+
+// MAKER
+if (currentUser.role === "Maker") {
+return;
+}
+
+// CHECKER
+if (currentUser.role === "Checker") {
+
+
+document.querySelector(
+  'button[onclick="openCreateModal()"]'
+).style.display = "none";
+
+return;
+
+
+}
+
+// APPROVER
+if (currentUser.role === "Approver") {
+
+
+document.querySelector(
+  'button[onclick="openCreateModal()"]'
+).style.display = "none";
+
+return;
+
+
+}
+
+// ADMIN
+if (currentUser.role === "Admin") {
+return;
+}
+}
+
+async function validateUser() {
+
+// GET EID FROM LOCAL STORAGE
+const eid = localStorage.getItem("eid");
+
+if (!eid) {
+
+
+alert("No login session.");
+
+location.href = "login.html";
+
+return;
+
+
+}
+
+try {
+
+
+const res = await fetch(
+  API_URL +
+  "?action=validate&eid=" +
+  encodeURIComponent(eid)
+);
+
+const result = await res.json();
+
+// INVALID USER
+if (!result.success) {
+
+  alert("Access denied.");
+
+  localStorage.removeItem("eid");
+
+  location.href = "login.html";
+
+  return;
+}
+
+// VALID USER
+currentUser = result.user;
+
+console.log("CURRENT USER:", currentUser);
+
+// ROLE ACCESS
+applyRoleAccess();
+
+// LOAD REPORTS
+loadData();
+
+
+} catch (err) {
+
+
+console.error(err);
+
+alert("Validation failed.");
+
+
+}
+}
+
+function applyPermissions(r) {
+
+// HIDE ALL FIRST
+document.getElementById("viewActions").style.display = "block";
+
+const editBtn =
+document.querySelector('button[onclick="editRecord()"]');
+
+const checkBtn =
+document.querySelector('button[onclick="checkRecord()"]');
+
+const approveBtn =
+document.querySelector('button[onclick="approveRecord()"]');
+
+const deleteBtn =
+document.querySelector('button[onclick="deleteRecord()"]');
+
+// HIDE ALL BUTTONS
+editBtn.style.display = "none";
+checkBtn.style.display = "none";
+approveBtn.style.display = "none";
+deleteBtn.style.display = "none";
+
+// ================= ADMIN =================
+if (currentUser.role === "Admin") {
+
+
+editBtn.style.display = "inline-block";
+checkBtn.style.display = "inline-block";
+approveBtn.style.display = "inline-block";
+deleteBtn.style.display = "inline-block";
+
+return;
+
+
+}
+
+// ================= MAKER =================
+if (currentUser.role === "Maker") {
+
+
+// MAKER CAN EDIT ONLY IF FOR REVISION
+if (r.status === "For Revision") {
+
+  editBtn.style.display = "inline-block";
+}
+
+return;
+
+
+}
+
+// ================= CHECKER =================
+if (currentUser.role === "Checker") {
+
+
+// CHECKER CAN CHECK ONLY
+if (r.status === "For Checking") {
+
+  checkBtn.style.display = "inline-block";
+}
+
+return;
+
+
+}
+
+// ================= APPROVER =================
+if (currentUser.role === "Approver") {
+
+
+// APPROVER CAN APPROVE ONLY
+if (r.status === "For Approval") {
+
+  approveBtn.style.display = "inline-block";
+}
+
+return;
+
+
+}
+}
+
+
+
+// DELETE USER
+function deleteUser(index) {
+
+  if (!confirm("Delete this user?")) return;
+
+  users.splice(index, 1);
+
+  localStorage.setItem("users", JSON.stringify(users));
+
+  loadUsers();
+}
 
 // ================= OPEN CREATE =================
 function openCreateModal() {
@@ -302,32 +509,10 @@ function openViewModal(r) {
   document.getElementById("fileLabel").style.display = "none";
   document.getElementById("file").style.display = "none";
   document.getElementById("saveBtn").style.display = "none";
-if (r.status === "For Submission") {
-  document.getElementById("viewActions").style.display = "none";
-} else {
-  document.getElementById("viewActions").style.display = "block";
+
+    applyPermissions(r);
 }
-if (r.status === "For Submission") {
 
-  document.getElementById("saveBtn").style.display = "none";
-  document.getElementById("viewActions").style.display = "none";
-
-} else {
-
-  document.getElementById("saveBtn").style.display = "none";
-  document.getElementById("viewActions").style.display = "block";
-
-}
-const editableStatuses = [
-  "For Approval",
-  "For Revision"
-];
-
-document.getElementById("viewActions").style.display =
-  editableStatuses.includes(r.status)
-    ? "block"
-    : "none";
-}
 
 // ================= CLOSE =================
 function closeModal() {
@@ -475,6 +660,23 @@ async function approveRecord() {
   loadData();
 }
 
+async function checkRecord() {
+
+if (!confirm("Mark as checked?")) return;
+
+await fetch(API_URL, {
+method: "POST",
+body: JSON.stringify({
+action: "check",
+row: selectedRecord.row
+})
+});
+
+closeModal();
+
+loadData();
+}
+
 // ================= FORMAT DATE =================
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -492,7 +694,7 @@ window.onclick = function(e) {
   }
 };
 
-loadData();
+validateUser();
 
 </script>
 
