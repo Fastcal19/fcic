@@ -663,6 +663,7 @@ openRoom("global","Global Chat");
         <a class="expandable" onclick="toggleMenu('reportsMenu')">Reports</a>
         <div class="submenu" id="reportsMenu">
           <a onclick="showPage('projects')">Projects</a>
+          <a onclick="showPage('projectReports')">Project Reports</a>
           <a onclick="showPage('salesreport')">Sales</a>
           <a onclick="showPage('ar')">Receivables</a>
           <a onclick="showPage('ap')">Payables</a>
@@ -799,10 +800,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const visible = {
     admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications","btnCs","btnInventory","btnPortals"],
-    staff: ["btnDashboard", "btneLeave", "btnPayslip", "btnInv"],
-    purchaser: ["btnDashboard", "btnProjects", "btneLeave","btnCs", "btnPayslip", "btnInv"],
+    staff: ["btnDashboard", "btneLeave", "btnprojectReports", "btnPayslip", "btnInv"],
+    purchaser: ["btnDashboard", "btnProjects", "btnprojectReports", "btneLeave","btnCs", "btnPayslip", "btnInv"],
     hr: ["btnDashboard", "btnHR","btnLeave","btnPortals"],
-    "system admin": ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnLeave", "btnProjects", "btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"],
+    "system admin": ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnLeave", "btnProjects", "btnprojectReports","btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"],
     "": ["btnPayslip"]
   };
 
