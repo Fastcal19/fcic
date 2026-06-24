@@ -322,7 +322,7 @@ async function validateUser() {
     if (!eid) {
       hideSpinner();
       alert("No login session.");
-      location.href = "login.html";
+      location.href = "/User/";
       return;
     }
 
@@ -339,7 +339,7 @@ async function validateUser() {
       hideSpinner();
       alert("Access denied.");
       localStorage.removeItem("eid");
-      location.href = "login.html";
+      location.href = "/User/";
       return;
     }
 
