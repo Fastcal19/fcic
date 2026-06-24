@@ -173,10 +173,48 @@ td:nth-child(4) {
     #desc {
   width: 100%;
 }
+
+/* ================= SPINNER ================= */
+
+#spinnerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.spinner {
+  width: 70px;
+  height: 70px;
+  border: 7px solid rgba(255,255,255,0.3);
+  border-top: 7px solid var(--orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
   </style>
 </head>
 
 <body>
+
+<!-- LOADING SPINNER -->
+<div id="spinnerOverlay">
+  <div class="spinner"></div>
+</div>
+
+
 
 <div class="header">
   <h2>PROJECT REPORTS</h2>
@@ -238,199 +276,159 @@ td:nth-child(4) {
 </div>
 <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzB52qCy6RuizHLQaetxYOyGxoWOcmWYRQUXwv4gJIV4KdqPP-cBDeLWst0nPxEOIO18g/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxCNgcbIDF6-Wq4oQZceSRFo5LqBruTQr69dYyrDbN15u3A7WJCFTQiyIsr4TiUovsi/exec";
 
 let currentMode = "create";
 let selectedRecord = null;
 let currentUser = null;
 
-// ================= ROLE ACCESS =================
+function showSpinner() {
+  document.getElementById("spinnerOverlay").style.display = "flex";
+}
 
+function hideSpinner() {
+  document.getElementById("spinnerOverlay").style.display = "none";
+}
+
+// ================= ROLE ACCESS =================
 function applyRoleAccess() {
 
-// MAKER
-if (currentUser.role === "Maker") {
-return;
+  const newBtn = document.querySelector(
+    'button[onclick="openCreateModal()"]'
+  );
+
+  // HIDE BY DEFAULT
+  newBtn.style.display = "none";
+
+  // ONLY MAKER CAN CREATE
+  if (currentUser.role === "Maker") {
+    newBtn.style.display = "inline-block";
+  }
+
+  // ADMIN OPTIONAL:
+  // Uncomment if admin should also create
+  if (currentUser.role === "Admin") {
+     newBtn.style.display = "inline-block";
+   }
 }
 
-// CHECKER
-if (currentUser.role === "Checker") {
 
-
-document.querySelector(
-  'button[onclick="openCreateModal()"]'
-).style.display = "none";
-
-return;
-
-
-}
-
-// APPROVER
-if (currentUser.role === "Approver") {
-
-
-document.querySelector(
-  'button[onclick="openCreateModal()"]'
-).style.display = "none";
-
-return;
-
-
-}
-
-// ADMIN
-if (currentUser.role === "Admin") {
-return;
-}
-}
 
 async function validateUser() {
+  showSpinner();
+  try {
+    // GET EID FROM LOCAL STORAGE
+    const eid = localStorage.getItem("eid");
+    if (!eid) {
+      hideSpinner();
+      alert("No login session.");
+      location.href = "login.html";
+      return;
+    }
 
-// GET EID FROM LOCAL STORAGE
-const eid = localStorage.getItem("eid");
+    const res = await fetch(
+      API_URL +
+      "?action=validate&eid=" +
+      encodeURIComponent(eid)
+    );
 
-if (!eid) {
+    const result = await res.json();
 
+    // INVALID USER
+    if (!result.success) {
+      hideSpinner();
+      alert("Access denied.");
+      localStorage.removeItem("eid");
+      location.href = "login.html";
+      return;
+    }
 
-alert("No login session.");
-
-location.href = "login.html";
-
-return;
-
-
+    // VALID USER
+    currentUser = result.user;
+    console.log("CURRENT USER:", currentUser);
+    // ROLE ACCESS
+    applyRoleAccess();
+    // LOAD REPORTS
+    await loadData();
+  } catch (err) {
+    console.error(err);
+    alert("Validation failed.");
+  } finally {
+    hideSpinner();
+  }
 }
 
-try {
-
-
-const res = await fetch(
-  API_URL +
-  "?action=validate&eid=" +
-  encodeURIComponent(eid)
-);
-
-const result = await res.json();
-
-// INVALID USER
-if (!result.success) {
-
-  alert("Access denied.");
-
-  localStorage.removeItem("eid");
-
-  location.href = "login.html";
-
-  return;
-}
-
-// VALID USER
-currentUser = result.user;
-
-console.log("CURRENT USER:", currentUser);
-
-// ROLE ACCESS
-applyRoleAccess();
-
-// LOAD REPORTS
-loadData();
-
-
-} catch (err) {
-
-
-console.error(err);
-
-alert("Validation failed.");
-
-
-}
-}
+// ================= BUTTON PERMISSIONS =================
 
 function applyPermissions(r) {
 
-// HIDE ALL FIRST
-document.getElementById("viewActions").style.display = "block";
+  document.getElementById("viewActions").style.display = "block";
 
-const editBtn =
-document.querySelector('button[onclick="editRecord()"]');
+  const editBtn =
+    document.querySelector('button[onclick="editRecord()"]');
 
-const checkBtn =
-document.querySelector('button[onclick="checkRecord()"]');
+  const checkBtn =
+    document.querySelector('button[onclick="checkRecord()"]');
 
-const approveBtn =
-document.querySelector('button[onclick="approveRecord()"]');
+  const approveBtn =
+    document.querySelector('button[onclick="approveRecord()"]');
 
-const deleteBtn =
-document.querySelector('button[onclick="deleteRecord()"]');
+  const deleteBtn =
+    document.querySelector('button[onclick="deleteRecord()"]');
 
-// HIDE ALL BUTTONS
-editBtn.style.display = "none";
-checkBtn.style.display = "none";
-approveBtn.style.display = "none";
-deleteBtn.style.display = "none";
-
-// ================= ADMIN =================
-if (currentUser.role === "Admin") {
+  // HIDE ALL FIRST
+  editBtn.style.display = "none";
+  checkBtn.style.display = "none";
+  approveBtn.style.display = "none";
+  deleteBtn.style.display = "none";
 
 
-editBtn.style.display = "inline-block";
-checkBtn.style.display = "inline-block";
-approveBtn.style.display = "inline-block";
-deleteBtn.style.display = "inline-block";
+  // ================= MAKER =================
+  // Edit only when:
+  // - For Checking
+  // - For Approval
 
-return;
+  if (currentUser.role === "Maker") {
+
+    if (
+      r.status === "For Checking" ||
+      r.status === "For Approval"
+    ) {
+      editBtn.style.display = "inline-block";
+    }
+  }
 
 
+  // ================= CHECKER =================
+  // Checked button only when status is For Checking
+
+  if (currentUser.role === "Checker") {
+
+    if (r.status === "For Checking") {
+      checkBtn.style.display = "inline-block";
+    }
+  }
+
+
+  // ================= APPROVER =================
+  // Approved button only when status is For Approval
+
+  if (currentUser.role === "Approver") {
+
+    if (r.status === "For Approval") {
+      approveBtn.style.display = "inline-block";
+    }
+  }
+
+
+  // ================= ADMIN =================
+  // Delete only for Admin
+
+  if (currentUser.role === "Admin") {
+
+    deleteBtn.style.display = "inline-block";
+  }
 }
-
-// ================= MAKER =================
-if (currentUser.role === "Maker") {
-
-
-// MAKER CAN EDIT ONLY IF FOR REVISION
-if (r.status === "For Revision") {
-
-  editBtn.style.display = "inline-block";
-}
-
-return;
-
-
-}
-
-// ================= CHECKER =================
-if (currentUser.role === "Checker") {
-
-
-// CHECKER CAN CHECK ONLY
-if (r.status === "For Checking") {
-
-  checkBtn.style.display = "inline-block";
-}
-
-return;
-
-
-}
-
-// ================= APPROVER =================
-if (currentUser.role === "Approver") {
-
-
-// APPROVER CAN APPROVE ONLY
-if (r.status === "For Approval") {
-
-  approveBtn.style.display = "inline-block";
-}
-
-return;
-
-
-}
-}
-
 
 
 // DELETE USER
@@ -521,24 +519,41 @@ function closeModal() {
 
 // ================= LOAD DATA =================
 async function loadData() {
-  let res = await fetch(API_URL);
-  let data = await res.json();
 
-  let tbody = document.getElementById("tbody");
-  tbody.innerHTML = "";
+  showSpinner();
 
-  data.forEach((r) => {
-    const encoded = encodeURIComponent(JSON.stringify(r));
+  try {
 
-    tbody.innerHTML += `
-      <tr onclick="openRow('${encoded}')">
-        <td>${formatDate(r.date)}</td>
-        <td>${r.po}</td>
-        <td>${r.desc}</td>
-        <td>${r.status || ""}</td>
-      </tr>
-    `;
-  });
+    let res = await fetch(API_URL);
+    let data = await res.json();
+
+    let tbody = document.getElementById("tbody");
+    tbody.innerHTML = "";
+
+    data.forEach((r) => {
+
+      const encoded = encodeURIComponent(JSON.stringify(r));
+
+      tbody.innerHTML += `
+        <tr onclick="openRow('${encoded}')">
+          <td>${formatDate(r.date)}</td>
+          <td>${r.po}</td>
+          <td>${r.desc}</td>
+          <td>${r.status || ""}</td>
+        </tr>
+      `;
+    });
+
+  } catch(err) {
+
+    console.error(err);
+    alert("Failed to load data.");
+
+  } finally {
+
+    hideSpinner();
+
+  }
 }
 
 function openRow(encoded) {
@@ -548,44 +563,62 @@ function openRow(encoded) {
 
 // ================= SAVE =================
 async function saveData() {
-    
 
-  let date = document.getElementById("date").value;
-  let po = document.getElementById("po").value;
-  let desc = document.getElementById("desc").value;
-  let file = document.getElementById("file").files[0];
+  showSpinner();
 
-  let fileBase64 = "";
-  let fileType = "";
-  let fileName = "";
+  try {
 
-  if (file) {
-    let base64 = await toBase64(file);
-    fileBase64 = base64.split(",")[1];
-    fileType = file.type;
-    fileName = file.name;
+    let date = document.getElementById("date").value;
+    let po = document.getElementById("po").value;
+    let desc = document.getElementById("desc").value;
+    let file = document.getElementById("file").files[0];
+
+    let fileBase64 = "";
+    let fileType = "";
+    let fileName = "";
+
+    if (file) {
+
+      let base64 = await toBase64(file);
+
+      fileBase64 = base64.split(",")[1];
+      fileType = file.type;
+      fileName = file.name;
+    }
+
+    let payload = {
+      date,
+      po,
+      desc,
+      fileBase64,
+      fileType,
+      fileName
+    };
+
+    if (currentMode === "edit") {
+      payload.action = "update";
+      payload.row = selectedRecord.row;
+    }
+
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    closeModal();
+
+    await loadData();
+
+  } catch(err) {
+
+    console.error(err);
+    alert("Save failed.");
+
+  } finally {
+
+    hideSpinner();
+
   }
-
-  let payload = {
-  date,
-  po,
-  desc,
-  fileBase64,
-  fileType,
-  fileName
-};
-
-if (currentMode === "edit") {
-  payload.action = "update";
-  payload.row = selectedRecord.row;
-}
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-
-  closeModal();
-  loadData();
 }
 
 // ================= BASE64 =================
@@ -611,70 +644,66 @@ function filterTable() {
 }
 
 function editRecord() {
-
   currentMode = "edit";
-
   document.getElementById("date").style.display = "block";
   document.getElementById("date").value = selectedRecord.date;
-
   document.getElementById("dateDisplay").style.display = "none";
-
   document.getElementById("po").disabled = false;
   document.getElementById("desc").disabled = false;
-
   document.getElementById("fileLabel").style.display = "block";
   document.getElementById("file").style.display = "block";
-
   document.getElementById("fileLink").style.display = "none";
-
   document.getElementById("viewActions").style.display = "none";
-
   document.getElementById("saveBtn").innerText = "Update";
   document.getElementById("saveBtn").style.display = "inline-block";
-
   document.getElementById("modalTitle").innerText = "EDIT PROJECT";
 }
 
 function deleteRecord() {
-
   if (!confirm("Delete this project report?")) return;
-
   console.log("DELETE:", selectedRecord);
-
   // call API here
 }
 
+// Approver code
 async function approveRecord() {
-
   if (!confirm("Approve this project report?")) return;
-
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "approve",
-      row: selectedRecord.row
-    })
-  });
-
-  closeModal();
-  loadData();
+  showSpinner();
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "approve",
+        row: selectedRecord.row
+      })
+    });
+    closeModal();
+    await loadData();
+  } finally {
+    hideSpinner();
+  }
 }
 
+//Checker Code
 async function checkRecord() {
-
-if (!confirm("Mark as checked?")) return;
-
-await fetch(API_URL, {
-method: "POST",
-body: JSON.stringify({
-action: "check",
-row: selectedRecord.row
-})
-});
-
-closeModal();
-
-loadData();
+  if (!confirm("Mark as checked?")) return;
+  showSpinner();
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "check",
+        row: selectedRecord.row
+      })
+    });
+    closeModal();
+    await loadData();
+  } catch(err) {
+    console.error(err);
+    alert("Check failed.");
+  } finally {
+    hideSpinner();
+  }
 }
 
 // ================= FORMAT DATE =================
