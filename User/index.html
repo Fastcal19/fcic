@@ -673,7 +673,7 @@ openRoom("global","Global Chat");
 
       <a id="btnProjects" onclick="showPage('projects')">Projects</a>
       <a id="btnprojectReports" onclick="showPage('projectReports')">Project Reports</a>
-
+      <a id="btneLeave" onclick="showPage('rleave')">Leave Application</a>
       <div id="btnApplications">
         <a class="expandable" onclick="toggleMenu('applicationsMenu')">Requests</a>
         <div class="submenu" id="applicationsMenu">
@@ -698,6 +698,7 @@ openRoom("global","Global Chat");
       
       <a id="btnPayslip" onclick="showPage('payslip')">Pay Slips</a>  
       <a id="btnPhotos" onclick="showPage('photos')">Photos</a> 
+      <a id="btnInv" onclick="showPage('inventoryGallery')">Photos</a>
       <div id="btnInventory">
         <a class="expandable" onclick="toggleMenu('invMenu')">Inventory</a>
         <div class="submenu" id="invMenu">
@@ -798,8 +799,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const visible = {
     admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications","btnCs","btnInventory","btnPortals"],
-    staff: ["btnDashboard", "btnRequests", "btnPayslip", "btnInventory"],
-    purchaser: ["btnDashboard", "btnProjects", "btnRequests","btnCs", "btnPayslip", "btnInventory"],
+    staff: ["btnDashboard", "btneLeave", "btnPayslip", "btnInv"],
+    purchaser: ["btnDashboard", "btnProjects", "btneLeave","btnCs", "btnPayslip", "btnInv"],
     hr: ["btnDashboard", "btnHR","btnLeave","btnPortals"],
     "system admin": ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnLeave", "btnProjects", "btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"],
     "": ["btnPayslip"]
