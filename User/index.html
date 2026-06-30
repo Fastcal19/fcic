@@ -358,12 +358,18 @@
     .user-item { cursor:pointer; }
     .room-item { cursor:pointer; font-weight:bold; }
 
-/* ✅ MOBILE APP GRID FIXED SIZE */
-.mobile-apps {
-  display: none;
+
+#chatToggle,
+#chatBox {
+  display: none !important;
 }
 
-@media (max-width: 768px) {
+/* ✅ MOBILE 2-TAB APP */
+.mobile-container{
+  display:none;
+}
+
+@media (max-width:768px){
 
   header,
   footer,
@@ -372,73 +378,216 @@
   .overlay,
   .bottom-nav,
   #chatToggle,
-  #chatBox {
-    display: none !important;
+  #chatBox{
+    display:none !important;
   }
 
-  body {
-    overflow: hidden;
+  body{
+    overflow:hidden;
   }
 
-  .main {
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
+  .main{
+    display:none;
   }
 
-  iframe {
-    width: 100%;
-    height: 100%;
+  .mobile-container{
+    display:flex;
+    flex-direction:column;
+    width:100vw;
+    height:90vh;
+    background:linear-gradient(180deg,gold,orangered);
   }
 
-  .mobile-apps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    padding: 15px;
-    width: 100vw;
-    height: 100vh;
-    overflow-y: auto;
-    box-sizing: border-box;
-    background: linear-gradient(180deg, gold, orangered);
-    align-content: start;
+  /* TOP TABS */
+  .mobile-tabs{
+    display:flex;
+    background:rgba(255,255,255,0.2);
+    backdrop-filter:blur(6px);
   }
 
-  .mobile-app {
-    width: 100%;
-    min-height: 100px;
-    border-radius: 16px;
-    padding: 12px 8px;
-    box-sizing: border-box;
-    background: rgba(255,255,255,0.5);
-    backdrop-filter: blur(6px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    overflow: hidden;
+  .mobile-tab{
+    flex:1;
+    border:none;
+    background:none;
+    padding:10px;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    color:#000;
   }
 
-  .mobile-app .icon {
-    font-size: 30px;
-    line-height: 1;
-    margin-bottom: 6px;
+  .mobile-tab.active{
+    background:#727070;
+    border-radius:0 0 15px 15px;
   }
 
-  .mobile-app .label {
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 12px;
-    line-height: 1.2;
-    word-break: break-word;
-  }
+  /* TAB CONTENT */
+  .mobile-page{
+  flex:1;
+  display:none;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:12px;
+  box-sizing:border-box;
+  width:100%;
 }
 
+  .mobile-page.active{
+    display:block;
+  }
 
-#chatToggle,
-#chatBox {
-  display: none !important;
+  /* PROFILE */
+  .mobile-profile{
+  font-family: 'Times New Roman', Times, serif;
+  text-align:center;
+  padding:10px 0 30px;
+}
+
+.mobile-profile img{
+  width:160px;
+  height:160px;
+  border-radius:50%;
+  object-fit:cover;
+  background:#fff;
+  border:4px solid rgba(255,255,255,0.7);
+  box-shadow:0 4px 12px rgba(0,0,0,0.25);
+}
+
+.mobile-profile h2{
+  margin:12px 0 4px;
+  text-align: center;
+  font-size:22px;
+  color:#111;
+}
+
+.mobile-profile p{
+  margin:0;
+  font-size:13px;
+  text-align: center;
+  color:#333;
+  font-weight:bold;
+}
+
+.mobile-profile-info{
+  text-align: left;
+  margin-top:20px;
+  background:rgba(255,255,255,0.5);
+  border-radius:22px;
+  padding:8px 16px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 4px 15px rgba(0,0,0,0.12);
+}
+
+.profile-row{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,0.25);
+}
+
+.profile-row:last-child{
+  border-bottom:none;
+}
+
+.profile-label{
+  font-size:12px;
+  font-weight:700;
+  color:#222;
+  opacity:0.8;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+
+.profile-row span:last-child{
+  font-size:14px;
+  color:#000;
+  font-weight:600;
+  line-height:1.4;
+  word-break:break-word;
+}
+
+.mobile-logout-btn{
+  margin-top:24px;
+  width:100%;
+  border:none;
+  background:#2f2f2f;
+  color:#fff;
+  padding:14px;
+  border-radius:16px;
+  font-size:15px;
+  font-weight:bold;
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+  /* ICON GRID */
+  .mobile-apps{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:10px;
+  width:100%;
+  max-width:100%;
+  height:calc(140vh - 180px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  box-sizing:border-box;
+
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+
+.mobile-apps::-webkit-scrollbar{
+  display:none;
+}
+
+  .mobile-app{
+  background:rgba(241, 230, 230, 0.8);
+  border-radius:16px;
+  min-height:90px;
+  width:100%;
+  max-width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:10px 6px;
+  box-sizing:border-box;
+  cursor:pointer;
+  overflow:hidden;
+}
+
+  .mobile-app .icon{
+  font-size:60px;
+  margin-bottom:4px;
+}
+
+.mobile-app .label{
+  font-family: 'Times New Roman', Times, serif;
+  font-size:14px;
+  font-weight:bold;
+  line-height:1.2;
+  word-break:break-word;
+}
+}
+
+.mobile-page{
+  flex:1;
+  display:none;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:12px;
+  box-sizing:border-box;
+  width:100%;
+
+  /* Hide scrollbar */
+  scrollbar-width:none;       /* Firefox */
+  -ms-overflow-style:none;    /* IE/Edge */
+}
+
+.mobile-page::-webkit-scrollbar{
+  display:none;               /* Chrome/Safari */
 }
   </style>
 </head>
@@ -551,7 +700,6 @@ chatClose.onclick = () => {
   chatOpen=false;
 };
 
-/* PRESENCE */
 /* PRESENCE */
 const userRef = db.ref("onlineUsers/"+username);
 userRef.set({name:username,role});
@@ -705,57 +853,159 @@ openRoom("global","Global Chat");
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
-<div class="mobile-apps" id="mobileApps">
+<div class="mobile-container">
 
-  <div class="mobile-app" onclick="showPage('dashboard')">
-    <div class="icon">🗓️</div>
-    <div class="label">Calendar</div>
+  <!-- TABS -->
+  <div class="mobile-tabs">
+    <button class="mobile-tab active" onclick="openMobileTab('profileTab', this)">
+      👤
+    </button>
+
+    <button class="mobile-tab" onclick="openMobileTab('appsTab', this)">
+      📱
+    </button>
   </div>
 
-  <div class="mobile-app" onclick="showPage('projects')">
-    <div class="icon">📁</div>
-    <div class="label">Projects</div>
+  <!-- PROFILE TAB -->
+  <div class="mobile-page active" id="profileTab">
+
+    <div class="mobile-profile">
+
+  <img id="ePhoto" src="fcic logo.png">
+
+  <h2 id="employeeName">Employee Name</h2>
+
+  <p id="employeeID">EID</p>
+
+  <div class="mobile-profile-info">
+
+    <div class="profile-row">
+      <span class="profile-label">Address</span>
+      <span id="mobileProfileRole2">Block 6 Lot 9 Ferrari Street, Mercado Village, Brgy. Pulong Sta Cruz, City of Sta. Rosa, Laguna</span>
+    </div>
+
+    <div class="profile-row">
+      <span class="profile-label">Email</span>
+      <span id="mobileProfileEmail">example@email.com</span>
+    </div>
+
+    <div class="profile-row">
+      <span class="profile-label">Mobile</span>
+      <span id="mobileProfileEmail1">0912-345-6789</span>
+    </div>
+
+    <div class="profile-row">
+      <span class="profile-label">TIN</span>
+      <span id="mobileProfileEmail2">123-456-789-00000</span>
+    </div>
+
+    <div class="profile-row">
+      <span class="profile-label">SSS</span>
+      <span id="mobileProfileEmail3">1234-5678-9012</span>
+    </div>
+
+    <div class="profile-row">
+      <span class="profile-label">Pag-IBIG</span>
+      <span id="mobileProfileEmail4">example@email.com</span>
+    </div>
+
+    <div class="profile-row">
+      <span class="profile-label">PhilHealth</span>
+      <span id="mobileProfileEmail5">example@email.com</span>
+    </div>
+
+    <div class="profile-row">
+      <span class="profile-label">CBC Account No</span>
+      <span id="mobileProfileEmail6">1285012314</span>
+    </div>
+
+    </div>
+
+
+  <button class="mobile-logout-btn" onclick="logout()">
+    Logout
+  </button>
+
+</div>
+
   </div>
 
-  <div class="mobile-app" onclick="showPage('projectReports')">
-    <div class="icon">📝</div>
-    <div class="label">Reports</div>
+  <!-- APPS TAB -->
+  <div class="mobile-page" id="appsTab">
+
+    <div class="mobile-apps">
+
+      <div class="mobile-app" onclick="showPage('dashboard')">
+        <div class="icon">📅</div>
+        <div class="label">Calendar</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('projects')">
+        <div class="icon">📁</div>
+        <div class="label">Projects</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('projectReports')">
+        <div class="icon">📝</div>
+        <div class="label">Project Reports</div>
+      </div>
+
+
+      <div class="mobile-app" onclick="showPage('projectReports')">
+        <div class="icon">📈</div>
+        <div class="label">Sales</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('projectReports')">
+        <div class="icon">💰</div>
+        <div class="label">Receivables</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('projectReports')">
+        <div class="icon">💳</div>
+        <div class="label">Payables</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('projectReports')">
+        <div class="icon">📊</div>
+        <div class="label">Income</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('projectReports')">
+        <div class="icon">📝</div>
+        <div class="label">Employees Leave</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('projectReports')">
+        <div class="icon">💵</div>
+        <div class="label">Payroll</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('projectReports')">
+        <div class="icon">👥</div>
+        <div class="label">Employees</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('inventoryGallery')">
+        <div class="icon">📦</div>
+        <div class="label">Inventory</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('payslip')">
+        <div class="icon">🧾</div>
+        <div class="label">Payslip</div>
+      </div>
+
+      <div class="mobile-app" onclick="showPage('aleave')">
+        <div class="icon">🤝</div>
+        <div class="label">Client & Supplier Profile</div>
+      </div>
+
+    </div>
+
   </div>
 
-  <div class="mobile-app" onclick="showPage('inventoryGallery')">
-    <div class="icon">📦</div>
-    <div class="label">Inventory</div>
-  </div>
-
-  <div class="mobile-app" onclick="showPage('payslip')">
-    <div class="icon">💰</div>
-    <div class="label">Payslip</div>
-  </div>
-
-  <div class="mobile-app" onclick="showPage('photos')">
-    <div class="icon">🖼️</div>
-    <div class="label">Photos</div>
-  </div>
-
-  <div class="mobile-app" onclick="showPage('rleave')">
-    <div class="icon">📋</div>
-    <div class="label">Leave</div>
-  </div>
-
-  <div class="mobile-app" onclick="showPage('cs')">
-    <div class="icon">🤝</div>
-    <div class="label">Clients & Supplier</div>
-  </div>
-
-  <div class="mobile-app" onclick="showPage('portals')">
-    <div class="icon">🌐</div>
-    <div class="label">Portals</div>
-  </div>
-
-  <div class="mobile-app" onclick="logout()">
-    <div class="icon">⏻</div>
-    <div class="label">Logout</div>
-  </div>
+</div>
 
 </div>
 
@@ -910,8 +1160,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const fullName = localStorage.getItem("full");
   const photo = localStorage.getItem("photo");
   const email = localStorage.getItem("email");
+  const eid = localStorage.getItem("eid");
   if(fullName) document.getElementById("usernameDisplay").textContent = fullName;
+  if(fullName) document.getElementById("employeeName").textContent = fullName;
   if(photo) document.getElementById("userPhoto").src = "./" + photo;
+  if(photo) document.getElementById("ePhoto").src = "./" + photo;
+  if(eid) document.getElementById("employeeID").textContent = eid;
 
   const usernameDisplay = document.getElementById("usernameDisplay");
   const userDropdown = document.getElementById("userDropdown");
@@ -1104,36 +1358,42 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+
+function openMobileTab(tabId, btn){
+
+  document.querySelectorAll(".mobile-page")
+    .forEach(p => p.classList.remove("active"));
+
+  document.querySelectorAll(".mobile-tab")
+    .forEach(t => t.classList.remove("active"));
+
+  document.getElementById(tabId)
+    .classList.add("active");
+
+  btn.classList.add("active");
+}
+
+/* LOAD PROFILE INFO */
+document.addEventListener("DOMContentLoaded", () => {
+
+  const fullName = localStorage.getItem("full") || "User";
+  const eid = localStorage.getItem("eid") || "000";
+  const email = localStorage.getItem("email") || "";
   const role = localStorage.getItem("role") || "";
-  const isMobile = window.innerWidth <= 768;
+  const photo = localStorage.getItem("photo");
 
-  if (isMobile && role === "hr") {
-    const bottomNav = document.getElementById("bottomNav");
-    if (!bottomNav) return;
+  // TOP PROFILE
+  document.getElementById("full").textContent = fullName;
+  document.getElementById("eid").textContent = eid;
 
-    // Clear existing buttons
-    bottomNav.innerHTML = "";
-
-    // Rebuild HR mobile navigation
-    bottomNav.innerHTML = `
-      <button onclick="showPage('dashboard')">🏠<br>Home</button>
-      <button id="leaveButton">🗓️<br>Leave</button>
-      <button onclick="showPage('employeelist')">👥<br>Employee</button>
-      <button id="mobileMenuToggle">☰<br>Menu</button>
-    `;
-
-    // Reattach Leave button logic
-    document.getElementById("leaveButton").addEventListener("click", function () {
-      showPage("aleave"); // HR leave page
-    });
-
-    // Reattach Menu toggle
-    document.getElementById("mobileMenuToggle").addEventListener("click", () => {
-      sidebar.classList.toggle("active");
-      overlay.classList.toggle("active");
-    });
+  if(photo){
+    document.getElementById("photo").src = "./" + photo;
   }
+
+  // PROFILE DETAILS
+  document.getElementById("mobileProfileRole2").textContent = role;
+  document.getElementById("mobileProfileEmail").textContent = email;
+
 });
 
 function showDesktopNotification(title, body) {
