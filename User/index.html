@@ -350,16 +350,96 @@
       .bottom-nav { display: flex; }
       .main { height: calc(100vh - 55px); }
     }
-#chatToggle,
-#chatBox {
-  display: none !important;
-}
+
     /* CHAT */
     #chatToggle { position:fixed;bottom:70px;right:10px;background:#333;color:#fff;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:6000;}
     #chatBadge { background:red;color:#fff;font-size:12px;border-radius:50%;padding:2px 6px;position:absolute;top:8px;right:6px;display:none;}
     #chatBox { position:fixed;bottom:70px;right:10px;width:95%;height:80%;background:#fff;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.4);display:none;flex-direction:column;z-index:6000;overflow:hidden;}
     .user-item { cursor:pointer; }
     .room-item { cursor:pointer; font-weight:bold; }
+
+/* ✅ MOBILE APP GRID FIXED SIZE */
+.mobile-apps {
+  display: none;
+}
+
+@media (max-width: 768px) {
+
+  header,
+  footer,
+  .sidebar,
+  .menu-toggle,
+  .overlay,
+  .bottom-nav,
+  #chatToggle,
+  #chatBox {
+    display: none !important;
+  }
+
+  body {
+    overflow: hidden;
+  }
+
+  .main {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+  }
+
+  .mobile-apps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 15px;
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, gold, orangered);
+    align-content: start;
+  }
+
+  .mobile-app {
+    width: 100%;
+    min-height: 100px;
+    border-radius: 16px;
+    padding: 12px 8px;
+    box-sizing: border-box;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .mobile-app .icon {
+    font-size: 30px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .mobile-app .label {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12px;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+}
+
+
+#chatToggle,
+#chatBox {
+  display: none !important;
+}
   </style>
 </head>
 
@@ -623,6 +703,61 @@ db.ref("chatRooms/global/members/"+username).set(true);
 openRoom("global","Global Chat");
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+<div class="mobile-apps" id="mobileApps">
+
+  <div class="mobile-app" onclick="showPage('dashboard')">
+    <div class="icon">🗓️</div>
+    <div class="label">Calendar</div>
+  </div>
+
+  <div class="mobile-app" onclick="showPage('projects')">
+    <div class="icon">📁</div>
+    <div class="label">Projects</div>
+  </div>
+
+  <div class="mobile-app" onclick="showPage('projectReports')">
+    <div class="icon">📝</div>
+    <div class="label">Reports</div>
+  </div>
+
+  <div class="mobile-app" onclick="showPage('inventoryGallery')">
+    <div class="icon">📦</div>
+    <div class="label">Inventory</div>
+  </div>
+
+  <div class="mobile-app" onclick="showPage('payslip')">
+    <div class="icon">💰</div>
+    <div class="label">Payslip</div>
+  </div>
+
+  <div class="mobile-app" onclick="showPage('photos')">
+    <div class="icon">🖼️</div>
+    <div class="label">Photos</div>
+  </div>
+
+  <div class="mobile-app" onclick="showPage('aleave')">
+    <div class="icon">📋</div>
+    <div class="label">Leave</div>
+  </div>
+
+  <div class="mobile-app" onclick="showPage('cs')">
+    <div class="icon">🤝</div>
+    <div class="label">Clients & Supplier</div>
+  </div>
+
+  <div class="mobile-app" onclick="showPage('portals')">
+    <div class="icon">🌐</div>
+    <div class="label">Portals</div>
+  </div>
+
+  <div class="mobile-app" onclick="logout()">
+    <div class="icon">⏻</div>
+    <div class="label">Logout</div>
+  </div>
+
+</div>
 
 <body>
   <header id="pageHeader">Fast Cal Industrial Corp</header>
@@ -730,14 +865,6 @@ openRoom("global","Global Chat");
 </script>
 
 
-  <!-- ✅ MOBILE BOTTOM NAVIGATION -->
-  <nav class="bottom-nav" id="bottomNav">
-    <button onclick="showPage('dashboard')">🏠<br>Home</button>
-    <button id="leaveButton">🗓️<br>Leave</button>
-    <button onclick="showPage('inventoryGallery')">📦<br>Inventory</button>
-    <button onclick="showPage('payslip')">💰<br>Payslip</button>
-    <button id="mobileMenuToggle">☰<br>Menu</button>
-  </nav>
 
   <script>
 if (!localStorage.getItem("username")) {
@@ -898,6 +1025,12 @@ function showPage(page) {
   }
 }
 
+const grid = document.getElementById("mobileApps");
+
+new Sortable(grid, {
+  animation: 150
+});
+
 // ✅ Adjust Leave button behavior depending on user role
 document.addEventListener("DOMContentLoaded", function () {
   const leaveBtn = document.getElementById("leaveButton");
@@ -916,6 +1049,38 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+
+  if (window.innerWidth <= 768) {
+
+    const apps = document.getElementById("mobileApps");
+    const main = document.getElementById("mainContent");
+
+    function openMobilePage(page) {
+      apps.style.display = "none";
+      main.style.display = "flex";
+      showPage(page);
+    }
+
+    document.querySelectorAll(".mobile-app").forEach(app => {
+
+      const onclickText = app.getAttribute("onclick");
+
+      if (onclickText && onclickText.includes("showPage")) {
+
+        const match = onclickText.match(/showPage\('(.*?)'\)/);
+
+        if (match) {
+          const page = match[1];
+
+          app.onclick = () => openMobilePage(page);
+        }
+      }
+    });
+
+    main.style.display = "none";
+  }
+});
 // ✅ Replace Payslip with Advances on Mobile for Admins
 document.addEventListener("DOMContentLoaded", function () {
   const role = localStorage.getItem("role") || "";
