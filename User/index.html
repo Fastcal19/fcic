@@ -914,42 +914,42 @@ openRoom("global","Global Chat");
 
     <div class="profile-row">
       <span class="profile-label">Address</span>
-      <span id="mobileProfileRole2">Block 6 Lot 9 Ferrari Street, Mercado Village, Brgy. Pulong Sta Cruz, City of Sta. Rosa, Laguna</span>
+      <span id="Address"></span>
     </div>
 
     <div class="profile-row">
       <span class="profile-label">Email</span>
-      <span id="mobileProfileEmail">example@email.com</span>
+      <span id="Email"></span>
     </div>
 
     <div class="profile-row">
       <span class="profile-label">Mobile</span>
-      <span id="mobileProfileEmail1">0912-345-6789</span>
+      <span id="Contact"></span>
     </div>
 
     <div class="profile-row">
       <span class="profile-label">TIN</span>
-      <span id="mobileProfileEmail2">123-456-789-00000</span>
+      <span id="TIN"></span>
     </div>
 
     <div class="profile-row">
       <span class="profile-label">SSS</span>
-      <span id="mobileProfileEmail3">1234-5678-9012</span>
+      <span id="SSS"></span>
     </div>
 
     <div class="profile-row">
       <span class="profile-label">Pag-IBIG</span>
-      <span id="mobileProfileEmail4">example@email.com</span>
+      <span id="Pagibig"></span>
     </div>
 
     <div class="profile-row">
       <span class="profile-label">PhilHealth</span>
-      <span id="mobileProfileEmail5">example@email.com</span>
+      <span id="Philhealth"></span>
     </div>
 
     <div class="profile-row">
       <span class="profile-label">CBC Account No</span>
-      <span id="mobileProfileEmail6">1285012314</span>
+      <span id="CBCAccount"></span>
     </div>
 
     </div>
@@ -1505,27 +1505,57 @@ function openMobileTab(tabId, btn){
 }
 
 /* LOAD PROFILE INFO */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
-  const fullName = localStorage.getItem("full") || "User";
-  const eid = localStorage.getItem("eid") || "000";
-  const email = localStorage.getItem("email") || "";
-  const role = localStorage.getItem("role") || "";
-  const photo = localStorage.getItem("photo");
+  try {
 
-  // TOP PROFILE
-  document.getElementById("full").textContent = fullName;
-  document.getElementById("eid").textContent = eid;
+    const eid = localStorage.getItem("eid") || "000";
 
-  if(photo){
-    document.getElementById("photo").src = "./" + photo;
+    const EMPLOYEE_API =
+      "https://script.google.com/macros/s/AKfycbxQ1EYC5dOJl985RosKRFRPQ8cp6_qC37Efjq3qB0K_l3YHtp5goiFBE6iyMjPKU1UrKQ/exec";
+
+    const paddedEID = String(eid).padStart(3, "0");
+
+    console.log("Searching:", paddedEID);
+
+    const res = await fetch(EMPLOYEE_API);
+    const employees = await res.json();
+
+    const data = employees.find(emp =>
+      String(emp.EN).padStart(3, "0") === paddedEID
+    );
+
+    console.log("FOUND:", data);
+
+    if (!data) {
+      console.error("Employee not found");
+      return;
+    }
+
+    // ===== PROFILE =====
+
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || "-";
+    };
+
+    setText("Address", data["ADDRESS"]);
+    setText("Email", data["EMAIL ADDRESS"]);
+    setText("Contact", data["CONTACT NUMBER"]);
+    setText("TIN", data["TIN"]);
+    setText("SSS", data["SSS"]);
+    setText("Pagibig", data["PAG-IBIG"]);
+    setText("Philhealth", data["PHILHEALTH"]);
+    setText("CBCAccount", data["CBC ACCOUNT NO"]);
+
+  } catch (err) {
+
+    console.error("PROFILE LOAD ERROR:", err);
+
   }
 
-  // PROFILE DETAILS
-  document.getElementById("mobileProfileRole2").textContent = role;
-  document.getElementById("mobileProfileEmail").textContent = email;
-
 });
+
 
 function showDesktopNotification(title, body) {
   if ("Notification" in window && Notification.permission === "granted") {
