@@ -365,11 +365,22 @@
 }
 
 /* ✅ MOBILE 2-TAB APP */
+/* DESKTOP DEFAULT */
 .mobile-container{
   display:none;
 }
 
+/* MOBILE ONLY */
 @media (max-width:768px){
+
+  .mobile-container{
+  display:flex;
+  flex-direction:column;
+  width:100vw;
+  height:100dvh;
+  background:linear-gradient(180deg,gold,orangered);
+  overflow:hidden;
+}
 
   header,
   footer,
@@ -386,22 +397,29 @@
     overflow:hidden;
   }
 
-  .main{
-    display:none;
+  .main.mobile-open{
+  display:flex;
+  width:100vw;
+  height:100dvh;
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:4000;
+    background:#fff;
   }
 
-  .mobile-container{
-    display:flex;
-    flex-direction:column;
-    width:100vw;
-    height:90vh;
-    background:linear-gradient(180deg,gold,orangered);
+  .main.mobile-open #mainFrame{
+    width:100%;
+    height:100%;
+    border:none;
   }
+}
+
 
   /* TOP TABS */
   .mobile-tabs{
     display:flex;
-    background:rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.6);
     backdrop-filter:blur(6px);
   }
 
@@ -418,7 +436,6 @@
 
   .mobile-tab.active{
     background:#727070;
-    border-radius:0 0 15px 15px;
   }
 
   /* TAB CONTENT */
@@ -527,8 +544,7 @@
   grid-template-columns:repeat(2, minmax(0,1fr));
   gap:10px;
   width:100%;
-  max-width:100%;
-  height:calc(140vh - 180px);
+  height:100%;
   overflow-y:auto;
   overflow-x:hidden;
   box-sizing:border-box;
@@ -570,6 +586,18 @@
   line-height:1.2;
   word-break:break-word;
 }
+
+#backTabBtn{
+  position:fixed;
+  top:10px;
+  left:10px;
+  z-index:99999;
+  background:#333;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  padding:10px 14px;
+  font-size:18px;
 }
 
 .mobile-page{
@@ -589,9 +617,15 @@
 .mobile-page::-webkit-scrollbar{
   display:none;               /* Chrome/Safari */
 }
+
+@supports(padding:max(0px)) {
+  .mobile-container{
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
   </style>
 </head>
-
+<body>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
@@ -623,6 +657,11 @@ if (!isPayslipPortal) {
 
   db = firebase.database();
   storage = firebase.storage();
+}
+
+// ✅ Request notification permission
+if ("Notification" in window && Notification.permission !== "granted") {
+  Notification.requestPermission();
 }
 </script>
 
@@ -849,22 +888,12 @@ function sendMessage(){
 /* INIT */
 db.ref("chatRooms/global/members/"+username).set(true);
 openRoom("global","Global Chat");
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
 <div class="mobile-container">
-
-  <!-- TABS -->
-  <div class="mobile-tabs">
-    <button class="mobile-tab active" onclick="openMobileTab('profileTab', this)">
-      👤
-    </button>
-
-    <button class="mobile-tab" onclick="openMobileTab('appsTab', this)">
-      📱
-    </button>
-  </div>
 
   <!-- PROFILE TAB -->
   <div class="mobile-page active" id="profileTab">
@@ -1003,15 +1032,34 @@ openRoom("global","Global Chat");
 
     </div>
 
-  </div>
+ 
+</div>
+<!-- TABS -->
+<div class="mobile-tabs">
+
+  <button class="mobile-tab active"
+    id="profileTabBtn"
+    onclick="openMobileTab('profileTab', this)">
+    👤
+  </button>
+
+  <button class="mobile-tab"
+    id="appsTabBtn"
+    onclick="openMobileTab('appsTab', this)">
+    📱
+  </button>
 
 </div>
-
-</div>
-
-<body>
+<!-- BACK BUTTON -->
+  <button class="mobile-tab"
+    id="backTabBtn"
+    style="display:none"
+    onclick="closeMobilePage()">
+    ←
+  </button>
+  
   <header id="pageHeader">Fast Cal Industrial Corp</header>
-
+</div>
   <!-- Toggle stays for desktop -->
   <button class="menu-toggle" id="menuToggle">☰</button>
 
@@ -1310,11 +1358,26 @@ document.addEventListener("DOMContentLoaded", function () {
     const apps = document.getElementById("mobileApps");
     const main = document.getElementById("mainContent");
 
-    function openMobilePage(page) {
-      apps.style.display = "none";
-      main.style.display = "flex";
-      showPage(page);
-    }
+function openMobilePage(page) {
+
+  apps.style.display = "none";
+
+  main.classList.add("mobile-open");
+  main.style.display = "block";
+
+  // hide tabs
+  document.getElementById("profileTabBtn").style.display = "none";
+  document.getElementById("appsTabBtn").style.display = "none";
+
+  // show back button
+  const backBtn = document.getElementById("backTabBtn");
+
+backBtn.style.display = "block";
+backBtn.style.position = "fixed";
+backBtn.style.zIndex = "99999";
+
+  showPage(page);
+}
 
     document.querySelectorAll(".mobile-app").forEach(app => {
 
@@ -1332,7 +1395,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    main.style.display = "none";
+
   }
 });
 // ✅ Replace Payslip with Advances on Mobile for Admins
@@ -1358,6 +1421,20 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+function closeMobilePage(){
+
+  const apps = document.getElementById("mobileApps");
+  const main = document.getElementById("mainContent");
+
+  main.classList.remove("mobile-open");
+
+  apps.style.display = "grid";
+
+  document.getElementById("profileTabBtn").style.display = "block";
+  document.getElementById("appsTabBtn").style.display = "block";
+
+  document.getElementById("backTabBtn").style.display = "none";
+}
 
 function openMobileTab(tabId, btn){
 
@@ -1405,13 +1482,6 @@ function showDesktopNotification(title, body) {
   }
 }
 
-
-// ✅ Mobile bottom nav toggle
-const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-mobileMenuToggle.addEventListener('click', () => {
-  sidebar.classList.toggle('active');
-  overlay.classList.toggle('active');
-});
 
 
 // --- Manual Logout ---
