@@ -233,6 +233,7 @@
 
   const data = doc.data();
 
+  localStorage.setItem("isLoggedIn", "true");
   localStorage.setItem("uid", user.uid);
   localStorage.setItem("eid", data.eid);
   localStorage.setItem("email", user.email);
