@@ -1199,7 +1199,7 @@ openRoom("global","Global Chat");
 
 
   <script>
-if (!localStorage.getItem("username")) {
+if (localStorage.getItem("isLoggedIn") !== "true") {
   window.location.href = "/";
 }
 
@@ -1623,7 +1623,14 @@ function showDesktopNotification(title, body) {
 
 // --- Manual Logout ---
 function logout() {
-  localStorage.clear();
+  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("username");
+  localStorage.removeItem("role");
+  localStorage.removeItem("full");
+  localStorage.removeItem("email");
+  localStorage.removeItem("photo");
+  localStorage.removeItem("eid");
+
   window.location.href = "/";
 }
 
