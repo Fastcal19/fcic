@@ -417,11 +417,21 @@
 
 
   /* TOP TABS */
+  /* MOBILE TABS DEFAULT = HIDDEN */
+.mobile-tabs{
+  display:none;
+}
+
+/* MOBILE ONLY */
+@media (max-width:768px){
+
   .mobile-tabs{
     display:flex;
     background:rgba(255,255,255,0.6);
     backdrop-filter:blur(6px);
   }
+
+}
 
   .mobile-tab{
     flex:1;
@@ -626,6 +636,25 @@
 
 .mobile-page{
   transition: all 0.25s ease;
+}
+
+#backTabBtn{
+  display:none;
+}
+
+@media (max-width:768px){
+  #backTabBtn{
+    position:fixed;
+    top:10px;
+    left:10px;
+    z-index:99999;
+    background:#333;
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:18px;
+  }
 }
   </style>
 </head>
