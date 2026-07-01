@@ -140,6 +140,20 @@ tbody td {
   border: 1px solid #e2e8f0;
 }
 
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:4px 0;
+}
+
+.row div:last-child{
+  text-align:right;
+  font-weight:600;
+  white-space:nowrap;
+}
+
 #payslipContent {
   display: flex;
   flex-direction: column;
@@ -236,7 +250,8 @@ tbody td {
         <thead>
           <tr>
             <th>Pay Date</th>
-            <th>Gross Pay</th>
+            <th>Basic Pay</th>
+            <th>Other Compensation</th>
             <th>Deductions</th>
             <th>Net Pay</th>
             <th>13th Month Pay</th>
@@ -272,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = "login.html";
   }
 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlYH879_FHNYurfbCLoN7HFpzKhLRZp3rNsrBFWUVvU-B9GbiuQwJTlMU2fl9nfdNksw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNm4ZXS-SVPGpAEa_STGcKfdFu-hv_zF1SWy2XRFpxsXKLco_-s12WGstMraE7TxyqYQ/exec";
 
   const yearSelect = document.getElementById('yearSelect');
   const tbody = document.getElementById('tbody');
@@ -341,10 +356,11 @@ document.addEventListener('DOMContentLoaded', () => {
       parseDate(b.pay_date) - parseDate(a.pay_date)
     );
 
-    let gross=0, ded=0, net=0, th13=0;
+    let gross=0, other=0, ded=0, net=0, th13=0;
 
     list.forEach(r => {
-      gross += r.gross;
+      gross +=r.gross;
+      other += r.other;
       ded += r.total_deductions;
       net += r.net;
       th13 += r.thirteenth_pay;
@@ -353,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.innerHTML = `
         <td>${r.pay_date || r.pay_period}</td>
         <td>${money(r.gross)}</td>
+        <td>${money(r.other)}</td>
         <td>${money(r.total_deductions)}</td>
         <td>${money(r.net)}</td>
         <td>${money(r.thirteenth_pay)}</td>
@@ -361,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tbody.appendChild(tr);
     });
 
-    document.getElementById('totalGross').textContent = money(gross);
+    document.getElementById('totalGross').textContent = money(gross+other);
     document.getElementById('totalDeduction').textContent = money(ded);
     document.getElementById('totalNet').textContent = money(net);
     document.getElementById('total13thMonth').textContent = money(th13);
