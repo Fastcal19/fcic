@@ -623,6 +623,10 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+.mobile-page{
+  transition: all 0.25s ease;
+}
   </style>
 </head>
 <body>
@@ -1398,6 +1402,56 @@ backBtn.style.zIndex = "99999";
 
   }
 });
+
+// ✅ SWIPE LEFT / RIGHT FOR MOBILE TABS
+
+let touchStartX = 0;
+let touchEndX = 0;
+
+const mobileContainer = document.querySelector(".mobile-container");
+
+mobileContainer.addEventListener("touchstart", (e) => {
+  touchStartX = e.changedTouches[0].screenX;
+});
+
+mobileContainer.addEventListener("touchend", (e) => {
+  touchEndX = e.changedTouches[0].screenX;
+
+  handleSwipe();
+});
+
+function handleSwipe() {
+
+  const profileTab = document.getElementById("profileTab");
+  const appsTab = document.getElementById("appsTab");
+
+  const profileBtn = document.getElementById("profileTabBtn");
+  const appsBtn = document.getElementById("appsTabBtn");
+
+  const swipeDistance = touchEndX - touchStartX;
+
+  // minimum swipe distance
+  if (Math.abs(swipeDistance) < 50) return;
+
+  // 👉 Swipe LEFT = open Apps
+  if (swipeDistance < 0) {
+
+    if (profileTab.classList.contains("active")) {
+      openMobileTab("appsTab", appsBtn);
+    }
+
+  }
+
+  // 👈 Swipe RIGHT = open Profile
+  else {
+
+    if (appsTab.classList.contains("active")) {
+      openMobileTab("profileTab", profileBtn);
+    }
+
+  }
+}
+
 // ✅ Replace Payslip with Advances on Mobile for Admins
 document.addEventListener("DOMContentLoaded", function () {
   const role = localStorage.getItem("role") || "";
