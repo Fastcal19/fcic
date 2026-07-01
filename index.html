@@ -234,18 +234,23 @@
 
   const data = doc.data();
 
-  localStorage.setItem("isLoggedIn", "true");
-  localStorage.setItem("uid", user.uid);
-  localStorage.setItem("eid", data.eid);
-  localStorage.setItem("email", user.email);
-  localStorage.setItem("role", data.role);
-  localStorage.setItem("full", data.fullName || "");
-  localStorage.setItem("username", data.nickname || "");
-  localStorage.setItem("photo", data.photo || "fcic logo.png");
+  // SAVE LOGIN
+localStorage.setItem("isLoggedIn", "true");
+localStorage.setItem("uid", user.uid);
+localStorage.setItem("eid", data.eid);
+localStorage.setItem("email", user.email);
+localStorage.setItem("role", data.role);
+localStorage.setItem("full", data.fullName || "");
+localStorage.setItem("username", data.nickname || "");
+localStorage.setItem("photo", data.photo || "fcic logo.png");
 
+// VERIFY FIRST
+console.log("Saved:", localStorage.getItem("isLoggedIn"));
 
+// SMALL DELAY BEFORE REDIRECT
+setTimeout(() => {
   window.location.href = "/User/";
-}
+}, 300);
   
   // ---------------- EMAIL/PASSWORD LOGIN ----------------
   async function manualLogin() {
