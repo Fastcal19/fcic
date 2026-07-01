@@ -220,6 +220,7 @@
   };
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
   async function loadUserProfile(user) {
   const db = firebase.firestore();
