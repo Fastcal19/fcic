@@ -964,78 +964,100 @@ openRoom("global","Global Chat");
   </div>
 
   <!-- APPS TAB -->
-  <div class="mobile-page" id="appsTab">
+  <div class="mobile-apps" id="mobileApps">
 
-    <div class="mobile-apps" id="mobileApps">
+  <div class="mobile-app"
+       data-role="admin,system admin,staff,purchaser,hr"
+       onclick="showPage('dashboard')">
+    <div class="icon">📅</div>
+    <div class="label">Calendar</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('dashboard')">
-        <div class="icon">📅</div>
-        <div class="label">Calendar</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin,purchaser"
+       onclick="showPage('projects')">
+    <div class="icon">📁</div>
+    <div class="label">Projects</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('projects')">
-        <div class="icon">📁</div>
-        <div class="label">Projects</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin,staff,purchaser"
+       onclick="showPage('projectReports')">
+    <div class="icon">📝</div>
+    <div class="label">Project Reports</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('projectReports')">
-        <div class="icon">📝</div>
-        <div class="label">Project Reports</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin"
+       onclick="showPage('salesreport')">
+    <div class="icon">📈</div>
+    <div class="label">Sales</div>
+  </div>
 
+  <div class="mobile-app"
+       data-role="admin,system admin"
+       onclick="showPage('ar')">
+    <div class="icon">💰</div>
+    <div class="label">Receivables</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('projectReports')">
-        <div class="icon">📈</div>
-        <div class="label">Sales</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin"
+       onclick="showPage('ap')">
+    <div class="icon">💳</div>
+    <div class="label">Payables</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('projectReports')">
-        <div class="icon">💰</div>
-        <div class="label">Receivables</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin"
+       onclick="showPage('is')">
+    <div class="icon">📊</div>
+    <div class="label">Income</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('projectReports')">
-        <div class="icon">💳</div>
-        <div class="label">Payables</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin,hr"
+       onclick="showPage('aleave')">
+    <div class="icon">📝</div>
+    <div class="label">Employees Leave</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('projectReports')">
-        <div class="icon">📊</div>
-        <div class="label">Income</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin,hr"
+       onclick="showPage('payroll')">
+    <div class="icon">💵</div>
+    <div class="label">Payroll</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('rleave')">
-        <div class="icon">📝</div>
-        <div class="label">Leave</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin,hr"
+       onclick="showPage('employeelist')">
+    <div class="icon">👥</div>
+    <div class="label">Employees</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('projectReports')">
-        <div class="icon">💵</div>
-        <div class="label">Payroll</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin,staff,purchaser"
+       onclick="showPage('inventoryGallery')">
+    <div class="icon">📦</div>
+    <div class="label">Inventory</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('employeelist')">
-        <div class="icon">👥</div>
-        <div class="label">Employees</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin,staff,purchaser,"
+       onclick="showPage('payslip')">
+    <div class="icon">🧾</div>
+    <div class="label">Payslip</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('inventoryGallery')">
-        <div class="icon">📦</div>
-        <div class="label">Inventory</div>
-      </div>
+  <div class="mobile-app"
+       data-role="admin,system admin,purchaser"
+       onclick="showPage('cs')">
+    <div class="icon">🤝</div>
+    <div class="label">Client & Supplier Profile</div>
+  </div>
 
-      <div class="mobile-app" onclick="showPage('payslip')">
-        <div class="icon">🧾</div>
-        <div class="label">Payslip</div>
-      </div>
-
-      <div class="mobile-app" onclick="showPage('cs')">
-        <div class="icon">🤝</div>
-        <div class="label">Client & Supplier Profile</div>
-      </div>
-
-    </div>
-
+</div>
  
 </div>
 <!-- TABS -->
@@ -1335,6 +1357,29 @@ const grid = document.getElementById("mobileApps");
 
 new Sortable(grid, {
   animation: 150
+});
+
+/* ===== MOBILE APPS ROLE FILTER ===== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const role = (localStorage.getItem("role") || "").toLowerCase();
+
+  document.querySelectorAll(".mobile-app").forEach(app => {
+
+    const allowedRoles =
+      (app.dataset.role || "")
+      .toLowerCase()
+      .split(",");
+
+    if (allowedRoles.includes(role)) {
+      app.style.display = "flex";
+    } else {
+      app.style.display = "none";
+    }
+
+  });
+
 });
 
 // ✅ Adjust Leave button behavior depending on user role
