@@ -34,16 +34,15 @@
     }
 
     header {
-  display: flex;
-  background: linear-gradient(90deg, orange, white, orange);
-  color: white;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
+      background: linear-gradient(90deg, orange, white, orange);
+      color: white;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
     .logo-section { display: flex; justify-content: center; }
     .logo-section img { height: 55px; }
 
@@ -210,339 +209,145 @@
 
 <script>
   
-  // =========================
-// FIREBASE CONFIG
-// =========================
-const firebaseConfig = {
-  apiKey: "AIzaSyAItDyGgVSzNEKQFNd5N4hrTOLsrPhXXtg",
-  authDomain: "fcic-7f3c1.firebaseapp.com",
-  projectId: "fcic-7f3c1",
-  storageBucket: "fcic-7f3c1.appspot.com",
-  messagingSenderId: "91128961829",
-  appId: "1:91128961829:web:a223dc5400732654cbd8cc"
-};
+  // ---------------- FIREBASE CONFIG ----------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyAItDyGgVSzNEKQFNd5N4hrTOLsrPhXXtg",
+    authDomain: "fcic-7f3c1.firebaseapp.com",
+    projectId: "fcic-7f3c1",
+    storageBucket: "fcic-7f3c1.firebasestorage.app",
+    messagingSenderId: "91128961829",
+    appId: "1:91128961829:web:a223dc5400732654cbd8cc"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-firebase.initializeApp(firebaseConfig);
+  async function loadUserProfile(user) {
+  const db = firebase.firestore();
+  const doc = await db.collection("users").doc(user.uid).get();
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+  if (!doc.exists) {
+    alert("User not registered. Contact admin.");
+    auth.signOut();
+    return;
+  }
 
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+  const data = doc.data();
 
-// =========================
-// YEAR
-// =========================
-document.getElementById("year").textContent =
-new Date().getFullYear();
+  localStorage.setItem("uid", user.uid);
+  localStorage.setItem("eid", data.eid);
+  localStorage.setItem("email", user.email);
+  localStorage.setItem("role", data.role);
+  localStorage.setItem("full", data.fullName || "");
+  localStorage.setItem("username", data.nickname || "");
+  localStorage.setItem("photo", data.photo || "fcic logo.png");
 
-// =========================
-// LOAD USER PROFILE
-// =========================
-async function loadUserProfile(user) {
+
+  window.location.href = "/User/";
+}
+  
+  // ---------------- EMAIL/PASSWORD LOGIN ----------------
+  async function manualLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const status = document.getElementById('loginStatus');
+
+  if (!email || !password) {
+    status.style.color = "red";
+    status.textContent = "⚠️ Please enter email and password.";
+    return;
+  }
+
+  status.style.color = "black";
+  status.textContent = "⏳ Logging in...";
+
+  try {
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    await loadUserProfile(userCredential.user);
+  } catch (error) {
+    status.style.color = "red";
+    status.textContent = "❌ " + error.message;
+  }
+}
+
+
+  function manualLoginModal(){
+    document.getElementById('email').value = document.getElementById('emailModal').value;
+    document.getElementById('password').value = document.getElementById('passwordModal').value;
+    manualLogin();
+  }
+
+  // ---------------- GOOGLE LOGIN ----------------
+  async function gmailLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  const status = document.getElementById('loginStatus');
+
+  try {
+    const result = await auth.signInWithPopup(provider);
+    await loadUserProfile(result.user);
+  } catch (error) {
+    status.style.color = "red";
+    status.textContent = "❌ " + error.message;
+  }
+}
+
+  async function forgotPassword(isModal = false) {
+    const emailInput = isModal
+      ? document.getElementById('emailModal')
+      : document.getElementById('email');
+
+    const status = isModal
+      ? document.getElementById('loginStatusModal')
+      : document.getElementById('loginStatus');
+
+    const email = emailInput.value.trim();
+
+    if (!email) {
+      status.style.color = "red";
+      status.textContent = "⚠️ Please enter your email first.";
+      return;
+    }
 
     try {
-
-        const doc = await db.collection("users")
-        .doc(user.uid)
-        .get();
-
-        if (!doc.exists) {
-
-            alert("User is not registered.");
-
-            await auth.signOut();
-
-            return;
-        }
-
-        const data = doc.data();
-
-        localStorage.setItem("isLoggedIn","true");
-        localStorage.setItem("uid",user.uid);
-        localStorage.setItem("email",user.email || "");
-        localStorage.setItem("eid",data.eid || "");
-        localStorage.setItem("role",data.role || "");
-        localStorage.setItem("full",data.fullName || "");
-        localStorage.setItem("username",data.nickname || "");
-        localStorage.setItem("photo",data.photo || "fcic logo.png");
-
-        window.location.replace("/User/");
-
-    } catch(err){
-
-        console.error(err);
-
-        alert(err.message);
-
+      await auth.sendPasswordResetEmail(email);
+      status.style.color = "green";
+      status.textContent = "✅ Password reset email sent. Check your inbox.";
+    } catch (error) {
+      status.style.color = "red";
+      status.textContent = "❌ " + error.message;
     }
-
-}
-
-// =========================
-// AUTO LOGIN
-// =========================
-auth.onAuthStateChanged(async(user)=>{
-
-    if(user){
-
-        await loadUserProfile(user);
-
-    }
-
-});
-
-// =========================
-// EMAIL LOGIN
-// =========================
-async function manualLogin(){
-
-    const email =
-    document.getElementById("email").value.trim();
-
-    const password =
-    document.getElementById("password").value.trim();
-
-    const status =
-    document.getElementById("loginStatus");
-
-    if(email==="" || password===""){
-
-        status.style.color="red";
-
-        status.textContent=
-        "Enter email and password.";
-
-        return;
-
-    }
-
-    status.style.color="black";
-
-    status.textContent="Logging in...";
-
-    try{
-
-        const result=
-        await auth.signInWithEmailAndPassword(
-            email,
-            password
-        );
-
-        await loadUserProfile(result.user);
-
-    }
-
-    catch(error){
-
-        status.style.color="red";
-
-        status.textContent=error.message;
-
-    }
-
-}
-
-// =========================
-// MODAL LOGIN
-// =========================
-function manualLoginModal(){
-
-    document.getElementById("email").value =
-    document.getElementById("emailModal").value;
-
-    document.getElementById("password").value =
-    document.getElementById("passwordModal").value;
-
-    manualLogin();
-
-}
-
-// =========================
-// GOOGLE LOGIN
-// =========================
-async function gmailLogin(){
-
-    const provider =
-    new firebase.auth.GoogleAuthProvider();
-
-    try{
-
-        await auth.signInWithRedirect(provider);
-
-    }
-
-    catch(error){
-
-        document.getElementById("loginStatus")
-        .textContent=error.message;
-
-    }
-
-}
-
-// =========================
-// HANDLE GOOGLE REDIRECT
-// =========================
-window.addEventListener("load",async()=>{
-
-    try{
-
-        const result=
-        await auth.getRedirectResult();
-
-        if(result.user){
-
-            await loadUserProfile(result.user);
-
-        }
-
-    }
-
-    catch(error){
-
-        console.error(error);
-
-    }
-
-});
-
-// =========================
-// PASSWORD RESET
-// =========================
-async function forgotPassword(isModal=false){
-
-    const emailInput=isModal
-    ?document.getElementById("emailModal")
-    :document.getElementById("email");
-
-    const status=isModal
-    ?document.getElementById("loginStatusModal")
-    :document.getElementById("loginStatus");
-
-    const email=emailInput.value.trim();
-
-    if(email===""){
-
-        status.style.color="red";
-
-        status.textContent=
-        "Enter your email.";
-
-        return;
-
-    }
-
-    try{
-
-        await auth.sendPasswordResetEmail(email);
-
-        status.style.color="green";
-
-        status.textContent=
-        "Password reset email sent.";
-
-    }
-
-    catch(error){
-
-        status.style.color="red";
-
-        status.textContent=
-        error.message;
-
-    }
-
-}
-
-// =========================
-// LOGIN MODAL
-// =========================
-const modal=document.getElementById("loginModal");
-
-const closeModal=document.getElementById("closeModal");
-
-if(closeModal){
-
-    closeModal.onclick=()=>{
-
-        modal.style.display="none";
-
-    };
-
-}
-
-window.onclick=(e)=>{
-
-    if(e.target===modal){
-
-        modal.style.display="none";
-
-    }
-
-};
-
-// =========================
-// INSTALL APP
-// =========================
-let deferredPrompt;
-
-const installBtn=
-document.getElementById("installBtn");
-
-window.addEventListener(
-"beforeinstallprompt",
-(e)=>{
-
+  }
+
+
+  // ---------------- MODAL HANDLING ----------------
+  const modal = document.getElementById('loginModal');
+  const closeModal = document.getElementById('closeModal');
+  if(closeModal) closeModal.onclick = ()=> modal.style.display='none';
+  window.onclick = e => { if(e.target==modal) modal.style.display='none'; };
+
+  // ---------------- INSTALL BUTTON ----------------
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', e=>{
     e.preventDefault();
-
-    deferredPrompt=e;
-
-    installBtn.style.display="block";
-
-});
-
-installBtn.addEventListener(
-"click",
-async()=>{
-
-    if(!deferredPrompt){
-
-        return;
-
-    }
-
+    deferredPrompt = e;
+    installBtn.style.display='block';
+  });
+  installBtn.addEventListener('click', async ()=>{
+    installBtn.style.display='none';
     deferredPrompt.prompt();
-
-    await deferredPrompt.userChoice;
-
+    const {outcome} = await deferredPrompt.userChoice;
+    console.log(`User response: ${outcome}`);
     deferredPrompt=null;
+  });
 
-    installBtn.style.display="none";
-
-});
-
-// =========================
-// SERVICE WORKER
-// =========================
-if("serviceWorker" in navigator){
-
-    window.addEventListener(
-    "load",
-    ()=>{
-
-        navigator.serviceWorker
-        .register("/sw.js")
-        .then(()=>{
-
-            console.log(
-            "Service Worker Registered");
-
-        })
-        .catch(console.error);
-
+  // ---------------- SERVICE WORKER ----------------
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('✅ SW registered', reg))
+        .catch(err => console.error('❌ SW failed:', err));
     });
-
-}
+  }
 </script>
 
 </body>
