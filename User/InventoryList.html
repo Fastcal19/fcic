@@ -3,127 +3,198 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inventory & Transactions</title>
+<title>Inventory Management</title>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background:#f4f6f8;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
 }
 
-/* ===== MAIN CONTAINER ===== */
-.main-container {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+body{
+    background:#f4f6f8;
 }
 
-.tab-container { margin-top:20px; }
-.tab-buttons { display:flex; gap:5px; }
-.tab-buttons button {
-  flex:1;
-  padding:8px;
-  cursor:pointer;
-  border:none;
-  background:#ccc;
-}
-.tab-buttons button.active {
-  background:#0d47a1;
-  color:#fff;
+.main-container{
+    max-width:1200px;
+    margin:20px auto;
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,.1);
 }
 
-.tab-content { display:none; margin-top:10px; }
-.tab-content.active { display:block; }
-
-.gridview, #txn-table {
-  width:100%;
-  border-collapse:collapse;
-  margin-top:10px;
-  font-size:13px;
-  background:#fff8f0;
-}
-.gridview th, #txn-table th {
-  background:#f4a460;
-  padding:10px;
-  border:1px solid #ccc;
-}
-.gridview td, #txn-table td {
-  padding:6px;
-  border:1px solid #ccc;
-  text-align:center;
-  font-size:12px;
-}
-.gridview td.col-desc { text-align:left; }
-
-button {
-  font-size:11px;
-  padding:4px 6px;
-  cursor:pointer;
-  border-radius:5px;
-  width:80px;
-}
-.btn-add { background:#4caf50; color:#fff; }
-.btn-return { background:#2196f3; color:#fff; }
-.btn-out { background:#f44336; color:#fff; }
-.btn-new { background:#ff9800; color:#fff; }
-
-.summary {
-  margin-top:10px;
-  padding:8px;
-  background:#faf0e6;
-  border:1px solid #f4a460;
+h2{
+    margin-bottom:15px;
+    color:#0d47a1;
 }
 
-.filters {
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:10px;
+.tab-buttons{
+    display:flex;
+    gap:5px;
+    margin-bottom:15px;
 }
 
-#addItemForm {
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-  flex-wrap:wrap;
-}
-#addItemForm input, #addItemForm select {
-  padding:4px;
-  width:150px;
+.tab-buttons button{
+    flex:1;
+    padding:10px;
+    border:none;
+    background:#ccc;
+    cursor:pointer;
+    font-weight:bold;
 }
 
-/* ===== HOVER EFFECTS ===== */
-button:hover {
-  opacity: 0.9;
-  filter: brightness(1.05);
-}
-.btn-add:hover { background:#ffb74d; }
-.btn-return:hover { background:#ffb74d; }
-.btn-out:hover { background:#ff7043; }
-.btn-new:hover { background:#ffa726; }
-
-.gridview tbody tr:hover,
-#txn-table tbody tr:hover {
-  background:#ffe0b2;
-  cursor:pointer;
+.tab-buttons button.active{
+    background:#f19a04;
+    color:#fff;
 }
 
-.tab-buttons button:hover {
-  background:#ffcc80;
-  color:#000;
+.tab-content{
+    display:none;
 }
 
-input:hover, select:hover,
-input:focus, select:focus {
-  border:1px solid #ff9800;
-  outline:none;
-  box-shadow:0 0 3px rgba(255,152,0,0.7);
+.tab-content.active{
+    display:block;
 }
+
+.filters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.filters input,
+.filters select{
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+.summary{
+    margin-bottom:15px;
+    padding:10px;
+    background:#fff8e1;
+    border:1px solid #ffcc80;
+    border-radius:5px;
+}
+
+#addItemForm{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:10px;
+    margin-bottom:20px;
+}
+
+#addItemForm input,
+#addItemForm select{
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+#addItemForm button{
+    background:#4caf50;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    padding:10px;
+}
+
+#addItemForm button:hover{
+    background:#43a047;
+}
+
+.image-preview{
+    width:120px;
+    height:120px;
+    border:2px dashed #ccc;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    border-radius:5px;
+    background:#fafafa;
+}
+
+.image-preview img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+thead{
+    background:#e77d05;
+    color:#fff;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
+
+tbody tr:nth-child(even){
+    background:#f9f9f9;
+}
+
+tbody tr:hover{
+    background:#ffe0b2;
+}
+
+.item-image{
+    width:60px;
+    height:60px;
+    object-fit:cover;
+    border-radius:5px;
+}
+
+.btn{
+    border:none;
+    color:white;
+    padding:6px 12px;
+    border-radius:5px;
+    cursor:pointer;
+    margin:2px;
+}
+
+.btn-add{
+    background:#4caf50;
+    border-radius: 5px;
+    width: 50px;
+}
+
+.btn-return{
+    background:#2196f3;
+    border-radius: 5px;
+    width: 50px;
+}
+
+.btn-out{
+    background:#f44336;
+    border-radius: 5px;
+    width: 50px;
+}
+
+.btn:hover{
+    opacity:.9;
+}
+
+.loading{
+    text-align:center;
+    padding:20px;
+    color:#777;
+}
+
 </style>
 </head>
 
@@ -194,7 +265,7 @@ input:focus, select:focus {
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbweFFZee0D6QVI9wB0M7Iyn3hsjuPCZbG_cSFo54YqqpE0t3Bo4AbHSn0IuzRm9NcXJCg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxAdUwnrN_K508XoiPJvo68X62HOXJUxnMUw-ljJhsDH26XqmKdJHHbm6fzTLMndeiLug/exec";
 
 let inventoryData = [];
 let transactionData = [];
@@ -330,38 +401,87 @@ function applyTxnFilter() {
 }
 
 
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+
+    reader.onload = () => resolve(reader.result);
+
+    reader.onerror = error => reject(error);
+  });
+}
+
 async function addItem(e) {
+
   e.preventDefault();
 
-  const fileInput = document.getElementById("newItemImage");
-  const file = fileInput.files[0];
-  if (!file) return alert("Please select an image");
+  try {
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("name", newItemName.value);
+    const fileInput = document.getElementById("newItemImage");
+    const file = fileInput.files[0];
 
-  // Upload image to Google Drive via Apps Script endpoint
-  const uploadRes = await fetch(API_URL + "?action=uploadImage", {
-    method: "POST",
-    body: formData
-  });
-  const { fileId } = await uploadRes.json(); // assuming your Apps Script returns {fileId: "..."}
-  
-  // Add item to Google Sheet
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      description: newItemName.value,
-      category: newItemCategory.value,
-      stock: +newItemStock.value,
-      image: fileId, // save the Drive file ID
-      type: "NEW"
-    })
-  });
+    if (!file) {
+      alert("Please select an image");
+      return;
+    }
 
-  e.target.reset();
-  loadInventory();
+    // Convert image to Base64
+    const base64 = await toBase64(file);
+
+    // Upload image to Apps Script
+    const uploadRes = await fetch(
+      API_URL +
+      "?action=uploadImage" +
+      "&name=" + encodeURIComponent(newItemName.value) +
+      "&mimeType=" + encodeURIComponent(file.type),
+      {
+        method: "POST",
+        body: base64.split(",")[1]
+      }
+    );
+
+    const uploadText = await uploadRes.text();
+
+console.log(uploadText);
+
+const uploadData = JSON.parse(uploadText);
+
+    if (!uploadData.fileId) {
+      alert("Image upload failed");
+      return;
+    }
+
+    // Save item
+    const saveRes = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        description: newItemName.value,
+        category: newItemCategory.value,
+        stock: Number(newItemStock.value),
+        image: uploadData.fileId,
+        uom: "PCS",
+        type: "NEW"
+      })
+    });
+
+    const result = await saveRes.text();
+
+    console.log(result);
+
+    alert("Item added successfully");
+
+    e.target.reset();
+
+    loadInventory();
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Error: " + err.message);
+  }
 }
 
 
