@@ -34,15 +34,16 @@
     }
 
     header {
-      background: linear-gradient(90deg, orange, white, orange);
-      color: white;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem 2rem;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
+  display: flex;
+  background: linear-gradient(90deg, orange, white, orange);
+  color: white;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
     .logo-section { display: flex; justify-content: center; }
     .logo-section img { height: 55px; }
 
@@ -290,7 +291,7 @@ setTimeout(() => {
   const status = document.getElementById('loginStatus');
 
   try {
-    const result = await auth.signInWithPopup(provider);
+    const result = await auth.signInWithRedirect(provider);
     await loadUserProfile(result.user);
   } catch (error) {
     status.style.color = "red";
@@ -340,13 +341,18 @@ setTimeout(() => {
     deferredPrompt = e;
     installBtn.style.display='block';
   });
-  installBtn.addEventListener('click', async ()=>{
-    installBtn.style.display='none';
-    deferredPrompt.prompt();
-    const {outcome} = await deferredPrompt.userChoice;
-    console.log(`User response: ${outcome}`);
-    deferredPrompt=null;
-  });
+  installBtn.addEventListener('click', async () => {
+
+  if (!deferredPrompt) {
+    alert("Install prompt not available yet.");
+    return;
+  }
+  installBtn.style.display = 'none';
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log(`User response: ${outcome}`);
+  deferredPrompt = null;
+});
 
   // ---------------- SERVICE WORKER ----------------
   if('serviceWorker' in navigator){
