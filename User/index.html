@@ -1005,7 +1005,7 @@ openRoom("global","Global Chat");
   </div>
 
    <div class="mobile-app"
-       data-role="admin,system admin, sales"
+       data-role="admin,system admin,sales"
        onclick="showPage('com')">
     <div class="icon">💸</div>
     <div class="label">Commission</div>
@@ -1060,6 +1060,13 @@ openRoom("global","Global Chat");
     <div class="label">Employees</div>
   </div>
 
+  <div class="mobile-app"
+       data-role="admin,system admin,hr"
+       onclick="showPage('contribution')">
+    <div class="icon">💵</div>
+    <div class="label">Monthly Contributions</div>
+  </div>
+    
   <div class="mobile-app"
        data-role="admin,system admin,staff,purchaser"
        onclick="showPage('inventoryGallery')">
@@ -1139,6 +1146,7 @@ openRoom("global","Global Chat");
           <a onclick="showPage('employeelist')">List of Employees</a>
           <a onclick="showPage('attendance')">Attendance</a>
           <a onclick="showPage('payroll')">Payroll</a>
+          <a onclick="showPage('contribution')">Monthly Contributions</a>
         </div>
       </div>
 
@@ -1371,7 +1379,8 @@ function showPage(page) {
     payslip: ["Pay Slips", "Payslip.html"],
     photos: ["Photos", "Photos.html"],
     portals: ["Portals", "Portals.html"],
-    com: ["Commission", "Sales Commission.html"]
+    com: ["Commission", "Sales Commission.html"],
+    contribution: ["Monthly Contributions", "/Contributions/"]
   };
 
   if (pages[page]) {
