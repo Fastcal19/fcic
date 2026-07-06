@@ -30,13 +30,17 @@
       cursor: pointer;
     }
     button:hover { background: #1a242f; }
+    
     .card {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 15px;
-      overflow-x: auto;
-    }
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 15px;
+
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -45,22 +49,30 @@
     th, td {
       padding: 10px;
       border: 1px solid #ccc;
-      word-break: break-word;
     }
     th {
       background: #34495e;
       color: #fff;
       text-align: center;
     }
-    td:nth-child(1) { width: 120px; text-align: center; }
-    td:nth-child(2) { width: 120px; text-align: center; }
-    td:nth-child(3) { width: 250px; }
-    td:nth-child(4) { width: 130px; text-align: right; }
-    td:nth-child(5) { width: auto; }
+    td:nth-child(1) { width: 8%; text-align: center; }
+    td:nth-child(2) { width: 7%; text-align: center; }
+    td:nth-child(3) { width: 10%; }
+    td:nth-child(4) { width: 58%; text-align: left; }
+    td:nth-child(5) { width: 20%; text-align: right; }
     .total-row {
       font-weight: bold;
       background: #f1f1f1;
     }
+
+    @media (max-width: 768px) {
+
+  table {
+    min-width: 700px;
+  }
+
+}
+
     .loading {
       text-align: center;
       padding: 30px 0;
@@ -82,8 +94,8 @@
           <th>DATE</th>
           <th>INVOICE</th>
           <th>CUSTOMER</th>
+          <th>DESCRIPTION</th>
           <th>AMOUNT</th>
-          <th>REMARKS</th>
         </tr>
       </thead>
       <tbody id="arBody"></tbody>
@@ -95,82 +107,159 @@ const webAppURL = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL
 
 function formatDate(val) {
   if (!val) return "";
+  
   const d = new Date(val);
-  if (isNaN(d)) return val;
-  return `${d.getDate().toString().padStart(2,"0")}-${d.toLocaleString("en-US",{month:"short"})}-${d.getFullYear()}`;
+  
+  if (isNaN(d.getTime())) return val;
+
+  return `${d.getDate().toString().padStart(2, "0")}-${d.toLocaleString("en-US", {
+    month: "short"
+  })}-${d.getFullYear()}`;
 }
 
 async function loadReceivables(fromCache = true) {
+
   const loading = document.getElementById("loading");
   const table = document.getElementById("arTable");
   const tbody = document.getElementById("arBody");
+
   tbody.innerHTML = "";
   loading.style.display = "block";
   table.style.display = "none";
 
   let data = null;
+
+  // =========================
+  // LOAD FROM CACHE
+  // =========================
   if (fromCache) {
     const cached = localStorage.getItem("receivablesData");
+
     if (cached) {
       try {
         data = JSON.parse(cached);
         console.log("Loaded from localStorage");
-      } catch(e) { data = null; }
+      } catch (e) {
+        console.error("Cache parse error", e);
+        data = null;
+      }
     }
   }
 
+  // =========================
+  // FETCH FROM GOOGLE SCRIPT
+  // =========================
   if (!data) {
     try {
+
       const res = await fetch(webAppURL + "?sheet=sales");
+
+      if (!res.ok) {
+        throw new Error("Network response not OK");
+      }
+
       data = await res.json();
+
+      // Ensure array
+      if (!Array.isArray(data)) {
+        console.error("Invalid JSON:", data);
+        loading.textContent = "Invalid data received.";
+        return;
+      }
+
       localStorage.setItem("receivablesData", JSON.stringify(data));
-      console.log("Fetched new data and saved to cache");
-    } catch(err) {
+
+      console.log("Fetched fresh data");
+
+    } catch (err) {
       console.error(err);
       loading.textContent = "Error loading data.";
       return;
     }
   }
 
-  // Filter only PENDING
-  const pending = data.filter(r => (r.STATUS || "").toUpperCase() === "PENDING");
+  // =========================
+  // FILTER PENDING
+  // =========================
+  const pending = data.filter(r =>
+    (r.STATUS || "").toString().toUpperCase() === "PENDING"
+  );
 
-  // Group by invoice
+  // =========================
+  // GROUP BY INVOICE
+  // =========================
   const grouped = {};
+
   pending.forEach(r => {
+
     const inv = r.INVOICE || "NO-INVOICE";
+
     if (!grouped[inv]) {
       grouped[inv] = {
-        DATE: r.DATE,
+        DATE: r.DATE || "",
         INVOICE: inv,
         CUSTOMER: r.CUSTOMER || "",
-        TOTAL: 0,
-        REMARKS: r.REMARKS || ""
+        DESCRIPTION: r.DESCRIPTION || "",
+        TOTAL: 0
       };
     }
-    grouped[inv].TOTAL += parseFloat(r.AMOUNT) || 0;
+
+    grouped[inv].TOTAL += parseFloat(r.TOTAL) || 0;
+
   });
 
-  // Sort by date descending
-  const sorted = Object.values(grouped).sort((a,b)=> new Date(b.DATE)-new Date(a.DATE));
+  // =========================
+  // SORT
+  // =========================
+  const sorted = Object.values(grouped).sort((a, b) =>
+    new Date(b.DATE) - new Date(a.DATE)
+  );
 
+  // =========================
+  // DISPLAY TABLE
+  // =========================
   let grandTotal = 0;
+
   sorted.forEach(item => {
+
     grandTotal += item.TOTAL;
+
     const tr = document.createElement("tr");
+
     tr.innerHTML = `
       <td>${formatDate(item.DATE)}</td>
       <td>${item.INVOICE}</td>
       <td>${item.CUSTOMER}</td>
-      <td>${item.TOTAL.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-      <td>${item.REMARKS}</td>
+      <td>${item.DESCRIPTION}</td>
+      <td style="text-align:right;">
+        ${item.TOTAL.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}
+      </td>
     `;
+
     tbody.appendChild(tr);
+
   });
 
+  // =========================
+  // TOTAL ROW
+  // =========================
   const trTotal = document.createElement("tr");
+
   trTotal.className = "total-row";
-  trTotal.innerHTML = `<td colspan="3" style="text-align:right;">TOTAL</td><td>${grandTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td></td>`;
+
+  trTotal.innerHTML = `
+    <td colspan="4" style="text-align:right;">TOTAL</td>
+    <td style="text-align:right;">
+      ${grandTotal.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}
+    </td>
+  `;
+
   tbody.appendChild(trTotal);
 
   loading.style.display = "none";
@@ -182,7 +271,10 @@ function refreshReceivables() {
   loadReceivables(false);
 }
 
-document.addEventListener("DOMContentLoaded", ()=> loadReceivables(true));
+// AUTO LOAD
+document.addEventListener("DOMContentLoaded", () => {
+  loadReceivables(true);
+});
 </script>
 </body>
 </html>
