@@ -345,7 +345,6 @@ async function validateUser() {
     if (!result.success) {
       hideSpinner();
       alert("Access denied.");
-      localStorage.removeItem("eid");
       location.href = "/User/";
       return;
     }
@@ -368,18 +367,13 @@ async function validateUser() {
 // ================= BUTTON PERMISSIONS =================
 
 function applyPermissions(r) {
-
   document.getElementById("viewActions").style.display = "block";
-
   const editBtn =
     document.querySelector('button[onclick="editRecord()"]');
-
   const checkBtn =
     document.querySelector('button[onclick="checkRecord()"]');
-
   const approveBtn =
     document.querySelector('button[onclick="approveRecord()"]');
-
   const deleteBtn =
     document.querySelector('button[onclick="deleteRecord()"]');
 
@@ -410,7 +404,6 @@ function applyPermissions(r) {
   // Checked button only when status is For Checking
 
   if (currentUser.role === "Checker") {
-
     if (r.status === "For Checking") {
       checkBtn.style.display = "inline-block";
     }
@@ -421,7 +414,6 @@ function applyPermissions(r) {
   // Approved button only when status is For Approval
 
   if (currentUser.role === "Approver") {
-
     if (r.status === "For Approval") {
       approveBtn.style.display = "inline-block";
     }
@@ -432,7 +424,6 @@ function applyPermissions(r) {
   // Delete only for Admin
 
   if (currentUser.role === "Admin") {
-
     deleteBtn.style.display = "inline-block";
   }
 }
@@ -440,22 +431,16 @@ function applyPermissions(r) {
 
 // DELETE USER
 function deleteUser(index) {
-
   if (!confirm("Delete this user?")) return;
-
   users.splice(index, 1);
-
   localStorage.setItem("users", JSON.stringify(users));
-
   loadUsers();
 }
 
 // ================= OPEN CREATE =================
 function openCreateModal() {
   currentMode = "create";
-
   document.getElementById("modalTitle").innerText = "NEW PROJECT REPORT";
-
   document.getElementById("dateDisplay").style.display = "none";
   document.getElementById("date").style.display = "block";
 
@@ -490,20 +475,14 @@ function openViewModal(r) {
   selectedRecord = r;
 
   document.getElementById("modalTitle").innerText = "PROJECT DETAILS";
-
   document.getElementById("dateDisplay").style.display = "block";
   document.getElementById("dateDisplay").innerText = formatDate(r.date);
-
   document.getElementById("date").style.display = "none";
-
   document.getElementById("po").value = r.po || "";
   document.getElementById("desc").value = r.desc || "";
-
   document.getElementById("po").disabled = true;
   document.getElementById("desc").disabled = true;
-
   document.getElementById("file").style.display = "none";
-
   document.getElementById("fileLink").innerHTML = r.file
     ? `<a href="${r.file}" target="_blank">Open File</a>`
     : "No file attached";
@@ -611,18 +590,13 @@ async function saveData() {
       method: "POST",
       body: JSON.stringify(payload)
     });
-
     closeModal();
 
     await loadData();
-
   } catch(err) {
-
     console.error(err);
     alert("Save failed.");
-
   } finally {
-
     hideSpinner();
 
   }
