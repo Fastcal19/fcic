@@ -183,7 +183,10 @@ td:nth-child(4) {
   align-items: center;
   justify-content: center;
 }
-    
+
+#search {
+  width: 300px;
+}
 /* ================= SPINNER ================= */
 #spinnerOverlay {
   position: fixed;
@@ -216,13 +219,13 @@ td:nth-child(4) {
   </style>
 </head>
 
-<body>
+
 
 <!-- LOADING SPINNER -->
 <div id="spinnerOverlay">
   <div class="spinner"></div>
 </div>
-
+<body>
 <div class="controls">
   <button onclick="openCreateModal()">NEW</button>
 
@@ -283,7 +286,7 @@ td:nth-child(4) {
 </div>
 <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxCNgcbIDF6-Wq4oQZceSRFo5LqBruTQr69dYyrDbN15u3A7WJCFTQiyIsr4TiUovsi/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyqsKCh3b2OetjgLV7VHOIoqwwgKp5nk0jiHIp_rSee65qXHNnyxW2p5mbqHtKYPhhe2Q/exec";
 
 let currentMode = "create";
 let selectedRecord = null;
@@ -345,6 +348,7 @@ async function validateUser() {
     if (!result.success) {
       hideSpinner();
       alert("Access denied.");
+      localStorage.removeItem("eid");
       location.href = "/User/";
       return;
     }
@@ -367,13 +371,18 @@ async function validateUser() {
 // ================= BUTTON PERMISSIONS =================
 
 function applyPermissions(r) {
+
   document.getElementById("viewActions").style.display = "block";
+
   const editBtn =
     document.querySelector('button[onclick="editRecord()"]');
+
   const checkBtn =
     document.querySelector('button[onclick="checkRecord()"]');
+
   const approveBtn =
     document.querySelector('button[onclick="approveRecord()"]');
+
   const deleteBtn =
     document.querySelector('button[onclick="deleteRecord()"]');
 
@@ -404,6 +413,7 @@ function applyPermissions(r) {
   // Checked button only when status is For Checking
 
   if (currentUser.role === "Checker") {
+
     if (r.status === "For Checking") {
       checkBtn.style.display = "inline-block";
     }
@@ -414,6 +424,7 @@ function applyPermissions(r) {
   // Approved button only when status is For Approval
 
   if (currentUser.role === "Approver") {
+
     if (r.status === "For Approval") {
       approveBtn.style.display = "inline-block";
     }
@@ -424,6 +435,7 @@ function applyPermissions(r) {
   // Delete only for Admin
 
   if (currentUser.role === "Admin") {
+
     deleteBtn.style.display = "inline-block";
   }
 }
@@ -431,16 +443,22 @@ function applyPermissions(r) {
 
 // DELETE USER
 function deleteUser(index) {
+
   if (!confirm("Delete this user?")) return;
+
   users.splice(index, 1);
+
   localStorage.setItem("users", JSON.stringify(users));
+
   loadUsers();
 }
 
 // ================= OPEN CREATE =================
 function openCreateModal() {
   currentMode = "create";
+
   document.getElementById("modalTitle").innerText = "NEW PROJECT REPORT";
+
   document.getElementById("dateDisplay").style.display = "none";
   document.getElementById("date").style.display = "block";
 
@@ -475,14 +493,20 @@ function openViewModal(r) {
   selectedRecord = r;
 
   document.getElementById("modalTitle").innerText = "PROJECT DETAILS";
+
   document.getElementById("dateDisplay").style.display = "block";
   document.getElementById("dateDisplay").innerText = formatDate(r.date);
+
   document.getElementById("date").style.display = "none";
+
   document.getElementById("po").value = r.po || "";
   document.getElementById("desc").value = r.desc || "";
+
   document.getElementById("po").disabled = true;
   document.getElementById("desc").disabled = true;
+
   document.getElementById("file").style.display = "none";
+
   document.getElementById("fileLink").innerHTML = r.file
     ? `<a href="${r.file}" target="_blank">Open File</a>`
     : "No file attached";
@@ -511,12 +535,15 @@ async function loadData() {
   try {
 
     let res = await fetch(API_URL);
-    let data = await res.json();
+let data = await res.json();
 
-    let tbody = document.getElementById("tbody");
-    tbody.innerHTML = "";
+// Sort by date (newest first)
+data.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    data.forEach((r) => {
+let tbody = document.getElementById("tbody");
+tbody.innerHTML = "";
+
+data.forEach((r) => {
 
       const encoded = encodeURIComponent(JSON.stringify(r));
 
@@ -581,22 +608,29 @@ async function saveData() {
       fileName
     };
 
+    
     if (currentMode === "edit") {
       payload.action = "update";
       payload.row = selectedRecord.row;
+      payload.oldFile = selectedRecord.file || "";
     }
 
     await fetch(API_URL, {
       method: "POST",
       body: JSON.stringify(payload)
     });
+
     closeModal();
 
     await loadData();
+
   } catch(err) {
+
     console.error(err);
     alert("Save failed.");
+
   } finally {
+
     hideSpinner();
 
   }
