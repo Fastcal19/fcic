@@ -221,6 +221,39 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
 
+  // Keep user logged in even after closing the app
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// Automatically login if user is already authenticated
+auth.onAuthStateChanged(async (user) => {
+    if (!user) return;
+
+    try {
+        const db = firebase.firestore();
+        const doc = await db.collection("users").doc(user.uid).get();
+
+        if (!doc.exists) {
+            await auth.signOut();
+            return;
+        }
+
+        const data = doc.data();
+
+        localStorage.setItem("uid", user.uid);
+        localStorage.setItem("eid", data.eid);
+        localStorage.setItem("email", user.email);
+        localStorage.setItem("role", data.role);
+        localStorage.setItem("full", data.fullName || "");
+        localStorage.setItem("username", data.nickname || "");
+        localStorage.setItem("photo", data.photo || "fcic logo.png");
+
+        // Already logged in, go directly to the app
+        window.location.replace("/User/");
+    } catch (err) {
+        console.error(err);
+    }
+});
+
   async function loadUserProfile(user) {
   const db = firebase.firestore();
   const doc = await db.collection("users").doc(user.uid).get();
