@@ -1661,16 +1661,17 @@ function showDesktopNotification(title, body) {
 
 
 // --- Manual Logout ---
-function logout() {
-  localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("username");
-  localStorage.removeItem("role");
-  localStorage.removeItem("full");
-  localStorage.removeItem("email");
-  localStorage.removeItem("photo");
-  localStorage.removeItem("eid");
+async function logout() {
+  try {
+    await auth.signOut();
 
-  window.location.href = "/";
+    localStorage.clear();
+    sessionStorage.clear();
+
+    window.location.replace("/");
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 </script>
