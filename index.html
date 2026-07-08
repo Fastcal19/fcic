@@ -144,6 +144,44 @@
     #loginBoxModal .gmail-btn { background: #4285F4; color:white; }
     #closeModal { position:absolute; top:8px; right:12px; cursor:pointer; font-size:1.2rem; color:#888; }
 
+    /* Loading Screen */
+#loadingScreen{
+  position:fixed;
+  inset:0;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:99999;
+}
+
+.spinner{
+  width:60px;
+  height:60px;
+  border:6px solid #ddd;
+  border-top:6px solid orange;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+#loadingScreen p{
+  margin-top:15px;
+  color:#555;
+  font-weight:bold;
+}
+
+@keyframes spin{
+  to{
+    transform:rotate(360deg);
+  }
+}
+
+/* Hide login until auth check finishes */
+#loginBox{
+  display:none;
+}
+    
     @media (max-width: 768px) {
       .hero h1 { font-size: 2.2rem; }
       .hero p { font-size: 1rem; }
@@ -152,7 +190,12 @@
   </style>
 </head>
 <body>
-
+<!-- Loading Screen -->
+<div id="loadingScreen">
+  <div class="spinner"></div>
+  <p>Loading...</p>
+</div>
+  
 <header>
   <div class="logo-section">
     <img src="fcic logo.png" alt="FCIC Logo">
@@ -226,14 +269,26 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // Automatically login if user is already authenticated
 auth.onAuthStateChanged(async (user) => {
-    if (!user) return;
+
+    const loading = document.getElementById("loadingScreen");
+    const loginBox = document.getElementById("loginBox");
+
+    if (!user) {
+        loading.style.display = "none";
+        loginBox.style.display = "inline-block";
+        return;
+    }
 
     try {
+
         const db = firebase.firestore();
         const doc = await db.collection("users").doc(user.uid).get();
 
         if (!doc.exists) {
             await auth.signOut();
+
+            loading.style.display = "none";
+            loginBox.style.display = "inline-block";
             return;
         }
 
@@ -247,11 +302,17 @@ auth.onAuthStateChanged(async (user) => {
         localStorage.setItem("username", data.nickname || "");
         localStorage.setItem("photo", data.photo || "fcic logo.png");
 
-        // Already logged in, go directly to the app
+        // Redirect immediately if already logged in
         window.location.replace("/User/");
+
     } catch (err) {
+
         console.error(err);
+
+        loading.style.display = "none";
+        loginBox.style.display = "inline-block";
     }
+
 });
 
   async function loadUserProfile(user) {
@@ -259,10 +320,11 @@ auth.onAuthStateChanged(async (user) => {
   const doc = await db.collection("users").doc(user.uid).get();
 
   if (!doc.exists) {
-    alert("User not registered. Contact admin.");
-    auth.signOut();
-    return;
-  }
+  document.getElementById("loadingScreen").style.display = "none";
+  alert("User not registered. Contact admin.");
+  await auth.signOut();
+  return;
+}
 
   const data = doc.data();
 
@@ -274,21 +336,22 @@ auth.onAuthStateChanged(async (user) => {
   localStorage.setItem("username", data.nickname || "");
   localStorage.setItem("photo", data.photo || "fcic logo.png");
 
-
-  window.location.href = "/User/";
+window.location.replace("/User/");
 }
   
   // ---------------- EMAIL/PASSWORD LOGIN ----------------
   async function manualLogin() {
+  document.getElementById("loadingScreen").style.display = "flex";
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value.trim();
   const status = document.getElementById('loginStatus');
 
   if (!email || !password) {
-    status.style.color = "red";
-    status.textContent = "⚠️ Please enter email and password.";
-    return;
-  }
+  document.getElementById("loadingScreen").style.display = "none";
+  status.style.color = "red";
+  status.textContent = "⚠️ Please enter email and password.";
+  return;
+}
 
   status.style.color = "black";
   status.textContent = "⏳ Logging in...";
@@ -297,6 +360,7 @@ auth.onAuthStateChanged(async (user) => {
     const userCredential = await auth.signInWithEmailAndPassword(email, password);
     await loadUserProfile(userCredential.user);
   } catch (error) {
+    document.getElementById("loadingScreen").style.display = "none";
     status.style.color = "red";
     status.textContent = "❌ " + error.message;
   }
@@ -311,6 +375,7 @@ auth.onAuthStateChanged(async (user) => {
 
   // ---------------- GOOGLE LOGIN ----------------
   async function gmailLogin() {
+  document.getElementById("loadingScreen").style.display = "flex";
   const provider = new firebase.auth.GoogleAuthProvider();
   const status = document.getElementById('loginStatus');
 
@@ -318,6 +383,7 @@ auth.onAuthStateChanged(async (user) => {
     const result = await auth.signInWithPopup(provider);
     await loadUserProfile(result.user);
   } catch (error) {
+    document.getElementById("loadingScreen").style.display = "none";
     status.style.color = "red";
     status.textContent = "❌ " + error.message;
   }
