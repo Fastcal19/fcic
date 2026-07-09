@@ -1671,9 +1671,14 @@ async function logout() {
     localStorage.clear();
     sessionStorage.clear();
 
-    window.location.replace("/");
-  } catch (error) {
-    console.error(error);
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.replace("/");
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
   }
 }
 </script>
