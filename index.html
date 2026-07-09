@@ -204,6 +204,17 @@
   letter-spacing:1px;
 }
 
+.logo{
+    width:130px;
+    height:130px;
+    border-radius:50%;
+    background:#fff;
+    padding:6px;
+    object-fit:contain;
+    z-index:2;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+    animation:pulse 1.5s ease-in-out infinite;
+}
 @keyframes spin{
   from{
     transform:rotate(0deg);
@@ -213,6 +224,18 @@
   }
 }
 
+/* Logo Pulse */
+@keyframes pulse{
+    0%,100%{
+        transform:scale(1);
+        box-shadow:0 5px 15px rgba(0,0,0,.15);
+    }
+    50%{
+        transform:scale(1.12);
+        box-shadow:0 10px 30px rgba(255,152,0,.45);
+    }
+}
+    
 #loadingScreen p{
   margin-top:15px;
   color:#555;
