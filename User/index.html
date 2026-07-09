@@ -1666,7 +1666,7 @@ function showDesktopNotification(title, body) {
 // --- Manual Logout ---
 async function logout() {
   try {
-    await auth.signOut();
+    await firebase.auth().signOut();
 
     localStorage.clear();
     sessionStorage.clear();
@@ -1676,7 +1676,6 @@ async function logout() {
     console.error(error);
   }
 }
-
 </script>
 
 
