@@ -156,13 +156,61 @@
   z-index:99999;
 }
 
-.spinner{
-  width:60px;
-  height:60px;
-  border:6px solid #ddd;
+/* Loading Screen */
+#loadingScreen{
+  position:fixed;
+  inset:0;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:99999;
+}
+
+.loader{
+  position:relative;
+  width:110px;
+  height:110px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.spinner-ring{
+  position:absolute;
+  width:100%;
+  height:100%;
+  border:6px solid #e0e0e0;
   border-top:6px solid orange;
+  border-right:6px solid #ff9800;
   border-radius:50%;
   animation:spin 1s linear infinite;
+}
+
+.loader-logo{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:#fff;
+  object-fit:contain;
+  z-index:2;
+}
+
+#loadingScreen p{
+  margin-top:20px;
+  color:#555;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+
+@keyframes spin{
+  from{
+    transform:rotate(0deg);
+  }
+  to{
+    transform:rotate(360deg);
+  }
 }
 
 #loadingScreen p{
@@ -191,8 +239,12 @@
 </head>
 <body>
 <!-- Loading Screen -->
+<!-- Loading Screen -->
 <div id="loadingScreen">
-  <div class="spinner"></div>
+  <div class="loader">
+    <div class="spinner-ring"></div>
+    <img src="fcic logo.png" alt="FCIC Logo" class="loader-logo">
+  </div>
   <p>Loading...</p>
 </div>
   
