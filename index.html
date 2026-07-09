@@ -269,6 +269,16 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // Automatically login if user is already authenticated
 auth.onAuthStateChanged(async (user) => {
+    console.log("Auth state:", user);
+
+    if (!user) {
+        console.log("No user");
+        document.getElementById("loadingScreen").style.display = "none";
+        document.getElementById("loginBox").style.display = "inline-block";
+        return;
+    }
+
+    console.log("Logged in:", user.email);
 
     const loading = document.getElementById("loadingScreen");
     const loginBox = document.getElementById("loginBox");
