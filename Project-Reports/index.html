@@ -188,9 +188,19 @@ td:nth-child(4) {
   width: 300px;
 }
 
+/* Loader Container */
+.loader{
+    position:absolute;
+    width:180px;
+    height:180px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 130px;
+}
 
 /* Logo */
-.logo{
+.logo1{
     width:180px;
     height:180px;
     border-radius:50%;
@@ -201,6 +211,18 @@ td:nth-child(4) {
     box-shadow:0 5px 15px rgba(0,0,0,.15);
     animation:pulse 1.5s ease-in-out infinite;
 }
+
+
+@keyframes glow{
+    0%,100%{
+        filter:drop-shadow(0 0 6px rgba(255,122,0,.3));
+    }
+    50%{
+        filter:drop-shadow(0 0 20px rgba(255,122,0,.9));
+    }
+}
+
+
 
 /* Rotating Ring */
 @keyframes spin{
@@ -224,67 +246,82 @@ td:nth-child(4) {
     }
 }
 
-/* ===== Loading Overlay ===== */
-
 #spinnerOverlay{
     position:fixed;
     inset:0;
-    background:rgba(255,255,255,.95);
-    display:none;
-    justify-content:center;
-    align-items:center;
-    z-index:99999;
-}
-
-.loader{
-    position:relative;
-    width:150px;
-    height:150px;
     display:flex;
     justify-content:center;
     align-items:center;
+    background:rgba(255,255,255,.96);
+    z-index:2;
 }
 
-.spinner{
+
+/* Electric Ring */
+
+.electric-ring{
     position:absolute;
+    width:240px;
+    height:240px;
+    border-radius:50%;
+    border:4px solid transparent;
+    border-top:4px solid #ff9800;
+    border-left:4px solid #ffd54f;
+    
+    animation:electricSpin 1.5s linear infinite;
+}
+
+/* Second Ring */
+
+.ring2{
     width:220px;
     height:220px;
-    border:8px solid #e5e5e5;
-    border-top:8px solid var(--orange);
-    border-right:8px solid #ffb347;
-    border-radius:50%;
-    animation:spin .9s linear infinite;
+    animation-direction:reverse;
+    animation-duration:.8s;
+    border-top-color:#ffffff;
+    border-right:4px solid #ff9800;
 }
 
-/* Logo */
+@keyframes electricSpin{
 
-@keyframes spin{
     from{
         transform:rotate(0deg);
     }
+
     to{
         transform:rotate(360deg);
     }
+
 }
 
-@keyframes pulse{
+@keyframes energyPulse{
+
     0%,100%{
         transform:scale(1);
+        filter:drop-shadow(0 0 5px orange);
     }
+
     50%{
         transform:scale(1.08);
+        filter:
+            drop-shadow(0 0 10px orange)
+            drop-shadow(0 0 25px orange);
     }
+
 }
-  </style>
+
+</style>
 </head>
 
-<!-- LOADING SPINNER -->
-<div id="spinnerOverlay">
+<div id="spinnerOverlay" style="display:none;">
     <div class="loader">
-        <div class="spinner"></div>
-        <img src="fcic logo.png" class="logo" alt="FCIC Logo">
+        <div class="electric-ring"></div>
+        <div class="electric-ring ring2"></div>
+
+        <img src="fcic logo.png" class="logo1" alt="FCIC Logo">
     </div>
 </div>
+
 <body>
 <div class="controls">
   <button onclick="openCreateModal()">NEW</button>
@@ -353,11 +390,13 @@ let selectedRecord = null;
 let currentUser = null;
 
 function showSpinner() {
-  document.getElementById("spinnerOverlay").style.display = "flex";
+    const spinner = document.getElementById("spinnerOverlay");
+    if (spinner) spinner.style.display = "flex";
 }
 
 function hideSpinner() {
-  document.getElementById("spinnerOverlay").style.display = "none";
+    const spinner = document.getElementById("spinnerOverlay");
+    if (spinner) spinner.style.display = "none";
 }
 
 // ================= ROLE ACCESS =================
