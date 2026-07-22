@@ -87,6 +87,16 @@ tbody tr:hover {
       </select>
     </label>
 
+    <label>Quarter:
+  <select id="quarterFilter">
+    <option value="">All</option>
+    <option value="1">Q1 (Jan - Mar)</option>
+    <option value="2">Q2 (Apr - Jun)</option>
+    <option value="3">Q3 (Jul - Sep)</option>
+    <option value="4">Q4 (Oct - Dec)</option>
+  </select>
+</label>
+
     <button onclick="loadSales(true)" title="Refresh">🔄 Refresh</button>
 
     <div id="hdrTotal" style="font-weight:700;white-space:nowrap">Total: 0.00</div>
@@ -205,14 +215,26 @@ async function loadSales(forceRefresh=false){
 
     const yf=document.getElementById('yearFilter').value;
     const mf=document.getElementById('monthFilter').value;
+    const qf = document.getElementById('quarterFilter').value;
 
     const rows=data.filter(r=>{
       const s=(r.STATUS||"").toString().toUpperCase();
       if(s==="CANCELLED"||!s) return false;
       const d=new Date(r.DATE);
       if(isNaN(d)) return false;
-      if(yf && d.getFullYear()!=yf) return false;
-      if(mf!=="" && d.getMonth()!=mf) return false;
+      if (yf && d.getFullYear() != yf) return false;
+
+// Month filter has priority
+if (mf !== "") {
+  if (d.getMonth() != mf) return false;
+}
+// Otherwise use Quarter filter
+else if (qf !== "") {
+  const quarter = Math.floor(d.getMonth() / 3) + 1;
+  if (quarter != qf) return false;
+}
+
+return true;
       return true;
     });
 
@@ -332,11 +354,24 @@ function escapeHtml(s){
   return String(s||"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
   populateYearFilter();
   loadSales();
-  yearFilter.onchange=()=>loadSales();
-  monthFilter.onchange=()=>loadSales();
+
+  yearFilter.onchange = () => loadSales();
+  monthFilter.onchange = () => {
+    if (monthFilter.value !== "") {
+      quarterFilter.value = ""; // clear quarter when month selected
+    }
+    loadSales();
+  };
+
+  quarterFilter.onchange = () => {
+    if (quarterFilter.value !== "") {
+      monthFilter.value = ""; // clear month when quarter selected
+    }
+    loadSales();
+  };
 });
 </script>
 </body>
