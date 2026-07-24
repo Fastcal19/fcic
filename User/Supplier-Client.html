@@ -139,7 +139,7 @@ Expanded Row
 }
 
 .expandBox{
-    padding:12px 18px;
+    padding:8px 15px;
     background:#fafafa;
     line-height:1.7;
     font-size:14px;
@@ -214,42 +214,6 @@ Attachments
     background:#1257be;
 }
 
-/*=============================
-Spinner
-=============================*/
-
-#spinnerOverlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    opacity:0;
-    pointer-events:none;
-    transition:.3s;
-    z-index:9999;
-}
-
-#spinnerOverlay.active{
-    opacity:1;
-    pointer-events:auto;
-}
-
-.loader{
-    width:60px;
-    height:60px;
-    border-radius:50%;
-    border:8px solid #eee;
-    border-top:8px solid #1a73e8;
-    animation:spin 1s linear infinite;
-}
-
-@keyframes spin{
-    to{
-        transform:rotate(360deg);
-    }
-}
 
 /*=============================
 Modal
@@ -445,15 +409,82 @@ iframe{
     background:#1258c7;
     transform:translateY(-1px);
 }
+
+/* Loading Screen */
+#loadingScreen{
+  position:fixed;
+  inset:0;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:99999;
+}
+
+.loader{
+  position:relative;
+  width:110px;
+  height:110px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.spinner-ring{
+  position:absolute;
+  width:100%;
+  height:100%;
+  border:6px solid #e0e0e0;
+  border-top:6px solid orange;
+  border-right:6px solid #ff9800;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+.loader-logo{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:#fff;
+  object-fit:contain;
+  z-index:2;
+  animation:pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse{
+  0%,100%{
+    transform:scale(1);
+  }
+  50%{
+    transform:scale(1.08);
+  }
+}
+
+
+#loadingScreen p{
+  margin-top:15px;
+  color:#555;
+  font-weight:bold;
+}
+
+@keyframes spin{
+  to{
+    transform:rotate(360deg);
+  }
+}
 </style>
 </head>
 
 <body>
-
-<div id="spinnerOverlay">
-    <div class="loader"></div>
+<!-- Loading Screen -->
+<div id="loadingScreen">
+  <div class="loader">
+    <div class="spinner-ring"></div>
+    <img src="fcic logo.png" alt="FCIC Logo" class="loader-logo">
+  </div>
 </div>
-
+  
 <div class="container">
 
     <div class="section-header">
@@ -531,12 +562,12 @@ let supplierData = [];
 Spinner
 ========================================*/
 
-function showSpinner(){
-    document.getElementById("spinnerOverlay").classList.add("active");
+function showSpinner() {
+    document.getElementById("loadingScreen").style.display = "flex";
 }
 
-function hideSpinner(){
-    document.getElementById("spinnerOverlay").classList.remove("active");
+function hideSpinner() {
+    document.getElementById("loadingScreen").style.display = "none";
 }
 
 /*========================================
@@ -592,7 +623,11 @@ function fetchSuppliers(){
 
     })
 
-    .finally(hideSpinner);
+    .catch(console.error)
+
+    .finally(()=>{
+        hideSpinner();
+    });
 
 }
 
@@ -962,12 +997,9 @@ Edit
 
 function openCompanyProfile(id) {
 
-    showSpinner();
-
     const modal = document.getElementById("addModal");
     const iframe = modal.querySelector("iframe");
 
-    // Prevent duplicate events
     iframe.onload = function () {
         hideSpinner();
         modal.style.display = "block";
@@ -985,9 +1017,27 @@ function refreshData(){
 
     localStorage.removeItem("supplierData");
 
+    showSpinner();
+
     fetchSuppliers();
 
 }
+
+window.onload = () => {
+
+    showSpinner();
+
+    const cache = localStorage.getItem("supplierData");
+
+    if(cache){
+        supplierData = JSON.parse(cache);
+        displayTable(supplierData);
+        hideSpinner();
+    }else{
+        fetchSuppliers();
+    }
+
+};
 </script>
 
 </body>
