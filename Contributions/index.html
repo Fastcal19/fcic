@@ -52,9 +52,14 @@ th {
     background: #fff;
     padding: 0;
   }
-  .unpaid-section, button {
+  .tabs,
+button,
+#pendingSection,
+#paidSection,
+#details,
+#paidDetails {
     display: none !important;
-  }
+}
   #printDetails {
     display: block !important;
   }
@@ -194,6 +199,7 @@ button {
     <option value="PAG-IBIG">PAG-IBIG</option>
   </select>
 </div>
+
 <div class="container">
   <h2></h2>
 
@@ -203,9 +209,14 @@ button {
 </div>
 
 
-<button onclick="window.print()" style="margin-bottom:15px">
-🖨 Print Selected Contributions
+<button onclick="printCurrentView()">
+    🖨 Print
 </button>
+
+<button onclick="renderAllDetails()" style="margin-bottom:15px">
+    📋 Display All
+</button>
+
 
   <!-- Unpaid section (screen only) -->
   <div id="pendingSection" class="unpaid-section" style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
@@ -257,6 +268,7 @@ let data = [];
 let selectedMonth = null;
 let currentStatus = "pending";
 let selectedAgency = "";
+let showAll = false;
 
 fetch(API_URL)
   .then(res => res.json())
@@ -362,9 +374,10 @@ function loadPaid(){
 
 /* When user clicks a month */
 function selectMonth(month) {
-  selectedMonth = month;
-  renderDetails(month);
-  preparePrint(month);
+    showAll = false;
+    selectedMonth = month;
+    renderDetails(month);
+    preparePrint(month);
 }
 
 function formatAmount(val){
@@ -436,6 +449,139 @@ function renderDetails(month) {
 
 }
 
+function renderAllDetails() {
+    showAll = true;
+
+    const filtered = data.filter(d =>
+        d.status?.toLowerCase() === currentStatus &&
+        (selectedAgency === "" || d.agency === selectedAgency)
+    );
+
+    const months = [...new Set(filtered.map(d => d.month))]
+        .sort((a, b) => new Date(b) - new Date(a));
+
+           
+    let html = "";
+
+    months.forEach(month => {
+        
+
+        html += `
+            <h3 style="margin-top:20px;border-bottom:1px solid #ddd;">
+                ${month}
+            </h3>
+        `;
+
+        const monthData = filtered.filter(d => d.month === month);
+
+        const agencies = [...new Set(monthData.map(d => d.agency))];
+
+        agencies.forEach(agency => {
+
+            const rows = monthData.filter(r => r.agency === agency);
+
+            let empTotal = 0;
+            let emprTotal = 0;
+            let total = 0;
+
+            html += `
+                <table>
+                    <tr class="agency">
+                        <td colspan="4">${agency}</td>
+                    </tr>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Employee Share</th>
+                        <th>Employer Share</th>
+                        <th>Total</th>
+                    </tr>
+            `;
+
+            rows.forEach(r => {
+                empTotal += Number(r.empShare);
+                emprTotal += Number(r.emprShare);
+                total += Number(r.total);
+
+                html += `
+                    <tr>
+                        <td>${r.employee}</td>
+                        <td class="right">${formatAmount(r.empShare)}</td>
+                        <td class="right">${formatAmount(r.emprShare)}</td>
+                        <td class="right">${formatAmount(r.total)}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                <tr class="total">
+                    <td>TOTAL</td>
+                    <td class="right">${formatAmount(empTotal)}</td>
+                    <td class="right">${formatAmount(emprTotal)}</td>
+                    <td class="right">${formatAmount(total)}</td>
+                </tr>
+                </table>
+            `;
+        });
+    });
+
+    const target = currentStatus === "pending"
+        ? document.getElementById("details")
+        : document.getElementById("paidDetails");
+
+    target.innerHTML = html;
+}
+
+function printCurrentView() {
+
+    // ==========================================
+    // DISPLAY ALL
+    // ==========================================
+    if (showAll) {
+
+        const summary = currentStatus === "pending"
+            ? document.getElementById("unpaidList").innerHTML
+            : document.getElementById("paidList").innerHTML;
+
+        const details = currentStatus === "pending"
+            ? document.getElementById("details").innerHTML
+            : document.getElementById("paidDetails").innerHTML;
+
+        document.getElementById("printDetails").innerHTML = `
+            <div class="print-header">
+                <h2>MONTH SUMMARY</h2>
+            </div>
+
+            <table>
+                <tr>
+                    <th>Month</th>
+                    <th class="right">Amount</th>
+                </tr>
+
+                ${summary}
+            </table>
+
+            <div class="page-break"></div>
+
+            ${details}
+        `;
+
+    // ==========================================
+    // SINGLE MONTH
+    // ==========================================
+    } else {
+
+        const source = currentStatus === "pending"
+            ? document.getElementById("details")
+            : document.getElementById("paidDetails");
+
+        document.getElementById("printDetails").innerHTML =
+            source.innerHTML;
+    }
+
+    setTimeout(() => {
+        window.print();
+    }, 200);
+}
 
 /* Prepare selected month for printing (each agency has its own signature) */
 function preparePrint(month) {
