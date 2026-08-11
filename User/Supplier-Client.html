@@ -215,9 +215,9 @@ Attachments
 }
 
 
-/*=============================
-Modal
-=============================*/
+/* =============================
+   Modal
+============================= */
 
 .modal{
     display:none;
@@ -225,25 +225,78 @@ Modal
     inset:0;
     background:rgba(0,0,0,.45);
     z-index:999;
+
+    /* Allow the modal to scroll on small screens */
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    padding:20px 0;
+    box-sizing:border-box;
 }
 
 .modal-content{
     width:90%;
     max-width:900px;
-    margin:40px auto;
+
+    /* Don't force a fixed height */
+    min-height:200px;
+    height:auto;
+
+    margin:0 auto;
+
     background:#fff;
     border-radius:8px;
+
     position:relative;
-    overflow:hidden;
+
+    /* Important: don't hide the iframe */
+    overflow:visible;
+
+    box-sizing:border-box;
 }
 
 .close-btn{
     position:absolute;
     right:15px;
     top:8px;
+
     font-size:28px;
     cursor:pointer;
     z-index:5;
+}
+
+/* Responsive iframe */
+.modal-content iframe{
+    display:block;
+    width:100%;
+
+    /* Use viewport height instead of fixed 820px */
+    height:calc(100vh - 40px);
+
+    min-height:600px;
+
+    border:none;
+    border-radius:8px;
+}
+
+/* Small screens */
+@media (max-width:600px){
+
+    .modal{
+        padding:10px 0;
+    }
+
+    .modal-content{
+        width:96%;
+        margin:0 auto;
+        border-radius:6px;
+    }
+
+    .modal-content iframe{
+        height:calc(100vh - 20px);
+        min-height:700px;
+    }
+
 }
 
 iframe{
