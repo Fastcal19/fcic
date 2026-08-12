@@ -1182,7 +1182,7 @@ openRoom("global","Global Chat");
           <a onclick="showPage('is')">Income Statement</a>
         </div>
       </div>
-
+      <a id="btnCanvasses" onclick="showPage('canvasses')">Canvasses</a>
       <a id="btnProjects" onclick="showPage('projects')">Projects</a>
       <a id="btnprojectReports" onclick="showPage('projectReports')">Project Reports</a>
       <a id="btneLeave" onclick="showPage('rleave')">Leave Application</a>
@@ -1308,13 +1308,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const visible = {
     admin: ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnApplications","btnCs","btnInventory","btnPortals"],
     staff: ["btnDashboard", "btneLeave", "btnprojectReports", "btnPayslip", "btnInv"],
-    purchaser: ["btnDashboard", "btnProjects", "btnprojectReports", "btneLeave","btnCs", "btnPayslip", "btnInv"],
+    purchaser: ["btnDashboard", "btnCanvasses", "btnProjects", "btnprojectReports", "btneLeave","btnCs", "btnPayslip", "btnInv"],
     hr: ["btnDashboard", "btnHR","btnLeave","btnPortals"],
     "system admin": ["btnDashboard", "btnHR", "btnAcctg","btnReports", "btnLeave", "btnProjects", "btnprojectReports","btnApplications", "btnRequests", "btnPayslip", "btnCs","btnInventory", "btnPortals"],
     "": ["btnPayslip"]
   };
 
-  const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btneLeave","btnLeave","btnProjects","btnprojectReports","btnProjectCosting","btnApplications","btnRequests","btnCs","btnPhotos","btnInv","btnInventory","btnPortals"];
+  const allIds = ["btnDashboard","btnHR","btnAcctg","btnReports","btneLeave","btnLeave","btnCanvasses","btnProjects","btnprojectReports","btnProjectCosting","btnApplications","btnRequests","btnCs","btnPhotos","btnInv","btnInventory","btnPortals"];
   allIds.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -1371,6 +1371,7 @@ function showPage(page) {
     je: ["Journal Entries", "JE.html"],
     voucher: ["Vouchers", "Updating.html"],
     salesdata: ["Sales", "Updating.html"],
+    canvasses: ["Canvasses", "canvasses.html"],
     projects: ["Projects", "Projects.html"],
     projectReports:["Project Reports", "/Project-Reports/"],
     salesreport: ["Sales Report", "Sales.html"],
