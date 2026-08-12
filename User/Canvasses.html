@@ -1,0 +1,2591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Purchases Canvassing</title>
+
+<style>
+:root{
+    --primary:#f57c00;
+    --primary-dark:#d65f00;
+    --dark:#263238;
+    --bg:#f4f6f8;
+    --border:#cfd8dc;
+    --success:#2e7d32;
+    --danger:#c62828;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:#263238;
+}
+
+.header{
+    background:var(--dark);
+    color:#fff;
+    padding:18px 25px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.container{
+    max-width:1500px;
+    margin:20px auto;
+    padding:0 15px;
+}
+
+.card{
+    background:#fff;
+    border-radius:8px;
+    padding:18px;
+    margin-bottom:18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.toolbar h2{
+    margin:0;
+}
+
+button{
+    border:0;
+    border-radius:5px;
+    padding:9px 14px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-primary:hover{
+    background:var(--primary-dark);
+}
+
+.btn-dark{
+    background:#455a64;
+    color:#fff;
+}
+
+.btn-success{
+    background:var(--success);
+    color:#fff;
+}
+
+.btn-danger{
+    background:var(--danger);
+    color:#fff;
+}
+
+.btn-light{
+    background:#eceff1;
+    color:#263238;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:9px;
+    border:1px solid #aaa;
+    border-radius:5px;
+    font:inherit;
+}
+
+textarea{
+    resize:vertical;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.form-group label{
+    display:block;
+    font-size:12px;
+    font-weight:bold;
+    margin-bottom:5px;
+    color:#546e7a;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+.table-container{
+    width:100%;
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,
+td{
+    border:1px solid #9e9e9e;
+    padding:7px;
+}
+
+th{
+    background:#eceff1;
+    text-align:center;
+}
+
+.center{
+    text-align:center;
+}
+
+.right{
+    text-align:right;
+}
+
+.item-input{
+    border:0;
+    background:transparent;
+    padding:5px;
+}
+
+.item-input:focus{
+    background:#fff;
+    outline:1px solid var(--primary);
+}
+
+/* PRICE CELLS */
+
+.price-cell{
+    cursor:pointer;
+    min-width:130px;
+    text-align:right;
+    vertical-align:middle;
+    transition:.15s;
+}
+
+.price-cell:hover{
+    background:#fff3e0;
+}
+
+.price-cell.selected{
+    background:#ff9800 !important;
+    color:#fff;
+    font-weight:bold;
+}
+
+.price-cell .price-input{
+    text-align:right;
+}
+
+.recommended{
+    font-weight:bold;
+    color:var(--primary-dark);
+}
+
+/* SUMMARY */
+
+.supplier-header td{
+    background:#f5f5f5;
+    font-weight:bold;
+}
+
+.supplier-subtotal td{
+    background:#fafafa;
+    border-top:2px solid #777;
+    font-weight:bold;
+}
+
+.grand-total{
+    font-size:17px;
+    font-weight:bold;
+}
+
+/* MODAL */
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.65);
+    z-index:999;
+    overflow:auto;
+}
+
+.modal-content{
+    background:#fff;
+    width:min(1450px,97%);
+    margin:20px auto;
+    border-radius:8px;
+    padding:20px;
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.modal-header h2{
+    margin:0;
+}
+
+.message{
+    display:none;
+    padding:11px;
+    border-radius:5px;
+    margin-bottom:15px;
+}
+
+.message.success{
+    display:block;
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+.message.error{
+    display:block;
+    background:#ffebee;
+    color:#c62828;
+}
+
+.status{
+    display:inline-block;
+    padding:4px 9px;
+    border-radius:15px;
+    background:#eceff1;
+}
+
+.add-item{
+    color:#1976d2;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.expand-row td{
+    background:#fafafa;
+}
+
+@media(max-width:1000px){
+    .form-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:600px){
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media print{
+    .no-print,
+    .header{
+        display:none !important;
+    }
+
+    .modal{
+        position:static;
+        background:#fff;
+    }
+
+    .modal-content{
+        width:100%;
+        margin:0;
+        padding:0;
+    }
+
+    .card{
+        box-shadow:none;
+    }
+}
+
+/* =========================================================
+   PRICE HIGHLIGHTS - EXPANDED CANVASS
+========================================================= */
+
+.lowest-price {
+    background: #fff8d6 !important;
+    font-weight: 600;
+}
+
+.recommended-price {
+    background: #ff9800 !important;
+    color: #fff !important;
+    font-weight: bold;
+}
+
+.recommended-supplier {
+    background: #fff3e0 !important;
+    color: #e65100;
+    font-weight: bold;
+    border-left: 3px solid #ff9800 !important;
+}
+
+.recommended-amount {
+    background: #ff9800 !important;
+    color: #fff !important;
+    font-weight: bold;
+}
+
+/* =========================================================
+   FCIC LOADING SPINNER
+========================================================= */
+
+#spinnerOverlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.96);
+    z-index: 99999;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#spinnerOverlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader {
+    position: relative;
+    width: 240px;
+    height: 240px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* FCIC LOGO */
+
+.logo1 {
+    width: 180px;
+    height: 180px;
+
+    border-radius: 50%;
+    background: #fff;
+
+    padding: 6px;
+    object-fit: contain;
+
+    z-index: 3;
+
+    box-shadow: 0 5px 15px rgba(0,0,0,.15);
+
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* OUTER ELECTRIC RING */
+
+.electric-ring {
+    position: absolute;
+
+    width: 240px;
+    height: 240px;
+
+    border-radius: 50%;
+
+    border: 4px solid transparent;
+
+    border-top: 4px solid #ff9800;
+    border-left: 4px solid #ffd54f;
+
+    animation: electricSpin 1.5s linear infinite;
+
+    z-index: 1;
+}
+
+/* INNER RING */
+
+.ring2 {
+    width: 220px;
+    height: 220px;
+
+    animation-direction: reverse;
+    animation-duration: .8s;
+
+    border-top-color: #ffffff;
+    border-right: 4px solid #ff9800;
+
+    z-index: 2;
+}
+
+/* LOGO PULSE */
+
+@keyframes pulse {
+
+    0%, 100% {
+        transform: scale(1);
+
+        box-shadow:
+            0 5px 15px rgba(0,0,0,.15);
+    }
+
+    50% {
+        transform: scale(1.12);
+
+        box-shadow:
+            0 10px 30px rgba(255,152,0,.45);
+    }
+
+}
+
+/* RING ROTATION */
+
+@keyframes electricSpin {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<!-- FCIC LOADING OVERLAY -->
+<div id="spinnerOverlay">
+    <div class="loader">
+        <div class="electric-ring"></div>
+        <div class="electric-ring ring2"></div>
+
+        <img
+            src="fcic logo.png"
+            class="logo1"
+            alt="FCIC Logo"
+        >
+    </div>
+</div>
+
+<div class="header">
+    Purchases Canvassing
+</div>
+
+<div class="container">
+
+    <div id="message" class="message"></div>
+
+    <!-- CANVASS LIST -->
+
+    <div class="card no-print">
+
+        <div class="toolbar">
+
+            <h2>Canvasses</h2>
+
+            <div style="display:flex;gap:8px;">
+                <input
+                    id="search"
+                    placeholder="Search canvass..."
+                    style="width:250px;"
+                    oninput="filterCanvasses()"
+                >
+
+                <button
+                    class="btn-primary"
+                    onclick="newCanvass()"
+                >
+                    + New Canvass
+                </button>
+            </div>
+
+        </div>
+
+        <br>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Canvass No.</th>
+                        <th>Date</th>
+                        <th>Project</th>
+                        <th>Total Recommended</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="canvassList"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MODAL -->
+
+<div id="canvassModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2 id="modalTitle">
+                New Purchase Canvass
+            </h2>
+
+            <button
+                class="btn-light"
+                onclick="closeModal()"
+            >
+                ✕
+            </button>
+
+        </div>
+
+
+        <!-- HEADER INFORMATION -->
+
+        <div class="card">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Canvass No.</label>
+                    <input id="canvassNo" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <input id="canvassDate" type="date">
+                </div>
+
+                <div class="form-group">
+                    <label>Project</label>
+                    <input id="project">
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+
+                    <select id="status">
+                        <option>Draft</option>
+                        <option>For Canvass</option>
+                        <option>For Approval</option>
+                        <option>Approved</option>
+                        <option>Rejected</option>
+                        <option>Purchased</option>
+                    </select>
+
+                </div>
+
+
+                <!-- SUPPLIERS -->
+
+                <div class="form-group">
+                    <label>Supplier 1</label>
+                    <input
+                        id="supplier1"
+                        placeholder="Supplier company name"
+                        oninput="updateSupplierHeaders()"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Supplier 2</label>
+                    <input
+                        id="supplier2"
+                        placeholder="Supplier company name"
+                        oninput="updateSupplierHeaders()"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Supplier 3</label>
+                    <input
+                        id="supplier3"
+                        placeholder="Supplier company name"
+                        oninput="updateSupplierHeaders()"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Requested By</label>
+                    <input id="requestedBy">
+                </div>
+
+                <div class="form-group">
+                    <label>Required Date</label>
+                    <input id="requiredDate" type="date">
+                </div>
+
+                <div class="form-group full">
+                    <label>Purpose</label>
+                    <textarea id="purpose" rows="2"></textarea>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ITEMS -->
+
+        <div class="card">
+
+            <div class="toolbar">
+
+                <h3>Item Details</h3>
+
+                <button
+                    class="btn-primary no-print"
+                    onclick="addItem()"
+                >
+                    + Add Item
+                </button>
+
+            </div>
+
+            <p style="font-size:12px;color:#607d8b;">
+                Click the supplier price that you recommend.
+                The selected price will turn orange.
+            </p>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead id="itemHeader"></thead>
+
+                    <tbody id="itemBody"></tbody>
+
+                    <tfoot>
+
+                        <tr>
+
+                            <th colspan="8" class="right">
+                                Total Recommended
+                            </th>
+
+                            <th
+                                id="grandTotal"
+                                class="right grand-total"
+                            >
+                                0.00
+                            </th>
+
+                            <th class="no-print"></th>
+
+                        </tr>
+
+                    </tfoot>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="card">
+
+            <h3>Supplier Summary</h3>
+
+            <br>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Recommended Item</th>
+                            <th class="right">Amount</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="summaryBody"></tbody>
+
+                    <tfoot>
+
+                        <tr>
+
+                            <th colspan="2" class="right">
+                                Grand Total
+                            </th>
+
+                            <th
+                                id="summaryGrandTotal"
+                                class="right grand-total"
+                            >
+                                0.00
+                            </th>
+
+                        </tr>
+
+                    </tfoot>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- REMARKS -->
+
+        <div class="card">
+
+            <div class="form-group">
+
+                <label>Remarks</label>
+
+                <textarea
+                    id="remarks"
+                    rows="3"
+                ></textarea>
+
+            </div>
+
+        </div>
+
+
+        <!-- BUTTONS -->
+
+        <div class="no-print">
+
+            <button
+                class="btn-success"
+                onclick="saveCanvass()"
+            >
+                Save Canvass
+            </button>
+
+            <button
+                class="btn-dark"
+                onclick="window.print()"
+            >
+                Print
+            </button>
+
+            <button
+                class="btn-light"
+                onclick="closeModal()"
+            >
+                Cancel
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   GOOGLE APPS SCRIPT WEB APP URL
+   REPLACE THIS
+========================================================= */
+
+const API_URL =
+    "https://script.google.com/macros/s/AKfycbypCvbJtD_qNilZV26phZ95pMTZDbEiPPaFtQ4aYNp1Sd1r5e29IshLGuzX3KLHhgkyOQ/exec";
+
+
+let canvasses = [];
+let editingCanvass = null;
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function $(id){
+    return document.getElementById(id);
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+function money(value){
+
+    return Number(value || 0).toLocaleString(
+        "en-PH",
+        {
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        }
+    );
+
+}
+
+
+function showMessage(text,error=false){
+
+    const box = $("message");
+
+    box.textContent = text;
+
+    box.className =
+        "message " +
+        (error ? "error" : "success");
+
+    setTimeout(()=>{
+        box.className="message";
+    },4000);
+
+}
+
+
+async function api(action, data = {}) {
+
+    if (!API_URL || API_URL.includes("PASTE_YOUR")) {
+        throw new Error("Google Apps Script API URL is not configured.");
+    }
+
+    const response = await fetch(API_URL, {
+        method: "POST",
+
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+        },
+
+        body: JSON.stringify({
+            action: action,
+            ...data
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            "Server returned HTTP " + response.status
+        );
+    }
+
+    const text = await response.text();
+
+    let result;
+
+    try {
+        result = JSON.parse(text);
+    } catch (e) {
+        console.error("Invalid server response:", text);
+
+        throw new Error(
+            "Invalid response from Google Apps Script."
+        );
+    }
+
+    if (!result.success) {
+        throw new Error(
+            result.message || "Server error."
+        );
+    }
+
+    return result.data;
+}
+
+
+function today(){
+
+    return new Date()
+        .toISOString()
+        .substring(0,10);
+
+}
+
+
+/* =========================================================
+   SUPPLIER HEADERS
+========================================================= */
+
+function getSupplierNames(){
+
+    return [
+
+        $("supplier1").value.trim()
+            || "Supplier 1",
+
+        $("supplier2").value.trim()
+            || "Supplier 2",
+
+        $("supplier3").value.trim()
+            || "Supplier 3"
+
+    ];
+
+}
+
+
+function updateSupplierHeaders(){
+
+    const suppliers =
+        getSupplierNames();
+
+
+    $("itemHeader").innerHTML = `
+
+        <tr>
+
+            <th>+</th>
+
+            <th>Item No.</th>
+
+            <th>Item Description</th>
+
+            <th>Qty</th>
+
+            <th>Unit</th>
+
+            <th>${escapeHtml(suppliers[0])}</th>
+
+            <th>${escapeHtml(suppliers[1])}</th>
+
+            <th>${escapeHtml(suppliers[2])}</th>
+
+            <th>Recommended</th>
+
+            <th class="no-print">
+                Action
+            </th>
+
+        </tr>
+
+    `;
+
+
+    calculateTotals();
+
+}
+
+
+/* =========================================================
+   NEW CANVASS
+========================================================= */
+
+async function newCanvass(){
+
+    editingCanvass = null;
+
+    $("modalTitle").textContent =
+        "New Purchase Canvass";
+
+    $("canvassModal").style.display =
+        "block";
+
+
+    $("canvassDate").value =
+        today();
+
+    $("project").value="";
+    $("status").value="Draft";
+
+    $("supplier1").value="";
+    $("supplier2").value="";
+    $("supplier3").value="";
+
+    $("requestedBy").value="";
+    $("requiredDate").value="";
+
+    $("purpose").value="";
+    $("remarks").value="";
+
+    $("itemBody").innerHTML="";
+
+
+    updateSupplierHeaders();
+
+
+    try{
+
+        const no =
+            await api("nextCanvassNo");
+
+        $("canvassNo").value=no;
+
+    }
+    catch(error){
+
+        showMessage(
+            error.message,
+            true
+        );
+
+    }
+
+
+    addItem();
+
+}
+
+
+function closeModal(){
+
+    $("canvassModal")
+        .style.display="none";
+
+}
+
+
+/* =========================================================
+   ADD ITEM
+========================================================= */
+
+function addItem(data={}){
+
+    const row =
+        document.createElement("tr");
+
+
+    row.innerHTML = `
+
+        <td
+            class="center add-item"
+            onclick="addItemAfter(this)"
+        >
+            +
+        </td>
+
+
+        <td
+            class="center item-number"
+        ></td>
+
+
+        <td>
+
+            <input
+                class="item-input description"
+                value="${escapeHtml(data.description || "")}"
+                oninput="calculateTotals()"
+            >
+
+        </td>
+
+
+        <td>
+
+            <input
+                class="item-input qty"
+                type="number"
+                step="0.01"
+                value="${data.qty ?? 1}"
+                oninput="calculateTotals()"
+            >
+
+        </td>
+
+
+        <td>
+
+            <input
+                class="item-input unit"
+                value="${escapeHtml(data.unit || "pcs")}"
+            >
+
+        </td>
+
+
+        ${priceCell(1,data)}
+
+        ${priceCell(2,data)}
+
+        ${priceCell(3,data)}
+
+
+        <td class="recommended right">
+            -
+        </td>
+
+
+        <td class="center no-print">
+
+            <button
+                class="btn-danger"
+                onclick="
+                    this.closest('tr').remove();
+                    renumberItems();
+                    calculateTotals();
+                "
+            >
+                ×
+            </button>
+
+        </td>
+
+    `;
+
+
+    $("itemBody")
+        .appendChild(row);
+
+
+    if(data.recommended){
+
+        selectPrice(
+            row,
+            Number(data.recommended),
+            false
+        );
+
+    }
+
+
+    renumberItems();
+
+    calculateTotals();
+
+}
+
+
+function priceCell(number,data){
+
+    return `
+
+        <td
+            class="price-cell"
+            data-supplier="${number}"
+            onclick="
+                selectPrice(
+                    this.closest('tr'),
+                    ${number}
+                )
+            "
+        >
+
+            <input
+                class="item-input price-input"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value="${data["price"+number] ?? ""}"
+                onclick="event.stopPropagation()"
+                oninput="calculateTotals()"
+            >
+
+        </td>
+
+    `;
+
+}
+
+
+function addItemAfter(element){
+
+    const current =
+        element.closest("tr");
+
+    const row =
+        document.createElement("tr");
+
+
+    row.innerHTML = `
+
+        <td
+            class="center add-item"
+            onclick="addItemAfter(this)"
+        >
+            +
+        </td>
+
+        <td class="center item-number"></td>
+
+        <td>
+            <input
+                class="item-input description"
+                oninput="calculateTotals()"
+            >
+        </td>
+
+        <td>
+            <input
+                class="item-input qty"
+                type="number"
+                step="0.01"
+                value="1"
+                oninput="calculateTotals()"
+            >
+        </td>
+
+        <td>
+            <input
+                class="item-input unit"
+                value="pcs"
+            >
+        </td>
+
+        ${priceCell(1,{})}
+        ${priceCell(2,{})}
+        ${priceCell(3,{})}
+
+        <td class="recommended right">
+            -
+        </td>
+
+        <td class="center no-print">
+
+            <button
+                class="btn-danger"
+                onclick="
+                    this.closest('tr').remove();
+                    renumberItems();
+                    calculateTotals();
+                "
+            >
+                ×
+            </button>
+
+        </td>
+
+    `;
+
+
+    current.after(row);
+
+    renumberItems();
+
+    calculateTotals();
+
+}
+
+
+function renumberItems(){
+
+    [
+        ...$("itemBody").children
+    ].forEach((row,index)=>{
+
+        row.querySelector(
+            ".item-number"
+        ).textContent =
+            index+1;
+
+    });
+
+}
+
+
+/* =========================================================
+   SELECT RECOMMENDED PRICE
+========================================================= */
+
+function selectPrice(
+    row,
+    supplierNumber,
+    recalculate=true
+){
+
+    row.querySelectorAll(
+        ".price-cell"
+    ).forEach(cell=>{
+
+        cell.classList.remove(
+            "selected"
+        );
+
+    });
+
+
+    const selected =
+        row.querySelector(
+            `.price-cell[data-supplier="${supplierNumber}"]`
+        );
+
+
+    if(!selected)
+        return;
+
+
+    selected.classList.add(
+        "selected"
+    );
+
+
+    row.dataset.recommended =
+        supplierNumber;
+
+
+    if(recalculate)
+        calculateTotals();
+
+}
+
+
+/* =========================================================
+   CALCULATIONS
+========================================================= */
+
+function calculateTotals(){
+
+    const suppliers =
+        getSupplierNames();
+
+
+    let grandTotal=0;
+
+    const groups={};
+
+
+    [
+        ...$("itemBody").children
+    ].forEach((row,index)=>{
+
+        const qty =
+            Number(
+                row.querySelector(".qty").value
+            ) || 0;
+
+
+        const prices=[];
+
+
+        for(let n=1;n<=3;n++){
+
+            const cell =
+                row.querySelector(
+                    `.price-cell[data-supplier="${n}"]`
+                );
+
+            const price =
+                Number(
+                    cell.querySelector(
+                        ".price-input"
+                    ).value
+                ) || 0;
+
+
+            prices.push({
+                number:n,
+                price,
+                cell
+            });
+
+        }
+
+
+        const recommended =
+            Number(
+                row.dataset.recommended
+            ) || 0;
+
+
+        const recommendation =
+            prices.find(
+                x=>x.number===recommended
+            );
+
+
+        const recommendedBox =
+            row.querySelector(
+                ".recommended"
+            );
+
+
+        if(
+            recommendation &&
+            recommendation.price > 0
+        ){
+
+            const amount =
+                qty *
+                recommendation.price;
+
+
+            grandTotal += amount;
+
+
+            const supplier =
+                suppliers[
+                    recommendation.number-1
+                ];
+
+
+            recommendedBox.innerHTML = `
+
+                <b>
+                    ${escapeHtml(supplier)}
+                </b>
+
+                <br>
+
+                <small>
+                    ${money(recommendation.price)}
+                </small>
+
+            `;
+
+
+            if(!groups[supplier])
+                groups[supplier]=[];
+
+
+            groups[supplier].push({
+
+                item:
+                    row.querySelector(
+                        ".description"
+                    ).value ||
+                    "Item "+(index+1),
+
+                amount
+
+            });
+
+        }
+        else{
+
+            recommendedBox.textContent="-";
+
+        }
+
+    });
+
+
+    $("grandTotal").textContent =
+        money(grandTotal);
+
+
+    $("summaryGrandTotal").textContent =
+        money(grandTotal);
+
+
+    renderSummary(groups);
+
+}
+
+
+function renderSummary(groups){
+
+    const body =
+        $("summaryBody");
+
+
+    body.innerHTML="";
+
+
+    Object.keys(groups)
+        .forEach(supplier=>{
+
+            const subtotal =
+                groups[supplier]
+                    .reduce(
+                        (sum,item)=>
+                            sum+item.amount,
+                        0
+                    );
+
+
+            body.insertAdjacentHTML(
+                "beforeend",
+
+                `
+
+                <tr class="supplier-header">
+
+                    <td colspan="2">
+                        ${escapeHtml(supplier)}
+                    </td>
+
+                    <td></td>
+
+                </tr>
+
+                `
+
+            );
+
+
+            groups[supplier]
+                .forEach(item=>{
+
+                    body.insertAdjacentHTML(
+                        "beforeend",
+
+                        `
+
+                        <tr>
+
+                            <td></td>
+
+                            <td>
+                                ${escapeHtml(item.item)}
+                            </td>
+
+                            <td class="right">
+                                ${money(item.amount)}
+                            </td>
+
+                        </tr>
+
+                        `
+
+                    );
+
+                });
+
+
+            body.insertAdjacentHTML(
+                "beforeend",
+
+                `
+
+                <tr class="supplier-subtotal">
+
+                    <td></td>
+
+                    <td>
+                        ${escapeHtml(supplier)}
+                        Subtotal
+                    </td>
+
+                    <td class="right">
+                        ${money(subtotal)}
+                    </td>
+
+                </tr>
+
+                `
+
+            );
+
+        });
+
+}
+
+
+/* =========================================================
+   COLLECT DATA
+========================================================= */
+
+function collectData(){
+
+    const suppliers =
+        getSupplierNames();
+
+
+    return {
+
+        canvassNo:
+            $("canvassNo").value,
+
+        date:
+            $("canvassDate").value,
+
+        project:
+            $("project").value,
+
+        requestedBy:
+            $("requestedBy").value,
+
+        requiredDate:
+            $("requiredDate").value,
+
+        purpose:
+            $("purpose").value,
+
+        status:
+            $("status").value,
+
+        supplier1:
+            suppliers[0],
+
+        supplier2:
+            suppliers[1],
+
+        supplier3:
+            suppliers[2],
+
+        remarks:
+            $("remarks").value,
+
+        items:[
+            ...$("itemBody").children
+        ].map((row,index)=>{
+
+            return {
+
+                itemNo:
+                    index+1,
+
+                description:
+                    row.querySelector(
+                        ".description"
+                    ).value,
+
+                qty:
+                    Number(
+                        row.querySelector(
+                            ".qty"
+                        ).value
+                    ) || 0,
+
+                unit:
+                    row.querySelector(
+                        ".unit"
+                    ).value,
+
+                price1:
+                    getPrice(row,1),
+
+                price2:
+                    getPrice(row,2),
+
+                price3:
+                    getPrice(row,3),
+
+                recommended:
+                    Number(
+                        row.dataset.recommended
+                    ) || "",
+
+            };
+
+        })
+
+    };
+
+}
+
+
+function getPrice(row,number){
+
+    const value =
+        row.querySelector(
+            `.price-cell[data-supplier="${number}"] .price-input`
+        ).value;
+
+
+    return value === ""
+        ? ""
+        : Number(value);
+
+}
+
+
+/* =========================================================
+   SAVE
+========================================================= */
+
+async function saveCanvass() {
+
+    showLoader();
+
+    try {
+
+        calculateTotals();
+
+        const data =
+            collectData();
+
+        /* =========================
+           VALIDATION
+        ========================= */
+
+        if (!data.project.trim()) {
+
+            throw new Error(
+                "Please enter the Project."
+            );
+
+        }
+
+        if (
+            !data.supplier1 &&
+            !data.supplier2 &&
+            !data.supplier3
+        ) {
+
+            throw new Error(
+                "Please enter at least one supplier."
+            );
+
+        }
+
+        if (!data.items.length) {
+
+            throw new Error(
+                "Please add at least one item."
+            );
+
+        }
+
+        /* =========================
+           SAVE TO GOOGLE SHEETS
+        ========================= */
+
+        await api(
+            "saveCanvass",
+            {
+                record: data
+            }
+        );
+
+        showMessage(
+            "Canvass successfully saved."
+        );
+
+        closeModal();
+
+        await loadCanvasses();
+
+    }
+    catch (error) {
+
+        console.error(
+            "Save error:",
+            error
+        );
+
+        showMessage(
+            error.message,
+            true
+        );
+
+    }
+    finally {
+
+        hideLoader();
+
+    }
+}
+
+
+/* =========================================================
+   LOAD CANVASSES
+========================================================= */
+
+async function loadCanvasses() {
+
+    showLoader();
+
+    try {
+
+        const data =
+            await api("getCanvasses");
+
+        canvasses =
+            Array.isArray(data)
+                ? data
+                : [];
+
+        renderCanvasses(canvasses);
+
+    }
+    catch (error) {
+
+        console.error(
+            "Failed to load canvasses:",
+            error
+        );
+
+        showMessage(
+            "Failed to load canvasses: " +
+            error.message,
+            true
+        );
+
+    }
+    finally {
+
+        hideLoader();
+
+    }
+}
+
+
+function renderCanvasses(data){
+
+    const body =
+        $("canvassList");
+
+
+    if(!data.length){
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="6"
+                    class="center"
+                >
+                    No canvasses found.
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    body.innerHTML =
+        data.map(item=>`
+
+        <tr>
+
+            <td>
+                <b>
+                    ${escapeHtml(item.canvassNo)}
+                </b>
+            </td>
+
+            <td>
+                ${escapeHtml(item.date)}
+            </td>
+
+            <td>
+                ${escapeHtml(item.project)}
+            </td>
+
+            <td class="right">
+                ${money(item.recommendedTotal)}
+            </td>
+
+            <td>
+                <span class="status">
+                    ${escapeHtml(item.status)}
+                </span>
+            </td>
+
+            <td class="center">
+
+                <button
+                    class="btn-dark"
+                    onclick="
+                        expandCanvass(
+                            this,
+                            '${escapeHtml(item.canvassNo)}'
+                        )
+                    "
+                >
+                    +
+                </button>
+
+            </td>
+
+        </tr>
+
+        `).join("");
+
+}
+
+
+/* =========================================================
+   EXPAND
+========================================================= */
+
+async function expandCanvass(
+    button,
+    canvassNo
+){
+
+    const mainRow =
+        button.closest("tr");
+
+
+    const existing =
+        mainRow.nextElementSibling;
+
+
+    if(
+        existing &&
+        existing.classList.contains(
+            "expand-row"
+        )
+    ){
+
+        existing.remove();
+
+        button.textContent="+";
+
+        return;
+
+    }
+
+
+    try{
+
+        const data =
+            await api(
+                "getCanvass",
+                {
+                    canvassNo
+                }
+            );
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.className =
+            "expand-row";
+
+
+        const cell =
+            document.createElement("td");
+
+
+        cell.colSpan=6;
+
+
+        cell.innerHTML =
+            buildExpandedView(data);
+
+
+        row.appendChild(cell);
+
+        mainRow.after(row);
+
+        button.textContent="−";
+
+    }
+    catch(error){
+
+        showMessage(
+            error.message,
+            true
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   EXPANDED VIEW
+========================================================= */
+
+function buildExpandedView(data){
+
+    let total = 0;
+
+    let rows = "";
+
+    data.items.forEach((item, index) => {
+
+        const price1 = Number(item.price1) || 0;
+        const price2 = Number(item.price2) || 0;
+        const price3 = Number(item.price3) || 0;
+
+        const prices = [
+            {
+                supplier: 1,
+                price: price1
+            },
+            {
+                supplier: 2,
+                price: price2
+            },
+            {
+                supplier: 3,
+                price: price3
+            }
+        ];
+
+        // Only consider prices greater than zero
+        const validPrices = prices.filter(
+            p => p.price > 0
+        );
+
+        // Find lowest price
+        let lowestPrice = 0;
+
+        if(validPrices.length){
+
+            lowestPrice = Math.min(
+                ...validPrices.map(
+                    p => p.price
+                )
+            );
+
+        }
+
+        const recommended =
+            Number(item.recommended) || 0;
+
+        const recommendedPrice =
+            Number(
+                item["price" + recommended]
+            ) || 0;
+
+        const recommendedSupplier =
+            data["supplier" + recommended] || "";
+
+        const amount =
+            (Number(item.qty) || 0) *
+            recommendedPrice;
+
+        total += amount;
+
+
+        /*
+         * Check if each supplier is the lowest
+         */
+        const supplier1Lowest =
+            price1 > 0 &&
+            price1 === lowestPrice;
+
+        const supplier2Lowest =
+            price2 > 0 &&
+            price2 === lowestPrice;
+
+        const supplier3Lowest =
+            price3 > 0 &&
+            price3 === lowestPrice;
+
+
+        /*
+         * Recommended gets strong orange highlight.
+         * Lowest gets light yellow.
+         * Recommended wins if both apply.
+         */
+        const price1Class =
+            recommended === 1
+                ? "recommended-price"
+                : supplier1Lowest
+                    ? "lowest-price"
+                    : "";
+
+        const price2Class =
+            recommended === 2
+                ? "recommended-price"
+                : supplier2Lowest
+                    ? "lowest-price"
+                    : "";
+
+        const price3Class =
+            recommended === 3
+                ? "recommended-price"
+                : supplier3Lowest
+                    ? "lowest-price"
+                    : "";
+
+
+        rows += `
+
+            <tr>
+
+                <td>
+                    ${index + 1}
+                </td>
+
+
+                <td>
+                    ${escapeHtml(
+                        item.description
+                    )}
+                </td>
+
+
+                <td class="right">
+                    ${item.qty}
+                </td>
+
+
+                <td>
+                    ${escapeHtml(
+                        item.unit
+                    )}
+                </td>
+
+
+                <!-- SUPPLIER 1 -->
+
+                <td
+                    class="right ${price1Class}"
+                >
+                    ${price1 > 0
+                        ? money(price1)
+                        : "-"
+                    }
+                </td>
+
+
+                <!-- SUPPLIER 2 -->
+
+                <td
+                    class="right ${price2Class}"
+                >
+                    ${price2 > 0
+                        ? money(price2)
+                        : "-"
+                    }
+                </td>
+
+
+                <!-- SUPPLIER 3 -->
+
+                <td
+                    class="right ${price3Class}"
+                >
+                    ${price3 > 0
+                        ? money(price3)
+                        : "-"
+                    }
+                </td>
+
+
+                <!-- RECOMMENDED SUPPLIER -->
+
+                <td
+                    class="recommended-supplier"
+                >
+                    ${escapeHtml(
+                        recommendedSupplier
+                    )}
+                </td>
+
+
+                <!-- RECOMMENDED AMOUNT -->
+
+                <td
+                    class="right recommended-amount"
+                >
+                    ${money(amount)}
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+
+    return `
+
+        <div>
+
+            <b>Canvass No.:</b>
+            ${escapeHtml(data.canvassNo)}
+
+            &nbsp;&nbsp;
+
+            <b>Project:</b>
+            ${escapeHtml(data.project)}
+
+            &nbsp;&nbsp;
+
+            <b>Status:</b>
+            ${escapeHtml(data.status)}
+
+            <br><br>
+
+
+            <b>Suppliers:</b>
+
+            ${escapeHtml(
+                data.supplier1 || "-"
+            )}
+
+            &nbsp; | &nbsp;
+
+            ${escapeHtml(
+                data.supplier2 || "-"
+            )}
+
+            &nbsp; | &nbsp;
+
+            ${escapeHtml(
+                data.supplier3 || "-"
+            )}
+
+            <br><br>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>Item</th>
+
+                            <th>Qty</th>
+
+                            <th>Unit</th>
+
+                            <th>
+                                ${escapeHtml(
+                                    data.supplier1 ||
+                                    "Supplier 1"
+                                )}
+                            </th>
+
+                            <th>
+                                ${escapeHtml(
+                                    data.supplier2 ||
+                                    "Supplier 2"
+                                )}
+                            </th>
+
+                            <th>
+                                ${escapeHtml(
+                                    data.supplier3 ||
+                                    "Supplier 3"
+                                )}
+                            </th>
+
+                            <th>
+                                Recommended
+                            </th>
+
+                            <th>
+                                Amount
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        ${rows}
+
+                    </tbody>
+
+
+                    <tfoot>
+
+                        <tr>
+
+                            <th
+                                colspan="8"
+                                class="right"
+                            >
+                                Total Recommended
+                            </th>
+
+                            <th
+                                class="right recommended-amount"
+                            >
+                                ${money(total)}
+                            </th>
+
+                        </tr>
+
+                    </tfoot>
+
+                </table>
+
+            </div>
+
+
+            <br>
+
+
+            <b>Remarks:</b>
+
+            ${escapeHtml(
+                data.remarks || ""
+            )}
+
+
+            <br><br>
+
+
+            <button
+                class="btn-primary no-print"
+                onclick="
+                    editCanvass(
+                        '${escapeHtml(
+                            data.canvassNo
+                        )}'
+                    )
+                "
+            >
+                Edit
+            </button>
+
+
+            <button
+                class="btn-danger no-print"
+                onclick="
+                    deleteCanvass(
+                        '${escapeHtml(
+                            data.canvassNo
+                        )}'
+                    )
+                "
+            >
+                Delete
+            </button>
+
+
+            <button
+                class="btn-dark no-print"
+                onclick="window.print()"
+            >
+                Print
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   EDIT
+========================================================= */
+
+async function editCanvass(no){
+
+    try{
+
+        const data =
+            await api(
+                "getCanvass",
+                {
+                    canvassNo:no
+                }
+            );
+
+
+        editingCanvass=no;
+
+
+        $("modalTitle").textContent =
+            "Edit Purchase Canvass";
+
+
+        $("canvassModal").style.display =
+            "block";
+
+
+        $("canvassNo").value =
+            data.canvassNo;
+
+        $("canvassDate").value =
+            data.date;
+
+        $("project").value =
+            data.project;
+
+        $("status").value =
+            data.status;
+
+        $("supplier1").value =
+            data.supplier1 || "";
+
+        $("supplier2").value =
+            data.supplier2 || "";
+
+        $("supplier3").value =
+            data.supplier3 || "";
+
+        $("requestedBy").value =
+            data.requestedBy || "";
+
+        $("requiredDate").value =
+            data.requiredDate || "";
+
+        $("purpose").value =
+            data.purpose || "";
+
+        $("remarks").value =
+            data.remarks || "";
+
+
+        $("itemBody").innerHTML="";
+
+
+        updateSupplierHeaders();
+
+
+        data.items.forEach(
+            item=>{
+                addItem(item);
+            }
+        );
+
+
+        calculateTotals();
+
+    }
+    catch(error){
+
+        showMessage(
+            error.message,
+            true
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+async function deleteCanvass(no){
+
+    if(
+        !confirm(
+            "Delete canvass " +
+            no +
+            "?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    try{
+
+        await api(
+            "deleteCanvass",
+            {
+                canvassNo:no
+            }
+        );
+
+
+        showMessage(
+            "Canvass deleted."
+        );
+
+
+        loadCanvasses();
+
+    }
+    catch(error){
+
+        showMessage(
+            error.message,
+            true
+        );
+
+    }
+
+}
+
+function showLoader() {
+
+    const loader =
+        document.getElementById("spinnerOverlay");
+
+    if (!loader) return;
+
+    loader.classList.remove("hidden");
+}
+
+
+function hideLoader() {
+
+    const loader =
+        document.getElementById("spinnerOverlay");
+
+    if (!loader) return;
+
+    loader.classList.add("hidden");
+}
+
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function filterCanvasses(){
+
+    const search =
+        $("search")
+            .value
+            .toLowerCase();
+
+
+    const filtered =
+        canvasses.filter(item=>
+
+            JSON.stringify(item)
+                .toLowerCase()
+                .includes(search)
+
+        );
+
+
+    renderCanvasses(
+        filtered
+    );
+
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        updateSupplierHeaders();
+
+        loadCanvasses();
+
+    }
+);
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+updateSupplierHeaders();
+
+loadCanvasses();
+
+</script>
+
+</body>
+</html>
