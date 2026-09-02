@@ -283,10 +283,40 @@ function refreshReceivables() {
   loadReceivables(false);
 }
 
+function scheduleMidnightRefresh() {
+const now = new Date();
+
+// Calculate the next 12:00 AM
+const nextMidnight = new Date();
+nextMidnight.setHours(24, 0, 0, 0);
+
+const timeUntilMidnight = nextMidnight.getTime() - now.getTime();
+
+console.log(`Next automatic refresh in ${Math.round(timeUntilMidnight / 1000)} seconds`);
+
+setTimeout(() => {
+console.log("Auto refreshing receivables data at midnight...");
+
+
+// Clear old cached data
+localStorage.removeItem("receivablesData");
+
+// Load fresh data
+loadReceivables(false);
+
+// Schedule the next midnight refresh
+scheduleMidnightRefresh();
+
+
+}, timeUntilMidnight);
+}
+
 // AUTO LOAD
 document.addEventListener("DOMContentLoaded", () => {
-  loadReceivables(true);
+loadReceivables(true);
+scheduleMidnightRefresh();
 });
+
 </script>
 </body>
 </html>
