@@ -60,9 +60,10 @@
     td:nth-child(3) { width: 7%; text-align: center; }
     td:nth-child(4) { width: 4%; text-align: center; }
     td:nth-child(5) { width: 17%; }
-    td:nth-child(6) { width: 8%; text-align: center; }
-    td:nth-child(7) { width: 40%; text-align: left; }
-    td:nth-child(8) { width: 10%; text-align: right; }
+    td:nth-child(6) { width: 5%; }
+    td:nth-child(7) { width: 8%; text-align: center; }
+    td:nth-child(8) { width: 35%; text-align: left; }
+    td:nth-child(9) { width: 10%; text-align: right; }
     .total-row {
       font-weight: bold;
       background: #f1f1f1;
@@ -81,6 +82,16 @@
       padding: 30px 0;
       color: #555;
     }
+
+    /* Overdue row */
+.overdue {
+  background-color: #ffd6d6 !important;
+  color: #b00000;
+}
+
+.overdue:hover {
+  background-color: #ffbcbc !important;
+}
   </style>
 </head>
 <body>
@@ -99,6 +110,7 @@
           <th>DUE DATE</th>
           <th>INVOICE</th>
           <th>CUSTOMER</th>
+          <th>LOCATION</th>
           <th>PO#</th>
           <th>DESCRIPTION</th>
           <th>AMOUNT</th>
@@ -207,6 +219,7 @@ async function loadReceivables(fromCache = true) {
         DUE: r.DUE || "",
         INVOICE: inv,
         CUSTOMER: r.CUSTOMER || "",
+        LOCATION: r.LOCATION || "",
         PO: r.PO|| "",
         DESCRIPTION: r.DESCRIPTION || "",
         TOTAL: 0
@@ -229,11 +242,25 @@ async function loadReceivables(fromCache = true) {
   // =========================
   let grandTotal = 0;
 
-  sorted.forEach(item => {
+ const today = new Date();
+today.setHours(0, 0, 0, 0);
 
-    grandTotal += item.TOTAL;
+sorted.forEach(item => {
 
-    const tr = document.createElement("tr");
+  grandTotal += item.TOTAL;
+
+  const tr = document.createElement("tr");
+
+  // Check if overdue
+  const dueDate = new Date(item.DUE);
+
+  if (
+    item.DUE &&
+    !isNaN(dueDate.getTime()) &&
+    dueDate < today
+  ) {
+    tr.classList.add("overdue");
+  }
 
     tr.innerHTML = `
       <td>${formatDate(item.DATE)}</td>
@@ -241,6 +268,7 @@ async function loadReceivables(fromCache = true) {
       <td>${formatDate(item.DUE)}</td>
       <td>${item.INVOICE}</td>
       <td>${item.CUSTOMER}</td>
+      <td>${item.LOCATION}</td>
       <td>${item.PO}</td>
       <td>${item.DESCRIPTION}</td>
       <td style="text-align:right;">
@@ -263,7 +291,7 @@ async function loadReceivables(fromCache = true) {
   trTotal.className = "total-row";
 
   trTotal.innerHTML = `
-    <td colspan="7" style="text-align:right;">TOTAL</td>
+    <td colspan="8" style="text-align:right;">TOTAL</td>
     <td style="text-align:right;">
       ${grandTotal.toLocaleString(undefined, {
         minimumFractionDigits: 2,
