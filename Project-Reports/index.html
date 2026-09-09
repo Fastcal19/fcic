@@ -356,7 +356,7 @@ td:nth-child(4) {
 
     <input type="text" id="po" placeholder="Purchase Order Number">
     <textarea id="desc" rows="10" placeholder="Project description"></textarea>
-
+    <input type="text" id="status" placeholder="Status">
     <div id="fileLink"></div>
 
     <label id="fileLabel">Attachment</label>
@@ -600,9 +600,11 @@ function openViewModal(r) {
 
   document.getElementById("po").value = r.po || "";
   document.getElementById("desc").value = r.desc || "";
+  document.getElementById("status").value = r.status || "";
 
   document.getElementById("po").disabled = true;
   document.getElementById("desc").disabled = true;
+  document.getElementById("status").disabled = true;
 
   document.getElementById("file").style.display = "none";
 
