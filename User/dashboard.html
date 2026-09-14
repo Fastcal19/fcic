@@ -286,13 +286,22 @@
       margin-top: 10px;
     }
 
-    .close-btn {
-      background: #b22222;
+    .close-btn, .edit-btn, .save-btn {
       color: white;
       border: none;
       border-radius: 6px;
       padding: 10px 15px;
       cursor: pointer;
+      margin-left: 6px;
+    }
+
+    .close-btn { background: #b22222; }
+    .edit-btn { background: #f97316; }
+    .save-btn { background: #198754; }
+    .close-btn:hover, .edit-btn:hover, .save-btn:hover { opacity: .9; }
+
+    .modal-footer {
+      align-items: center;
     }
   </style>
 </head>
@@ -332,21 +341,66 @@
       <h4 id="modalDate" style="text-align:center; margin-top:-5px;"></h4>
       <textarea id="noteText" readonly></textarea>
       <div class="modal-footer">
+        <button id="editBtn" class="edit-btn" onclick="enableEditing()" style="display:none;">Edit</button>
+        <button id="saveBtn" class="save-btn" onclick="saveNote()" style="display:none;">Save</button>
         <button class="close-btn" onclick="closeModal()">Close</button>
       </div>
     </div>
   </div>
 
   <script>
+    // Google Apps Script Web App endpoint
     const API_URL = "https://script.google.com/macros/s/AKfycbxfQ_h4sW1QHUHR9zImCxpJ4h1lDajPJWIO6PVUk04MNkDyGV3poXMjijL3KQh6XilOWA/exec";
     const calendarGrid = document.getElementById("calendarGrid");
     const monthYear = document.getElementById("monthYear");
     const noteModal = document.getElementById("noteModal");
     const modalDate = document.getElementById("modalDate");
     const noteText = document.getElementById("noteText");
+    const editBtn = document.getElementById("editBtn");
+    const saveBtn = document.getElementById("saveBtn");
+
+    /*
+      ===== USER EDIT PERMISSIONS =====
+      Change the names below to the users who are allowed to edit notes.
+
+      Example:
+      const EDIT_USERS = ["berto", "clair", "accounting"];
+
+      The current user can be supplied by your portal using:
+      localStorage.setItem("fcicUsername", "berto");
+      or localStorage.setItem("username", "berto");
+    */
+    const EDIT_USERS = ["020", "admin", "accounting"];
+
+    function getCurrentUser() {
+      return (
+        localStorage.getItem("eid") ||
+        localStorage.getItem("username") ||
+        localStorage.getItem("user") ||
+        ""
+      ).trim().toLowerCase();
+    }
+
+    function canEdit() {
+      return EDIT_USERS.map(u => u.toLowerCase()).includes(getCurrentUser());
+    }
+
+    function updateEditControls(editing = false) {
+      if (!canEdit()) {
+        editBtn.style.display = "none";
+        saveBtn.style.display = "none";
+        noteText.readOnly = true;
+        return;
+      }
+
+      editBtn.style.display = editing ? "none" : "inline-block";
+      saveBtn.style.display = editing ? "inline-block" : "none";
+      noteText.readOnly = !editing;
+    }
 
     let currentDate = new Date();
     let notes = {};
+    let activeDateKey = null;
 
     function normalizeDateKey(dateInput) {
       const d = new Date(dateInput);
@@ -398,7 +452,13 @@
         if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear())
           div.classList.add("today");
         div.innerHTML = `<div class="day-number">${day}</div>${savedNote ? `<div class="note">${savedNote}</div>` : ""}`;
-        if (savedNote) div.onclick = () => openModal(dateKey, savedNote);
+
+        // Everyone can view existing notes. Authorized users can also open
+        // an empty date to create a new note.
+        if (savedNote || canEdit()) {
+          div.onclick = () => openModal(dateKey, savedNote);
+        }
+
         calendarGrid.appendChild(div);
       }
 
@@ -413,13 +473,74 @@
     }
 
     function openModal(dateKey, savedNote) {
+      activeDateKey = dateKey;
       modalDate.textContent = "Notes for " + dateKey;
-      noteText.value = savedNote;
+      noteText.value = savedNote || "";
       noteModal.style.display = "flex";
+      updateEditControls(false);
+    }
+
+    function enableEditing() {
+      if (!canEdit()) {
+        alert("You do not have permission to edit calendar notes.");
+        return;
+      }
+      noteText.readOnly = false;
+      noteText.focus();
+      updateEditControls(true);
+    }
+
+    async function saveNote() {
+      if (!canEdit()) {
+        alert("You do not have permission to edit calendar notes.");
+        return;
+      }
+
+      if (!activeDateKey) return;
+
+      const note = noteText.value.trim();
+
+      try {
+        showOverlaySpinner();
+
+        const url =
+          API_URL +
+          "?action=saveNote" +
+          "&date=" + encodeURIComponent(activeDateKey) +
+          "&note=" + encodeURIComponent(note) +
+          "&user=" + encodeURIComponent(getCurrentUser());
+
+        const res = await fetch(url);
+        const text = await res.text();
+
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error("Apps Script returned invalid JSON: " + text.substring(0, 200));
+        }
+
+        if (result.success === false) {
+          throw new Error(result.message || "Unable to save note.");
+        }
+
+        notes[activeDateKey] = note;
+        renderCalendar();
+        closeModal();
+      } catch (err) {
+        console.error("Error saving note:", err);
+        alert("Unable to save note.\n\n" + err.message);
+      } finally {
+        hideOverlaySpinner();
+      }
     }
 
     function closeModal() {
       noteModal.style.display = "none";
+      activeDateKey = null;
+      noteText.value = "";
+      noteText.readOnly = true;
+      updateEditControls(false);
     }
 
     function prevMonth() {
