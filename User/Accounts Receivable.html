@@ -3,24 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Accounts Receivables</title>
+  <title>Accounts Receivables & Collection</title>
+
   <style>
+
+    /* =========================================
+       BODY
+    ========================================= */
+
     body {
       font-family: Arial, sans-serif;
-      margin: 0; padding: 20px;
+      margin: 0;
+      padding: 20px;
       background: linear-gradient(70deg, gold, orange, orangered);
       color: #222;
     }
+
     h2 {
       text-align: center;
       margin-bottom: 15px;
       color: #2c3e50;
     }
+
+
+    /* =========================================
+       TABS
+    ========================================= */
+
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 15px;
+      background: rgba(255,255,255,0.35);
+      padding: 5px;
+      border-radius: 10px;
+    }
+
+    .tab-button {
+      flex: 1;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 7px;
+      background: #34495e;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .tab-button:hover {
+      background: #2c3e50;
+    }
+
+    .tab-button.active {
+      background: #f57c00;
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+
+    /* =========================================
+       REFRESH
+    ========================================= */
+
     .refresh {
       display: flex;
       justify-content: flex-end;
       margin-bottom: 10px;
     }
+
     button {
       padding: 6px 12px;
       border: none;
@@ -29,53 +81,174 @@
       color: white;
       cursor: pointer;
     }
-    button:hover { background: #1a242f; }
-    
-    .card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 15px;
 
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
+    button:hover {
+      background: #1a242f;
+    }
+
+
+    /* =========================================
+       CARD
+    ========================================= */
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 15px;
+
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+
+    /* =========================================
+       TABLE
+    ========================================= */
 
     table {
       width: 100%;
       border-collapse: collapse;
       border: 1px solid #ccc;
     }
-    th, td {
+
+    th,
+    td {
       padding: 10px;
       border: 1px solid #ccc;
     }
+
     th {
       background: #34495e;
       color: #fff;
       text-align: center;
     }
-    td:nth-child(1) { width: 7%; text-align: center; }
-    td:nth-child(2) { width: 7%; text-align: center; }
-    td:nth-child(3) { width: 7%; text-align: center; }
-    td:nth-child(4) { width: 4%; text-align: center; }
-    td:nth-child(5) { width: 17%; }
-    td:nth-child(6) { width: 5%; }
-    td:nth-child(7) { width: 8%; text-align: center; }
-    td:nth-child(8) { width: 35%; text-align: left; }
-    td:nth-child(9) { width: 10%; text-align: right; }
+
+    td:nth-child(1) {
+      width: 6%;
+      text-align: center;
+    }
+
+    td:nth-child(2) {
+      width: 6%;
+      text-align: center;
+    }
+
+    td:nth-child(3) {
+      width: 6%;
+      text-align: center;
+    }
+
+    td:nth-child(4) {
+      width: 3%;
+      text-align: center;
+    }
+
+    td:nth-child(5) {
+      width: 16%;
+    }
+
+    td:nth-child(6) {
+      width: 5%;
+    }
+
+    td:nth-child(7) {
+      width: 7%;
+      text-align: center;
+    }
+
+    td:nth-child(8) {
+      width: 33%;
+      text-align: left;
+    }
+
+    td:nth-child(9) {
+      width: 8%;
+      text-align: right;
+    }
+
     .total-row {
       font-weight: bold;
       background: #f1f1f1;
     }
 
-    @media (max-width: 768px) {
+    td:nth-child(10) {
+      width: 10%;
+      text-align: right;
+    }
 
-  table {
-    min-width: 700px;
-  }
+/* =========================================
+   COLLECTION TABLE - SAME WIDTH AS AR
+========================================= */
 
+#collectionTable {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
+
+/* Column widths */
+#collectionTable th:nth-child(1),
+#collectionTable td:nth-child(1) {
+  width: 8%;
+}
+
+#collectionTable th:nth-child(2),
+#collectionTable td:nth-child(2) {
+  width: 5%;
+}
+
+#collectionTable th:nth-child(3),
+#collectionTable td:nth-child(3) {
+  width: 16%;
+}
+
+#collectionTable th:nth-child(4),
+#collectionTable td:nth-child(4) {
+  width: 9%;
+}
+
+#collectionTable th:nth-child(5),
+#collectionTable td:nth-child(5) {
+  width: 30%;
+}
+
+#collectionTable th:nth-child(6),
+#collectionTable td:nth-child(6) {
+  width: 8%;
+}
+
+#collectionTable th:nth-child(7),
+#collectionTable td:nth-child(7) {
+  width: 8%;
+}
+
+#collectionTable th:nth-child(8),
+#collectionTable td:nth-child(8) {
+  width: 8%;
+}
+
+#collectionTable th:nth-child(9),
+#collectionTable td:nth-child(9) {
+  width: 8%;
+}
+    /* =========================================
+       OVERDUE
+    ========================================= */
+
+    .overdue {
+      background-color: #ffd6d6 !important;
+      color: #b00000;
+    }
+
+    .overdue:hover {
+      background-color: #ffbcbc !important;
+    }
+
+
+    /* =========================================
+       LOADING
+    ========================================= */
 
     .loading {
       text-align: center;
@@ -83,268 +256,1028 @@
       color: #555;
     }
 
-    /* Overdue row */
-.overdue {
-  background-color: #ffd6d6 !important;
-  color: #b00000;
+
+    /* =========================================
+       TAB CONTENT
+    ========================================= */
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+
+    /* =========================================
+       COLLECTION SUMMARY
+    ========================================= */
+
+    .summary {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .summary-card {
+      background: white;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      min-width: 160px;
+    }
+
+    .summary-title {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .summary-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-top: 4px;
+    }
+
+
+    /* =========================================
+       MOBILE
+    ========================================= */
+
+    @media (max-width: 768px) {
+
+      table {
+        min-width: 700px;
+      }
+
+      .tab-button {
+        font-size: 13px;
+        padding: 10px 5px;
+      }
+
+      .summary-card {
+        flex: 1;
+        min-width: 120px;
+      }
+
+    }
+
+    /* =========================================
+   COLLECTION - OVER COLLECTED
+========================================= */
+
+#collectionTable tbody tr.over-collected {
+  background-color: #ffe0e0 !important;
 }
 
-.overdue:hover {
-  background-color: #ffbcbc !important;
+#collectionTable tbody tr.over-collected td {
+  color: #b30000;
+  font-weight: bold;
 }
   </style>
 </head>
+
 <body>
 
-  <div class="refresh">
-    <button onclick="refreshReceivables()">🔄 Refresh</button>
+
+  <!-- =========================================
+       TABS
+  ========================================= -->
+
+  <div class="tabs">
+
+    <button
+      class="tab-button active"
+      onclick="openTab('receivablesTab', this)">
+      📋 Receivables
+    </button>
+
+    <button
+      class="tab-button"
+      onclick="openTab('collectionTab', this)">
+      💰 Collection
+    </button>
+
   </div>
 
-  <div class="card">
-    <div id="loading" class="loading">Loading receivables data...</div>
-    <table id="arTable" style="display:none;">
-      <thead>
-        <tr>
-          <th>DATE</th>
-          <th>COUNTERED</th>
-          <th>DUE DATE</th>
-          <th>INVOICE</th>
-          <th>CUSTOMER</th>
-          <th>LOCATION</th>
-          <th>PO#</th>
-          <th>DESCRIPTION</th>
-          <th>AMOUNT</th>
-        </tr>
-      </thead>
-      <tbody id="arBody"></tbody>
-    </table>
+
+  <!-- =========================================
+       REFRESH
+  ========================================= -->
+
+  <div class="refresh">
+
+    <button onclick="refreshData()">
+      🔄 Refresh
+    </button>
+
   </div>
+
+
+  <!-- =========================================
+       RECEIVABLES TAB
+  ========================================= -->
+
+  <div id="receivablesTab" class="tab-content active">
+
+    <div class="card">
+
+      <div id="loadingAR" class="loading">
+        Loading receivables data...
+      </div>
+
+      <table id="arTable" style="display:none;">
+
+        <thead>
+
+          <tr>
+            <th>DATE</th>
+            <th>COUNTERED</th>
+            <th>DUE DATE</th>
+            <th>INVOICE</th>
+            <th>CUSTOMER</th>
+            <th>LOCATION</th>
+            <th>PO#</th>
+            <th>DESCRIPTION</th>
+            <th>AMOUNT</th>
+            <th>REMARKS</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="arBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       COLLECTION TAB
+  ========================================= -->
+
+  <div id="collectionTab" class="tab-content">
+
+    <!-- SUMMARY -->
+
+    <div class="summary">
+
+      <div class="summary-card">
+
+        <div class="summary-title">
+          TOTAL COLLECTION
+        </div>
+
+        <div
+          class="summary-value"
+          id="totalCollection">
+          0.00
+        </div>
+
+      </div>
+
+      <div class="summary-card">
+
+        <div class="summary-title">
+          COLLECTION RECORDS
+        </div>
+
+        <div
+          class="summary-value"
+          id="collectionCount">
+          0
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div id="loadingCollection" class="loading">
+        Loading collection data...
+      </div>
+
+      <table
+        id="collectionTable"
+        style="display:none;">
+
+        <thead>
+
+          <tr>
+            <th>DATE</th>
+            <th>INVOICE</th>
+            <th>CUSTOMER</th>
+            <th>PO#</th>
+            <th>DESCRIPTION</th>
+            <th>AMOUNT</th>
+            <th>EWT</th>
+            <th>DISCOUNT</th>
+            <th>COLLECTED</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="collectionBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
 
 <script>
-const webAppURL = "https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
+
+/* =========================================
+   GOOGLE APPS SCRIPT
+========================================= */
+
+const webAppURL =
+"https://script.google.com/macros/s/AKfycbyesH41EA5Va9e7LNR_bL_I65C-8P-t5pcO7ZBIwxEGY5kAvdFVmfGGYpYnmTH9Xjs6/exec";
+
+
+/* =========================================
+   FORMAT DATE
+========================================= */
 
 function formatDate(val) {
-  if (!val) return "";
-  
-  const d = new Date(val);
-  
-  if (isNaN(d.getTime())) return val;
 
-  return `${d.getDate().toString().padStart(2, "0")}-${d.toLocaleString("en-US", {
-    month: "short"
-  })}-${d.getFullYear()}`;
+  if (!val) return "";
+
+  const d = new Date(val);
+
+  if (isNaN(d.getTime())) {
+    return val;
+  }
+
+  return `${d.getDate().toString().padStart(2, "0")}-${d.toLocaleString(
+    "en-US",
+    {
+      month: "short"
+    }
+  )}-${d.getFullYear()}`;
+
 }
 
-async function loadReceivables(fromCache = true) {
 
-  const loading = document.getElementById("loading");
-  const table = document.getElementById("arTable");
-  const tbody = document.getElementById("arBody");
+/* =========================================
+   FORMAT AMOUNT
+========================================= */
 
-  tbody.innerHTML = "";
-  loading.style.display = "block";
-  table.style.display = "none";
+function formatAmount(amount) {
+
+  return Number(amount || 0).toLocaleString(
+    undefined,
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }
+  );
+
+}
+
+
+/* =========================================
+   OPEN TAB
+========================================= */
+
+function openTab(tabId, button) {
+
+  document.querySelectorAll(".tab-content")
+    .forEach(tab => {
+      tab.classList.remove("active");
+    });
+
+  document.querySelectorAll(".tab-button")
+    .forEach(btn => {
+      btn.classList.remove("active");
+    });
+
+  document.getElementById(tabId)
+    .classList.add("active");
+
+  button.classList.add("active");
+
+}
+
+
+/* =========================================
+   LOAD DATA
+========================================= */
+
+async function loadData(fromCache = true) {
 
   let data = null;
 
-  // =========================
-  // LOAD FROM CACHE
-  // =========================
+
+  /* =========================================
+     LOAD CACHE
+  ========================================= */
+
   if (fromCache) {
-    const cached = localStorage.getItem("receivablesData");
+
+    const cached =
+      localStorage.getItem("receivablesData");
 
     if (cached) {
+
       try {
+
         data = JSON.parse(cached);
-        console.log("Loaded from localStorage");
+
+        console.log(
+          "Loaded data from localStorage"
+        );
+
       } catch (e) {
-        console.error("Cache parse error", e);
+
+        console.error(
+          "Cache parse error",
+          e
+        );
+
         data = null;
+
       }
+
     }
+
   }
 
-  // =========================
-  // FETCH FROM GOOGLE SCRIPT
-  // =========================
+
+  /* =========================================
+     FETCH GOOGLE SHEET
+  ========================================= */
+
   if (!data) {
+
     try {
 
-      const res = await fetch(webAppURL + "?sheet=sales");
+      const res =
+        await fetch(webAppURL + "?sheet=sales");
 
       if (!res.ok) {
-        throw new Error("Network response not OK");
+
+        throw new Error(
+          "Network response not OK"
+        );
+
       }
 
       data = await res.json();
 
-      // Ensure array
+
       if (!Array.isArray(data)) {
-        console.error("Invalid JSON:", data);
-        loading.textContent = "Invalid data received.";
+
+        console.error(
+          "Invalid JSON:",
+          data
+        );
+
+        document.getElementById(
+          "loadingAR"
+        ).textContent =
+          "Invalid data received.";
+
         return;
+
       }
 
-      localStorage.setItem("receivablesData", JSON.stringify(data));
 
-      console.log("Fetched fresh data");
+      localStorage.setItem(
+        "receivablesData",
+        JSON.stringify(data)
+      );
+
+
+      console.log(
+        "Fetched fresh data"
+      );
+
 
     } catch (err) {
+
       console.error(err);
-      loading.textContent = "Error loading data.";
+
+      document.getElementById(
+        "loadingAR"
+      ).textContent =
+        "Error loading data.";
+
       return;
+
     }
+
   }
 
-  // =========================
-  // FILTER PENDING
-  // =========================
+
+  /* =========================================
+     DISPLAY BOTH TABS
+  ========================================= */
+
+  displayReceivables(data);
+
+  displayCollection(data);
+
+}
+
+
+/* =========================================
+   RECEIVABLES
+========================================= */
+
+function displayReceivables(data) {
+
+  const loading =
+    document.getElementById("loadingAR");
+
+  const table =
+    document.getElementById("arTable");
+
+  const tbody =
+    document.getElementById("arBody");
+
+
+  tbody.innerHTML = "";
+
+  loading.style.display = "block";
+  table.style.display = "none";
+
+
+  /* =========================================
+     FILTER PENDING
+  ========================================= */
+
   const pending = data.filter(r =>
-    (r.STATUS || "").toString().toUpperCase() === "PENDING"
+
+    (r.STATUS || "")
+      .toString()
+      .trim()
+      .toUpperCase() === "PENDING"
+
   );
 
-  // =========================
-  // GROUP BY INVOICE
-  // =========================
+
+  /* =========================================
+     GROUP BY INVOICE
+  ========================================= */
+
   const grouped = {};
+
 
   pending.forEach(r => {
 
-    const inv = r.INVOICE || "NO-INVOICE";
+    const inv =
+      r.INVOICE || "NO-INVOICE";
+
 
     if (!grouped[inv]) {
+
       grouped[inv] = {
+
         DATE: r.DATE || "",
-        COUNTERED: r.COUNTERED || "",
-        DUE: r.DUE || "",
-        INVOICE: inv,
-        CUSTOMER: r.CUSTOMER || "",
-        LOCATION: r.LOCATION || "",
-        PO: r.PO|| "",
-        DESCRIPTION: r.DESCRIPTION || "",
-        TOTAL: 0
+
+        COUNTERED:
+          r.COUNTERED || "",
+
+        DUE:
+          r.DUE || "",
+
+        INVOICE:
+          inv,
+
+        CUSTOMER:
+          r.CUSTOMER || "",
+
+        LOCATION:
+          r.LOCATION || "",
+
+        PO:
+          r.PO || "",
+
+        DESCRIPTION:
+          r.DESCRIPTION || "",
+
+        TOTAL: 0,
+        
+        REMARKS:
+          r.REMARKS || "",
+
+
       };
+
     }
 
-    grouped[inv].TOTAL += parseFloat(r.TOTAL) || 0;
+
+    grouped[inv].TOTAL +=
+      parseFloat(r.TOTAL) || 0;
 
   });
 
-  // =========================
-  // SORT
-  // =========================
-  const sorted = Object.values(grouped).sort((a, b) =>
-    new Date(b.DATE) - new Date(a.DATE)
-  );
 
-  // =========================
-  // DISPLAY TABLE
-  // =========================
+  /* =========================================
+     SORT
+  ========================================= */
+
+  const sorted =
+    Object.values(grouped).sort(
+      (a, b) =>
+        new Date(b.DATE) -
+        new Date(a.DATE)
+    );
+
+
+  /* =========================================
+     DISPLAY
+  ========================================= */
+
   let grandTotal = 0;
 
- const today = new Date();
-today.setHours(0, 0, 0, 0);
 
-sorted.forEach(item => {
+  const today = new Date();
 
-  grandTotal += item.TOTAL;
+  today.setHours(
+    0, 0, 0, 0
+  );
 
-  const tr = document.createElement("tr");
 
-  // Check if overdue
-  const dueDate = new Date(item.DUE);
+  sorted.forEach(item => {
 
-  if (
-    item.DUE &&
-    !isNaN(dueDate.getTime()) &&
-    dueDate < today
-  ) {
-    tr.classList.add("overdue");
-  }
+    grandTotal += item.TOTAL;
+
+
+    const tr =
+      document.createElement("tr");
+
+
+    /* OVERDUE */
+
+    const dueDate =
+      new Date(item.DUE);
+
+
+    if (
+      item.DUE &&
+      !isNaN(dueDate.getTime()) &&
+      dueDate < today
+    ) {
+
+      tr.classList.add("overdue");
+
+    }
+
 
     tr.innerHTML = `
-      <td>${formatDate(item.DATE)}</td>
-      <td>${formatDate(item.COUNTERED)}</td>
-      <td>${formatDate(item.DUE)}</td>
-      <td>${item.INVOICE}</td>
-      <td>${item.CUSTOMER}</td>
-      <td>${item.LOCATION}</td>
-      <td>${item.PO}</td>
-      <td>${item.DESCRIPTION}</td>
-      <td style="text-align:right;">
-        ${item.TOTAL.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        })}
+
+      <td>
+        ${formatDate(item.DATE)}
       </td>
+
+      <td>
+        ${formatDate(item.COUNTERED)}
+      </td>
+
+      <td>
+        ${formatDate(item.DUE)}
+      </td>
+
+      <td>
+        ${item.INVOICE}
+      </td>
+
+      <td>
+        ${item.CUSTOMER}
+      </td>
+
+      <td>
+        ${item.LOCATION}
+      </td>
+
+      <td>
+        ${item.PO}
+      </td>
+
+      <td>
+        ${item.DESCRIPTION}
+      </td>
+
+      <td style="text-align:right;">
+        ${formatAmount(item.TOTAL)}
+      </td>
+
+       <td>
+        ${item.REMARKS}
+      </td>
+
     `;
+
 
     tbody.appendChild(tr);
 
   });
 
-  // =========================
-  // TOTAL ROW
-  // =========================
-  const trTotal = document.createElement("tr");
 
-  trTotal.className = "total-row";
+  /* =========================================
+     TOTAL
+  ========================================= */
+
+  const trTotal =
+    document.createElement("tr");
+
+  trTotal.className =
+    "total-row";
+
 
   trTotal.innerHTML = `
-    <td colspan="8" style="text-align:right;">TOTAL</td>
-    <td style="text-align:right;">
-      ${grandTotal.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })}
+
+    <td colspan="8"
+        style="text-align:right;">
+
+      TOTAL
+
     </td>
+
+    <td style="text-align:right;">
+
+      ${formatAmount(grandTotal)}
+
+    </td>
+
   `;
+
 
   tbody.appendChild(trTotal);
 
+
+  loading.style.display = "none";
+
+  table.style.display = "table";
+
+}
+
+
+/* =========================================
+   COLLECTION
+========================================= */
+
+function displayCollection(data) {
+
+  const loading = document.getElementById("loadingCollection");
+  const table = document.getElementById("collectionTable");
+  const tbody = document.getElementById("collectionBody");
+
+  tbody.innerHTML = "";
+
+  loading.style.display = "block";
+  table.style.display = "none";
+
+
+  /* =========================================
+     FIND COLUMN NAME
+  ========================================= */
+
+  function getField(row, fieldName) {
+
+    const wanted =
+      fieldName.toString()
+        .trim()
+        .toUpperCase();
+
+    const key = Object.keys(row).find(key =>
+
+      key.toString()
+        .trim()
+        .toUpperCase() === wanted
+
+    );
+
+    return key ? row[key] : "";
+
+  }
+
+
+  /* =========================================
+     FILTER ONLY RECORDS WITH CDATE
+  ========================================= */
+
+  const collections = data.filter(row => {
+
+    const cdate = getField(row, "CDATE");
+
+    return (
+      cdate !== undefined &&
+      cdate !== null &&
+      String(cdate).trim() !== ""
+    );
+
+  });
+
+
+  console.log(
+    "Total records:",
+    data.length
+  );
+
+  console.log(
+    "Collection records:",
+    collections.length
+  );
+
+
+  /* =========================================
+     SORT BY CDATE - LATEST FIRST
+  ========================================= */
+
+  collections.sort((a, b) => {
+
+    const dateA =
+      new Date(getField(a, "CDATE"));
+
+    const dateB =
+      new Date(getField(b, "CDATE"));
+
+    return dateB.getTime() - dateA.getTime();
+
+  });
+
+
+  /* =========================================
+     TOTALS
+  ========================================= */
+
+  let totalAmount = 0;
+  let totalEWT = 0;
+  let totalDiscount = 0;
+  let totalCollected = 0;
+
+
+  /* =========================================
+     DISPLAY COLLECTION
+  ========================================= */
+
+  collections.forEach(item => {
+
+    const cdate =
+      getField(item, "CDATE");
+
+    const invoice =
+      getField(item, "INVOICE");
+
+    const customer =
+      getField(item, "CUSTOMER");
+
+    const po =
+      getField(item, "PO");
+
+    const description =
+      getField(item, "DESCRIPTION");
+
+    const amount =
+      parseFloat(getField(item, "TOTAL")) || 0;
+
+    const ewt =
+      parseFloat(getField(item, "EWT")) || 0;
+
+    const discount =
+      parseFloat(getField(item, "DISCOUNT")) || 0;
+
+    const collected =
+      parseFloat(getField(item, "COLLECTED")) || 0;
+
+
+    totalAmount += amount;
+    totalEWT += ewt;
+    totalDiscount += discount;
+    totalCollected += collected;
+
+
+    const tr = document.createElement("tr");
+
+// Highlight if COLLECTED is greater than AMOUNT
+if (collected > amount) {
+  tr.classList.add("over-collected");
+}
+
+tr.innerHTML = `
+  <td>${formatDate(cdate)}</td>
+  <td>${invoice || ""}</td>
+  <td>${customer || ""}</td>
+  <td>${po || ""}</td>
+  <td>${description || ""}</td>
+
+  <td style="text-align:right;">
+    ${formatAmount(amount)}
+  </td>
+
+  <td style="text-align:right;">
+    ${formatAmount(ewt)}
+  </td>
+
+  <td style="text-align:right;">
+    ${formatAmount(discount)}
+  </td>
+
+  <td style="text-align:right;font-weight:bold;">
+    ${formatAmount(collected)}
+  </td>
+`;
+
+tbody.appendChild(tr);
+
+  });
+
+
+  /* =========================================
+     NO RECORDS
+  ========================================= */
+
+  if (collections.length === 0) {
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td colspan="9"
+          style="
+            text-align:center;
+            padding:25px;
+            color:#777;
+          ">
+
+        No collection records found.
+
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+
+  }
+
+
+  /* =========================================
+     TOTAL ROW
+  ========================================= */
+
+  if (collections.length > 0) {
+
+    const trTotal =
+      document.createElement("tr");
+
+    trTotal.className =
+      "total-row";
+
+
+    trTotal.innerHTML = `
+
+      <td colspan="5"
+          style="text-align:right;">
+
+        TOTAL
+
+      </td>
+
+      <td style="text-align:right;">
+        ${formatAmount(totalAmount)}
+      </td>
+
+      <td style="text-align:right;">
+        ${formatAmount(totalEWT)}
+      </td>
+
+      <td style="text-align:right;">
+        ${formatAmount(totalDiscount)}
+      </td>
+
+      <td style="text-align:right;">
+        ${formatAmount(totalCollected)}
+      </td>
+
+    `;
+
+
+    tbody.appendChild(trTotal);
+
+  }
+
+
+  /* =========================================
+     SUMMARY
+  ========================================= */
+
+  document.getElementById(
+    "totalCollection"
+  ).textContent =
+    formatAmount(totalCollected);
+
+
+  document.getElementById(
+    "collectionCount"
+  ).textContent =
+    collections.length;
+
+
   loading.style.display = "none";
   table.style.display = "table";
+
 }
 
-function refreshReceivables() {
-  localStorage.removeItem("receivablesData");
-  loadReceivables(false);
+
+/* =========================================
+   MANUAL REFRESH
+========================================= */
+
+function refreshData() {
+
+  localStorage.removeItem(
+    "receivablesData"
+  );
+
+  loadData(false);
+
 }
+
+
+/* =========================================
+   MIDNIGHT REFRESH
+========================================= */
 
 function scheduleMidnightRefresh() {
-const now = new Date();
 
-// Calculate the next 12:00 AM
-const nextMidnight = new Date();
-nextMidnight.setHours(24, 0, 0, 0);
-
-const timeUntilMidnight = nextMidnight.getTime() - now.getTime();
-
-console.log(`Next automatic refresh in ${Math.round(timeUntilMidnight / 1000)} seconds`);
-
-setTimeout(() => {
-console.log("Auto refreshing receivables data at midnight...");
+  const now = new Date();
 
 
-// Clear old cached data
-localStorage.removeItem("receivablesData");
-
-// Load fresh data
-loadReceivables(false);
-
-// Schedule the next midnight refresh
-scheduleMidnightRefresh();
+  const nextMidnight =
+    new Date();
 
 
-}, timeUntilMidnight);
+  nextMidnight.setHours(
+    24,
+    0,
+    0,
+    0
+  );
+
+
+  const timeUntilMidnight =
+    nextMidnight.getTime() -
+    now.getTime();
+
+
+  console.log(
+    `Next automatic refresh in ${
+      Math.round(
+        timeUntilMidnight / 1000
+      )
+    } seconds`
+  );
+
+
+  setTimeout(() => {
+
+    console.log(
+      "Auto refreshing data at midnight..."
+    );
+
+
+    localStorage.removeItem(
+      "receivablesData"
+    );
+
+
+    loadData(false);
+
+
+    scheduleMidnightRefresh();
+
+
+  }, timeUntilMidnight);
+
 }
 
-// AUTO LOAD
-document.addEventListener("DOMContentLoaded", () => {
-loadReceivables(true);
-scheduleMidnightRefresh();
-});
+
+/* =========================================
+   AUTO LOAD
+========================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    loadData(true);
+
+    scheduleMidnightRefresh();
+
+  }
+);
 
 </script>
+
 </body>
 </html>
