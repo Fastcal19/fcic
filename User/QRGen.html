@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FCIC QR Code Generator</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f8;
+    color: #263238;
+}
+
+.container {
+    max-width: 650px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 5px 25px rgba(0,0,0,.10);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.header h1 {
+    margin: 0;
+    color: #f57c00;
+}
+
+.header p {
+    color: #777;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.url-input {
+    display: flex;
+    gap: 8px;
+}
+
+input {
+    flex: 1;
+    padding: 13px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-generate {
+    background: #f57c00;
+    color: white;
+}
+
+.btn-copy {
+    background: #455a64;
+    color: white;
+}
+
+.btn-open {
+    background: #1976d2;
+    color: white;
+}
+
+.btn-download {
+    background: #388e3c;
+    color: white;
+}
+
+.btn-clear {
+    background: #e0e0e0;
+}
+
+button:hover {
+    opacity: .9;
+}
+
+.qr-section {
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+/* =========================================
+   QR CODE WITH CENTER LOGO
+========================================= */
+
+#qrcode-wrapper {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+}
+
+#qrcode {
+    width: 300px;
+    height: 300px;
+}
+
+#qrcode img {
+    width: 300px !important;
+    height: 300px !important;
+    display: block;
+}
+
+/* White area behind logo */
+.qr-logo {
+    position: absolute;
+
+    width: 72px;
+    height: 72px;
+
+    background: white;
+
+    border-radius: 12px;
+
+    padding: 7px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 1px 5px rgba(0,0,0,.20);
+
+    z-index: 10;
+}
+
+.qr-logo img {
+    width: 58px;
+    height: 58px;
+
+    object-fit: contain;
+    display: block;
+}
+
+/* =========================================
+   URL
+========================================= */
+
+.url-box {
+    background: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 15px;
+    text-align: left;
+    word-break: break-all;
+}
+
+.url-box a {
+    color: #1565c0;
+    text-decoration: none;
+}
+
+.url-box a:hover {
+    text-decoration: underline;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.hidden {
+    display: none;
+}
+
+.message {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #777;
+}
+
+@media(max-width:600px) {
+
+    .container {
+        margin: 20px auto;
+        padding: 12px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .url-input {
+        flex-direction: column;
+    }
+
+    .url-input button {
+        width: 100%;
+    }
+
+    #qrcode-wrapper {
+        width: 260px;
+        height: 260px;
+    }
+
+    #qrcode {
+        width: 260px;
+        height: 260px;
+    }
+
+    #qrcode img {
+        width: 260px !important;
+        height: 260px !important;
+    }
+
+    .qr-logo {
+        width: 64px;
+        height: 64px;
+    }
+
+    .qr-logo img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .actions button {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <div class="header">
+            <h1>FCIC QR Code Generator</h1>
+            <p>Generate a QR code for any URL</p>
+        </div>
+
+        <label for="urlInput">Enter URL</label>
+
+        <div class="url-input">
+
+            <input
+                type="url"
+                id="urlInput"
+                placeholder="https://fcic.xyz"
+                autocomplete="off"
+            >
+
+            <button
+                class="btn-generate"
+                onclick="generateQR()">
+                Generate QR
+            </button>
+
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div id="result" class="qr-section hidden">
+
+            <h3>QR Code</h3>
+
+            <!-- QR CODE + CENTER LOGO -->
+            <div id="qrcode-wrapper">
+
+                <div id="qrcode"></div>
+
+                <div class="qr-logo">
+
+                    <img
+                        src="fcic logo.png"
+                        alt="FCIC Logo">
+
+                </div>
+
+            </div>
+
+            <div class="url-box">
+
+                <strong>QR Link:</strong><br>
+
+                <a
+                    id="qrLink"
+                    href="#"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                </a>
+
+            </div>
+
+            <div class="actions">
+
+                <button
+                    class="btn-copy"
+                    onclick="copyURL()">
+                    Copy Link
+                </button>
+
+                <button
+                    class="btn-open"
+                    onclick="openURL()">
+                    Open Link
+                </button>
+
+                <button
+                    class="btn-download"
+                    onclick="downloadQR()">
+                    Download QR
+                </button>
+
+                <button
+                    class="btn-clear"
+                    onclick="clearQR()">
+                    Clear
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let currentURL = "";
+
+
+/* =========================================
+   GENERATE QR
+========================================= */
+
+function generateQR() {
+
+    let url = document
+        .getElementById("urlInput")
+        .value
+        .trim();
+
+    if (!url) {
+
+        document.getElementById("message")
+            .textContent = "Please enter a URL.";
+
+        return;
+    }
+
+    /* Add HTTPS automatically */
+
+    if (!/^https?:\/\//i.test(url)) {
+
+        url = "https://" + url;
+
+    }
+
+    /* Validate URL */
+
+    try {
+
+        new URL(url);
+
+    } catch (error) {
+
+        document.getElementById("message")
+            .textContent = "Please enter a valid URL.";
+
+        return;
+    }
+
+    currentURL = url;
+
+    document.getElementById("message")
+        .textContent = "";
+
+    /* Remove old QR */
+
+    document.getElementById("qrcode")
+        .innerHTML = "";
+
+    /* Generate QR */
+
+    new QRCode(
+        document.getElementById("qrcode"),
+        {
+            text: url,
+
+            width: 300,
+
+            height: 300,
+
+            colorDark: "#000000",
+
+            colorLight: "#ffffff",
+
+            /* Highest error correction */
+            correctLevel: QRCode.CorrectLevel.H
+        }
+    );
+
+    /* Display URL */
+
+    const link =
+        document.getElementById("qrLink");
+
+    link.href = url;
+
+    link.textContent = url;
+
+    /* Show result */
+
+    document.getElementById("result")
+        .classList.remove("hidden");
+
+}
+
+
+/* =========================================
+   COPY URL
+========================================= */
+
+function copyURL() {
+
+    if (!currentURL) return;
+
+    navigator.clipboard
+        .writeText(currentURL)
+        .then(() => {
+
+            alert("URL copied to clipboard.");
+
+        });
+
+}
+
+
+/* =========================================
+   OPEN URL
+========================================= */
+
+function openURL() {
+
+    if (!currentURL) return;
+
+    window.open(
+        currentURL,
+        "_blank",
+        "noopener,noreferrer"
+    );
+
+}
+
+
+/* =========================================
+   DOWNLOAD QR WITH LOGO
+========================================= */
+
+/* =========================================
+   DOWNLOAD QR WITH FCIC LOGO
+========================================= */
+
+async function downloadQR() {
+
+    const qrImg = document.querySelector("#qrcode img");
+    const logoImg = document.querySelector(".qr-logo img");
+
+    if (!qrImg) {
+        alert("Please generate a QR code first.");
+        return;
+    }
+
+    try {
+
+        /* Make sure QR image is loaded */
+        if (!qrImg.complete) {
+            await new Promise((resolve, reject) => {
+                qrImg.onload = resolve;
+                qrImg.onerror = reject;
+            });
+        }
+
+        /* Make sure logo is loaded */
+        if (!logoImg.complete) {
+            await new Promise((resolve, reject) => {
+                logoImg.onload = resolve;
+                logoImg.onerror = reject;
+            });
+        }
+
+        /* =====================================
+           CREATE HIGH-RESOLUTION CANVAS
+        ===================================== */
+
+        const canvas = document.createElement("canvas");
+
+        const size = 1200;
+
+        canvas.width = size;
+        canvas.height = size;
+
+        const ctx = canvas.getContext("2d");
+
+        /* White background */
+
+        ctx.fillStyle = "#ffffff";
+
+        ctx.fillRect(
+            0,
+            0,
+            size,
+            size
+        );
+
+        /* =====================================
+           DRAW QR CODE
+        ===================================== */
+
+        ctx.drawImage(
+            qrImg,
+            0,
+            0,
+            size,
+            size
+        );
+
+        /* =====================================
+           FCIC LOGO
+        ===================================== */
+
+        const logoSize = 220;
+
+        const logoX =
+            (size - logoSize) / 2;
+
+        const logoY =
+            (size - logoSize) / 2;
+
+        /* White background behind logo */
+
+        ctx.fillStyle = "#ffffff";
+
+        ctx.beginPath();
+
+        ctx.roundRect(
+            logoX - 20,
+            logoY - 20,
+            logoSize + 40,
+            logoSize + 40,
+            30
+        );
+
+        ctx.fill();
+
+        /* Draw logo */
+
+        ctx.drawImage(
+            logoImg,
+            logoX,
+            logoY,
+            logoSize,
+            logoSize
+        );
+
+        /* =====================================
+           CONVERT TO PNG
+        ===================================== */
+
+        canvas.toBlob(function(blob) {
+
+            if (!blob) {
+
+                alert("Unable to create the QR image.");
+
+                return;
+            }
+
+            /* Create temporary download URL */
+
+            const url =
+                URL.createObjectURL(blob);
+
+            const downloadLink =
+                document.createElement("a");
+
+            downloadLink.href = url;
+
+            downloadLink.download =
+                "FCIC-QR-Code.png";
+
+            document.body.appendChild(
+                downloadLink
+            );
+
+            downloadLink.click();
+
+            document.body.removeChild(
+                downloadLink
+            );
+
+            /* Release memory */
+
+            setTimeout(function() {
+
+                URL.revokeObjectURL(url);
+
+            }, 1000);
+
+        }, "image/png");
+
+    } catch (error) {
+
+        console.error(
+            "QR download error:",
+            error
+        );
+
+        alert(
+            "Unable to download the QR code. Please generate the QR code again."
+        );
+
+    }
+}
+
+/* =========================================
+   CLEAR
+========================================= */
+
+function clearQR() {
+
+    document.getElementById("urlInput")
+        .value = "";
+
+    document.getElementById("qrcode")
+        .innerHTML = "";
+
+    document.getElementById("qrLink")
+        .textContent = "";
+
+    document.getElementById("qrLink")
+        .href = "#";
+
+    document.getElementById("result")
+        .classList.add("hidden");
+
+    document.getElementById("message")
+        .textContent = "";
+
+    currentURL = "";
+
+}
+
+
+/* =========================================
+   ENTER KEY
+========================================= */
+
+document.getElementById("urlInput")
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+
+                generateQR();
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
