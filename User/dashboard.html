@@ -480,59 +480,41 @@
       updateEditControls(false);
     }
 
-    function enableEditing() {
-      if (!canEdit()) {
-        alert("You do not have permission to edit calendar notes.");
-        return;
-      }
-      noteText.readOnly = false;
-      noteText.focus();
-      updateEditControls(true);
-    }
 
+    // ======== SAVE NOTE ========
     async function saveNote() {
-      if (!canEdit()) {
-        alert("You do not have permission to edit calendar notes.");
-        return;
-      }
-
-      if (!activeDateKey) return;
-
+      if (!canEdit()) { alert("You do not have permission to edit calendar notes."); return; }
+      if (!activeDateKey) { alert("Please select a date first."); return; }
       const note = noteText.value.trim();
-
       try {
         showOverlaySpinner();
-
-        const url =
-          API_URL +
-          "?action=saveNote" +
-          "&date=" + encodeURIComponent(activeDateKey) +
-          "&note=" + encodeURIComponent(note) +
-          "&user=" + encodeURIComponent(getCurrentUser());
-
-        const res = await fetch(url);
-        const text = await res.text();
-
+        const formData = new FormData();
+        formData.append("type", "addNote");
+        formData.append("date", activeDateKey);
+        formData.append("note", note);
+        formData.append("user", getCurrentUser());
+        const response = await fetch(API_URL, { method: "POST", body: formData });
+        const responseText = await response.text();
+        console.log("Save Note Response:", responseText);
         let result;
-        try {
-          result = JSON.parse(text);
-        } catch (e) {
-          throw new Error("Apps Script returned invalid JSON: " + text.substring(0, 200));
-        }
-
-        if (result.success === false) {
-          throw new Error(result.message || "Unable to save note.");
-        }
-
+        try { result = JSON.parse(responseText); }
+        catch (e) { throw new Error("Apps Script returned invalid JSON:\n\n" + responseText.substring(0, 500)); }
+        if (result && result.success === false) throw new Error(result.message || "Unable to save note.");
         notes[activeDateKey] = note;
         renderCalendar();
         closeModal();
+        alert("✅ Note saved successfully!");
       } catch (err) {
         console.error("Error saving note:", err);
-        alert("Unable to save note.\n\n" + err.message);
-      } finally {
-        hideOverlaySpinner();
-      }
+        alert("❌ Unable to save note.\n\n" + err.message);
+      } finally { hideOverlaySpinner(); }
+    }
+
+    function enableEditing() {
+      if (!canEdit()) { alert("You do not have permission to edit calendar notes."); return; }
+      noteText.readOnly = false;
+      noteText.focus();
+      updateEditControls(true);
     }
 
     function closeModal() {
