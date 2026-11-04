@@ -290,11 +290,23 @@ const m = monthFilter.value;
 );
 
 
-  const agentTotals = {};
-  filtered.forEach(s => agentTotals[s.agent] = (agentTotals[s.agent] || 0) + s.amount);
+  // Determine each agent's sales total separately for each calendar month.
+  // This keeps a transaction's rate the same whether filters show one month
+  // or "All" months/years/agents.
+  const monthlyAgentTotals = new Map();
+  const monthlyKey = s => JSON.stringify([
+    s.agent,
+    s.date.getFullYear(),
+    s.date.getMonth()
+  ]);
 
   filtered.forEach(s => {
-    const rate = getRate(agentTotals[s.agent]);
+    const key = monthlyKey(s);
+    monthlyAgentTotals.set(key, (monthlyAgentTotals.get(key) || 0) + s.amount);
+  });
+
+  filtered.forEach(s => {
+    const rate = getRate(monthlyAgentTotals.get(monthlyKey(s)) || 0);
     const commission = s.net * rate;
     const balance = commission - s.paid;
 
