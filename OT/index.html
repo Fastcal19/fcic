@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OT & Pay Calculator</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #f5f7fb;
+}
+
+.container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.left-panel, .right-panel {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.left-panel {
+  width: 40%;
+}
+
+.right-panel {
+  width: 60%;
+}
+
+h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 10px;
+}
+
+input, select, button {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.result {
+  margin-top: 15px;
+  background: #f2f2f2;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.employee-list {
+  margin-top: 15px;
+}
+
+.employee-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  background: #fafafa;
+  transition: 0.2s;
+}
+
+.employee-card:hover {
+  background: #eef4ff;
+  border-color: #2563eb;
+}
+
+.employee-name {
+  font-weight: bold;
+  color: #222;
+}
+
+.small {
+  font-size: 14px;
+  color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- LEFT SIDE -->
+  <div class="left-panel">
+    <h3>Employee List</h3>
+    <div class="employee-list" id="employeeList"></div>
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="right-panel">
+    <h3>OT & Payment Calculator</h3>
+
+    <label>Selected Employee</label>
+    <input type="text" id="selectedEmployee" readonly placeholder="Click employee from left side">
+
+    <label>Monthly Rate</label>
+    <input type="number" id="monthlyRate" readonly>
+
+    <label>Daily Rate</label>
+    <input type="number" id="dailyRate" readonly>
+
+    <label>Day Type</label>
+    <select id="dayType">
+      <option value="regular">Regular Day</option>
+      <option value="rest">Rest Day</option>
+      <option value="special">Special Holiday</option>
+      <option value="holiday">Regular Holiday</option>
+      <option value="rest_special">Rest Day + Special Holiday</option>
+      <option value="rest_holiday">Rest Day + Regular Holiday</option>
+    </select>
+
+    <label>Time In</label>
+    <input type="time" id="timeIn">
+
+    <label>Time Out</label>
+    <input type="time" id="timeOut">
+
+    <button onclick="compute()">Compute Pay</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+</div>
+
+<script>
+// HARD CODED EMPLOYEE LIST
+const employees = [
+  { name: "ASUNAR, EDGAR", monthly: 19000.00, daily: 730.77 },
+  { name: "BUENAFLOR, MARC LOUISE", monthly: 40000.00, daily: 1538.46 },
+  { name: "DUBLADO, ANJOE", monthly: 25000.00, daily: 961.54 },
+  { name: "EDIJER, VICTOR", monthly: 19000.00, daily: 730.77 },
+  { name: "ERODIAS, JOEBERT", monthly: 25000.00, daily: 961.54 },
+  { name: "RUBALA, MARY JEY", monthly: 20000.00, daily: 769.23 },
+  { name: "HITA, ANDREA", monthly: 18000.00, daily: 692.31 },
+  { name: "DE GUZMAN, JEREMEE", monthly: 21000.00, daily: 807.69 },
+  { name: "BAROSO, GILBERT", monthly: 23000.00, daily: 884.62 }
+];
+
+renderEmployees();
+
+function renderEmployees() {
+  const list = document.getElementById("employeeList");
+  list.innerHTML = "";
+
+  employees.forEach((emp, index) => {
+    const div = document.createElement("div");
+    div.className = "employee-card";
+    div.innerHTML = `
+      <div class="employee-name">${emp.name}</div>
+      <div class="small">Monthly Rate: ₱${emp.monthly.toFixed(2)}</div>
+      <div class="small">Daily Rate: ₱${emp.daily.toFixed(2)}</div>
+    `;
+    div.onclick = () => selectEmployee(index);
+    list.appendChild(div);
+  });
+}
+
+function selectEmployee(index) {
+  const emp = employees[index];
+  document.getElementById("selectedEmployee").value = emp.name;
+  document.getElementById("monthlyRate").value = emp.monthly.toFixed(2);
+  document.getElementById("dailyRate").value = emp.daily.toFixed(2);
+}
+
+function compute() {
+  const daily = Number(document.getElementById("dailyRate").value);
+  if (!daily) return alert("Please select an employee first.");
+
+  let start = toMin(document.getElementById("timeIn").value);
+  let end = toMin(document.getElementById("timeOut").value);
+
+  if (!document.getElementById("timeIn").value || !document.getElementById("timeOut").value) {
+    return alert("Please enter Time In and Time Out.");
+  }
+
+  if (end <= start) end += 1440;
+
+  let worked = end - start;
+
+  // Deduct lunch break 12:00 PM - 1:00 PM if overlapped
+  if (overlap(start, end, 720, 780)) worked -= 60;
+
+  const basicHour = daily / 8;
+  const basicMin = basicHour / 60;
+
+  const nightMins = nightDiff(start, end);
+
+  let regularMins = 0;
+  let otMins = 0;
+  let undertimeMins = 0;
+
+  let regMult = 0;
+  let otMult = 0;
+  let regLabel = "N/A";
+  let otLabel = "N/A";
+
+  const dayType = document.getElementById("dayType").value;
+
+  switch(dayType) {
+    case "regular":
+      regularMins = Math.min(worked, 480);
+      otMins = Math.max(0, worked - 480);
+      undertimeMins = Math.max(0, 480 - worked);
+      regMult = 1.00;
+      otMult = 1.25;
+      regLabel = "Regular Day";
+      otLabel = "Regular OT";
+      break;
+
+    case "rest":
+      otMins = worked;
+      otMult = 1.30;
+      otLabel = "Rest Day OT";
+      break;
+
+    case "special":
+      regularMins = Math.min(worked, 480);
+      otMins = Math.max(0, worked - 480);
+      undertimeMins = Math.max(0, 480 - worked);
+      regMult = 1.30;
+      otMult = 1.69;
+      regLabel = "Special Holiday";
+      otLabel = "Special Holiday OT";
+      break;
+
+    case "holiday":
+      regularMins = Math.min(worked, 480);
+      otMins = Math.max(0, worked - 480);
+      undertimeMins = Math.max(0, 480 - worked);
+      regMult = 2.00;
+      otMult = 2.60;
+      regLabel = "Regular Holiday";
+      otLabel = "Regular Holiday OT";
+      break;
+
+    case "rest_special":
+      otMins = worked;
+      otMult = 1.50;
+      otLabel = "Rest Day + Special Holiday";
+      break;
+
+    case "rest_holiday":
+      otMins = worked;
+      otMult = 2.60;
+      otLabel = "Rest Day + Regular Holiday";
+      break;
+  }
+
+  const regPay = regularMins * basicMin * regMult;
+  const otPay = otMins * basicMin * otMult;
+  const ndRate = basicHour * 0.10;
+  const ndPay = nightMins * basicMin * 0.10;
+  const undertimeDeduction = undertimeMins * basicMin;
+
+  const total = regPay + otPay + ndPay;
+
+  document.getElementById("result").innerHTML = `
+<b>RATE BREAKDOWN</b><br>
+Basic Hourly Rate: ₱${basicHour.toFixed(2)}<br>
+Basic Per Minute: ₱${basicMin.toFixed(4)}<br>
+Night Diff Rate (10%): ₱${ndRate.toFixed(2)} / hour<br><br>
+
+<b>Applicable Rates</b><br>
+${regLabel !== "N/A" ? `${regLabel} Rate: ₱${(basicHour * regMult).toFixed(2)} / hour<br>` : ""}
+${otLabel}: ₱${(basicHour * otMult).toFixed(2)} / hour<br><br>
+
+<b>TIME SUMMARY</b><br>
+Worked: ${fmt(worked)}<br>
+Regular: ${fmt(regularMins)}<br>
+Overtime: ${fmt(otMins)}<br>
+Undertime: ${fmt(undertimeMins)}<br>
+Night Diff: ${fmt(nightMins)}<br><br>
+
+<b>PAY SUMMARY</b><br>
+Regular Pay: ₱${regPay.toFixed(2)}<br>
+OT Pay: ₱${otPay.toFixed(2)}<br>
+ND Pay: ₱${ndPay.toFixed(2)}<br>
+${undertimeMins > 0 ? `<span style="color:red">Undertime Deduction: -₱${undertimeDeduction.toFixed(2)}</span><br>` : ""}
+<hr>
+
+<b>TOTAL PAY: ₱${total.toFixed(2)}</b>
+`;
+}
+
+function toMin(t) {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function fmt(m) {
+  return `${Math.floor(m / 60)}h ${m % 60}m`;
+}
+
+function overlap(a, b, c, d) {
+  return a < d && b > c;
+}
+
+function nightDiff(s, e) {
+  let n = 0;
+  for (let i = s; i < e; i++) {
+    const t = i % 1440;
+    if (t >= 1320 || t < 360) n++;
+  }
+  return n;
+}
+</script>
+
+</body>
+</html>
