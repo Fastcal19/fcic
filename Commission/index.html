@@ -449,6 +449,114 @@ tbody tr:nth-child(even) {
   .loading-logo { animation: none; }
 }
 
+
+/* PRINT-ONLY SUMMARY AND TOTALS: leave the live dashboard unchanged. */
+.summary.print-only-summary,
+#commissionTableFooter { display: none; }
+
+.commission-totals-row {
+  font-weight: 700;
+  border-top: 2px solid #333;
+}
+.commission-totals-row .totals-label { text-align: right; }
+
+@media print {
+  .summary.screen-summary { display: none !important; }
+  .summary.print-only-summary { display: grid !important; }
+  #commissionTableFooter { display: table-row-group !important; } /* Once, at the bottom of the report. */
+  .commission-totals-row { background: #efefef !important; print-color-adjust: exact; }
+}
+
+/* PRINT CONTROLS */
+.print-report-button,
+.print-invoice-button {
+  background: #1765ad;
+  color: white;
+  border: 0;
+  padding: 11px 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.print-report-button { margin-left: auto; }
+.add-expense-button { margin-left: 0; }
+.print-report-button:hover,
+.print-invoice-button:hover { background: #0b4f8c; }
+.print-report-button:disabled { opacity: .5; cursor: not-allowed; }
+.detail-actions { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.print-invoice-button { padding: 9px 13px; font-size: 13px; }
+.print-report-header,
+.invoice-print-only { display: none; }
+
+@media print {
+  @page { size: A4 landscape; margin: 12mm; }
+  *, *::before, *::after { box-shadow: none !important; }
+  html, body { background: white !important; color: #111 !important; }
+  .container { padding: 0 !important; }
+  .filters, .modal-overlay, .loading-overlay, .details-row,
+  .detail-actions { display: none !important; }
+  .print-report-header {
+    display: flex !important;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid #d86f0b;
+    padding-bottom: 8px;
+  }
+  .print-report-header img { width: 52px; height: 52px; object-fit: contain; }
+  .print-report-header h1 { margin: 0 0 4px; font-size: 21px; }
+  .print-report-header p { margin: 0; font-size: 11px; color: #444; }
+  .summary { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .card { padding: 9px; border: 1px solid #ccc; border-radius: 4px; }
+  .card h3 { font-size: 10px; color: #222; }
+  .value { margin-top: 5px; font-size: 16px; color: #111; }
+  .table-scroll { overflow: visible !important; }
+  .table-scroll > table { width: 100%; table-layout: auto; }
+
+  /* Print-only: exclude Agent (4), Rate (8), and Paid (10) from the main report. */
+  .table-scroll > table > thead > tr > th:nth-child(4),
+  .table-scroll > table > thead > tr > th:nth-child(8),
+  .table-scroll > table > thead > tr > th:nth-child(10),
+  .table-scroll > table > #salesTable > tr.expand-row > td:nth-child(4),
+  .table-scroll > table > #salesTable > tr.expand-row > td:nth-child(8),
+  .table-scroll > table > #salesTable > tr.expand-row > td:nth-child(10),
+  .table-scroll > table > #commissionTableFooter .footer-agent-placeholder,
+  .table-scroll > table > #commissionTableFooter #footerRate,
+  .table-scroll > table > #commissionTableFooter #footerPaid {
+    display: none !important;
+  }
+  table { border-collapse: collapse; }
+  th, td {
+    border: 1px solid #b9b9b9 !important;
+    padding: 5px 4px !important;
+    font-size: 9px !important;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+  thead { background: #e8e8e8 !important; color: #111 !important; print-color-adjust: exact; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; page-break-inside: avoid; }
+  tbody tr:nth-child(even) { background: #f7f7f7 !important; }
+  .invoice-print-only { display: none !important; }
+  body.invoice-print .container { display: none !important; }
+  body.invoice-print .invoice-print-only { display: block !important; }
+  .invoice-print-only h1 { font-size: 22px; margin: 0 0 5px; }
+  .invoice-print-only .invoice-meta {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 7px 14px; margin: 16px 0;
+    font-size: 12px;
+  }
+  .invoice-print-only .invoice-heading { display:flex; gap:15px; align-items:center; border-bottom:2px solid #d86f0b; padding-bottom:10px; }
+  .invoice-print-only .invoice-heading img { width:58px; height:58px; object-fit:contain; }
+  .invoice-print-only .invoice-heading p { margin:0; font-size:11px; }
+  .invoice-print-only table { width:100%; }
+  .invoice-print-only th, .invoice-print-only td { font-size:11px !important; padding:7px !important; }
+  .invoice-print-only .invoice-totals { width: 300px; margin: 16px 0 0 auto; font-size:12px; }
+  .invoice-print-only .invoice-totals div { display:flex; justify-content:space-between; gap:12px; padding:5px 0; border-bottom:1px solid #ddd; }
+  .invoice-print-only .invoice-totals .emphasis { font-weight:700; border-top:2px solid #333; }
+}
+
 </style>
 
 </head>
@@ -469,11 +577,18 @@ tbody tr:nth-child(even) {
 
 <div class="container">
 
-
+  <!-- VISIBLE ONLY WHEN PRINTING THE FILTERED REPORT -->
+  <div class="print-report-header">
+    <img src="logo.png" alt="FCIC logo" />
+    <div>
+      <h1>Commission Report</h1>
+      <p id="printReportFilters"></p>
+    </div>
+  </div>
 
   <!-- SUMMARY -->
 
-  <div class="summary">
+  <div class="summary screen-summary">
 
     <div class="card"><h3>Total Sales</h3><div class="value" id="totalSales">₱0.00</div></div>
 
@@ -482,6 +597,19 @@ tbody tr:nth-child(even) {
     <div class="card"><h3>Paid Commissions</h3><div class="value" id="totalPaid">₱0.00</div></div>
 
     <div class="card"><h3>Commission Balance</h3><div class="value" id="totalBalance">₱0.00</div></div>
+
+  </div>
+
+  <!-- Replaces the four on-screen cards only in printed reports. -->
+  <div class="summary print-only-summary" aria-hidden="true">
+
+    <div class="card"><h3>Total Sales</h3><div class="value" id="printTotalSales">₱0.00</div></div>
+
+    <div class="card"><h3>Total Expense</h3><div class="value" id="printTotalExpense">₱0.00</div></div>
+
+    <div class="card"><h3>Rate</h3><div class="value" id="printTotalRate">0.00%</div></div>
+
+    <div class="card"><h3>Total Commission</h3><div class="value" id="printTotalCommission">₱0.00</div></div>
 
   </div>
 
@@ -500,6 +628,8 @@ tbody tr:nth-child(even) {
       <option value="ALL">All</option>
 
     </select>
+
+    <button type="button" class="print-report-button" id="printReportButton" disabled>🖨 Print Report</button>
 
     <button type="button" class="add-expense-button" id="addExpenseButton">+ Add Expenses</button>
 
@@ -545,6 +675,20 @@ tbody tr:nth-child(even) {
 
     <tbody id="salesTable"></tbody>
 
+    <tfoot id="commissionTableFooter" aria-hidden="true">
+      <tr class="commission-totals-row">
+        <th colspan="3" scope="row" class="totals-label">TOTAL</th>
+        <th class="footer-agent-placeholder" aria-hidden="true"></th>
+        <td class="right" id="footerSales">₱0.00</td>
+        <td class="right" id="footerExpense">₱0.00</td>
+        <td class="right" id="footerNet">₱0.00</td>
+        <td class="right" id="footerRate">0.00%</td>
+        <td class="right" id="footerCommission">₱0.00</td>
+        <td class="right" id="footerPaid">₱0.00</td>
+        <td class="right" id="footerBalance">₱0.00</td>
+      </tr>
+    </tfoot>
+
   </table>
 
   </div>
@@ -553,7 +697,8 @@ tbody tr:nth-child(even) {
 
 </div>
 
-
+<!-- Separate print view populated when a single invoice is printed -->
+<section class="invoice-print-only" id="printInvoiceSheet" aria-hidden="true"></section>
 
 <!-- NEW EXPENSE MODAL -->
 
@@ -1082,7 +1227,8 @@ function render() {
 
   tbody.innerHTML = "";
 
-  let ts = 0, tc = 0, tp = 0, tb = 0;
+  let ts = 0, te = 0, tn = 0, tc = 0, tp = 0, tb = 0;
+  let eligibleNet = 0; // For the printed effective rate (commission / eligible net).
 
 
 
@@ -1153,12 +1299,12 @@ const m = monthFilter.value;
 
 
     ts += s.amount;
-
+    te += s.expenses;
+    tn += s.net;
     tc += commission;
-
     tp += s.paid;
-
     tb += balance;
+    if (s.descriptions.length > 0) eligibleNet += s.net;
 
 
 
@@ -1203,6 +1349,10 @@ const m = monthFilter.value;
       <td colspan="11">
 
         <div class="details-box">
+
+          <div class="detail-actions">
+            <button class="print-invoice-button" type="button">🖨 Print Invoice Details</button>
+          </div>
 
           <table class="details-table">
 
@@ -1370,6 +1520,10 @@ ${
 
 
 
+    dr.querySelector(".print-invoice-button").addEventListener("click", () => {
+      printInvoiceDetails(s, rate, commission, balance);
+    });
+
     tbody.appendChild(tr);
 
     tbody.appendChild(dr);
@@ -1378,13 +1532,28 @@ ${
 
 
 
+  // Original on-screen summary remains unchanged.
   totalSalesEl.textContent = peso(ts);
-
   totalCommissionEl.textContent = peso(tc);
-
   totalPaidEl.textContent = peso(tp);
-
   totalBalanceEl.textContent = peso(tb);
+
+  // Print-only totals. The overall rate is weighted by eligible net income,
+  // not a sum of percentages or a simple average of monthly rates.
+  const effectiveRate = eligibleNet !== 0 ? tc / eligibleNet : 0;
+  const rateText = `${(effectiveRate * 100).toFixed(2)}%`;
+  document.getElementById("printTotalSales").textContent = peso(ts);
+  document.getElementById("printTotalExpense").textContent = peso(te);
+  document.getElementById("printTotalRate").textContent = rateText;
+  document.getElementById("printTotalCommission").textContent = peso(tc);
+  document.getElementById("footerSales").textContent = peso(ts);
+  document.getElementById("footerExpense").textContent = peso(te);
+  document.getElementById("footerNet").textContent = peso(tn);
+  document.getElementById("footerRate").textContent = rateText;
+  document.getElementById("footerCommission").textContent = peso(tc);
+  document.getElementById("footerPaid").textContent = peso(tp);
+  document.getElementById("footerBalance").textContent = peso(tb);
+  document.getElementById("printReportButton").disabled = filtered.length === 0;
 
 }
 
@@ -1397,6 +1566,75 @@ monthFilter.onchange = render;
 agentFilter.onchange = render;
 
 
+
+
+// ===== PRINT THE FILTERED REPORT OR A SINGLE INVOICE =====
+function updatePrintReportHeader() {
+  const label = select => select.selectedOptions[0]?.textContent?.trim() || "All";
+  const printed = new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila", year: "numeric", month: "long", day: "numeric",
+    hour: "numeric", minute: "2-digit", hour12: true
+  }).format(new Date());
+  document.getElementById("printReportFilters").textContent =
+    `Year: ${label(yearFilter)}  |  Month: ${label(monthFilter)}  |  Agent: ${label(agentFilter)}  |  Printed: ${printed}`;
+}
+
+document.getElementById("printReportButton").addEventListener("click", () => {
+  updatePrintReportHeader();
+  window.print();
+});
+
+function printInvoiceDetails(s, rate, commission, balance) {
+  const printed = new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila", year: "numeric", month: "long", day: "numeric",
+    hour: "numeric", minute: "2-digit", hour12: true
+  }).format(new Date());
+  const salesRows = s.descriptions.map(d => `
+    <tr><td>${displayDate(s.date)}</td>
+        <td>${escapeHtml(s.po || "")} - ${escapeHtml(d.text)}</td>
+        <td class="right">${peso(d.amount)}</td><td class="right">—</td></tr>`).join("");
+  const expenseRows = s.expensesList.map(e => `
+    <tr><td>${displayDate(e.date)}</td>
+        <td>${escapeHtml(e.po ? e.po + " - " : "")}${escapeHtml(e.name)}</td>
+        <td class="right">—</td><td class="right">${peso(e.amount)}</td></tr>`).join("");
+  const html = `
+    <header class="invoice-heading">
+      <img src="logo.png" alt="FCIC logo" />
+      <div><h1>Commission Invoice Details</h1><p>Printed: ${escapeHtml(printed)}</p></div>
+    </header>
+    <div class="invoice-meta">
+      <div><b>Invoice:</b> ${escapeHtml(s.invoice)}</div>
+      <div><b>Invoice date:</b> ${displayDate(s.date)}</div>
+      <div><b>PO number:</b> ${escapeHtml(s.po || "—")}</div>
+      <div><b>Client:</b> ${escapeHtml(s.client || "—")}</div>
+      <div><b>Agent:</b> ${escapeHtml(s.agent || "—")}</div>
+      <div><b>Commission rate:</b> ${(rate * 100).toFixed(2)}%</div>
+    </div>
+    <table>
+      <thead><tr><th>Date</th><th>Description</th><th>Gross Income</th><th>Expenses</th></tr></thead>
+      <tbody>
+        ${salesRows}${expenseRows}
+        <tr><td colspan="2"><b>TOTAL</b></td>
+            <td class="right"><b>${peso(s.amount)}</b></td>
+            <td class="right"><b>${peso(s.expenses)}</b></td></tr>
+      </tbody>
+    </table>
+    <div class="invoice-totals">
+      <div><span>Net income</span><b>${peso(s.net)}</b></div>
+      <div><span>Commission rate</span><b>${(rate * 100).toFixed(2)}%</b></div>
+      <div><span>Total commission</span><b>${peso(commission)}</b></div>
+      <div><span>Paid commission</span><b>${peso(s.paid)}</b></div>
+      <div class="emphasis"><span>Commission balance</span><b>${peso(balance)}</b></div>
+    </div>`;
+  document.getElementById("printInvoiceSheet").innerHTML = html;
+  document.body.classList.add("invoice-print");
+  window.print();
+}
+
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("invoice-print");
+  document.getElementById("printInvoiceSheet").replaceChildren();
+});
 
 // ===== ADD EXPENSE MODAL & SAVE WORKFLOW =====
 
