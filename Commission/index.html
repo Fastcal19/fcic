@@ -338,16 +338,19 @@ tbody tr:nth-child(even) {
   .table-scroll { overflow: visible !important; }
   .table-scroll > table { width: 100%; table-layout: auto; }
 
-  /* Print-only: exclude Agent (4), Rate (8), and Paid (10) from the main report. */
+  /* Print-only: exclude Agent (4), Rate (8), Paid (10), and Balance (11). */
   .table-scroll > table > thead > tr > th:nth-child(4),
   .table-scroll > table > thead > tr > th:nth-child(8),
   .table-scroll > table > thead > tr > th:nth-child(10),
+  .table-scroll > table > thead > tr > th:nth-child(11),
   .table-scroll > table > #salesTable > tr.expand-row > td:nth-child(4),
   .table-scroll > table > #salesTable > tr.expand-row > td:nth-child(8),
   .table-scroll > table > #salesTable > tr.expand-row > td:nth-child(10),
+  .table-scroll > table > #salesTable > tr.expand-row > td:nth-child(11),
   .table-scroll > table > #commissionTableFooter .footer-agent-placeholder,
   .table-scroll > table > #commissionTableFooter #footerRate,
-  .table-scroll > table > #commissionTableFooter #footerPaid {
+  .table-scroll > table > #commissionTableFooter #footerPaid,
+  .table-scroll > table > #commissionTableFooter #footerBalance {
     display: none !important;
   }
   table { border-collapse: collapse; }
@@ -378,7 +381,8 @@ tbody tr:nth-child(even) {
   .invoice-print-only th, .invoice-print-only td { font-size:11px !important; padding:7px !important; }
   .invoice-print-only .invoice-totals { width: 300px; margin: 16px 0 0 auto; font-size:12px; }
   .invoice-print-only .invoice-totals div { display:flex; justify-content:space-between; gap:12px; padding:5px 0; border-bottom:1px solid #ddd; }
-  .invoice-print-only .invoice-totals .emphasis { font-weight:700; border-top:2px solid #333; }
+  /* Do not print the commission balance on individual invoice printouts. */
+  .invoice-print-only .invoice-totals .emphasis { display: none !important; }
 }
 
 </style>
