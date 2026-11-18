@@ -145,7 +145,7 @@ button {
 
 /* ================= COMMISSION-STYLE PRINT LAYOUT ================= */
 @media print {
-  @page { size: A4 landscape; margin: 12mm; }
+  @page { size: A4 portrait; margin: 12mm; }
 
   *, *::before, *::after { box-shadow: none !important; }
   html, body {
@@ -277,13 +277,17 @@ button {
   #printDetails .print-report-table .col-employee { width: 46%; }
   #printDetails .print-report-table .col-amount { width: 18%; }
 
-  /* Physical A4 page wrappers let the signatures sit at the foot of the
-     last page only, including reports spanning many sheets. */
+  /* Each wrapper fills exactly the printable height of one A4 landscape
+     sheet (210mm - 12mm top - 12mm bottom). The signature block is pinned
+     to the physical FOOT of the LAST wrapper, not after the table content. */
   #printDetails .print-page {
-    height: 186mm; /* A4 landscape minus the 12mm top and bottom margins */
+    position: relative;
+    width: 100%;
+    height: 186mm;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    overflow: visible;
     break-after: page;
     page-break-after: always;
   }
@@ -293,8 +297,13 @@ button {
   }
   #printDetails .print-page-content { flex: 0 0 auto; }
   #printDetails .print-page > .signatures {
-    margin-top: auto !important;
-    padding-bottom: 1mm;
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    bottom: 1mm;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0;
   }
   #printDetails .signatures {
     display: flex;
@@ -620,13 +629,13 @@ function renderDetails(month = null) {
       html += `<table><tr class="agency"><td colspan="4">${escapeHtml(agency)}</td></tr>
         <tr><th>Employee</th><th>Employee Share</th><th>Employer Share</th><th>Total</th></tr>`;
       rows.forEach(r => {
-        const ee = amount(r.empShare), er = amount(r.emprShare), lineTotal = amount(r.total);
+        const ee = amount(r.emprShare), er = amount(r.empShare), lineTotal = amount(r.total);
         eeTotal += ee; erTotal += er; total += lineTotal;
-        html += `<tr><td>${escapeHtml(r.employee)}</td><td class="right">${formatAmount(er)}</td>
-          <td class="right">${formatAmount(ee)}</td><td class="right">${formatAmount(lineTotal)}</td></tr>`;
+        html += `<tr><td>${escapeHtml(r.employee)}</td><td class="right">${formatAmount(ee)}</td>
+          <td class="right">${formatAmount(er)}</td><td class="right">${formatAmount(lineTotal)}</td></tr>`;
       });
-      html += `<tr class="total"><td>TOTAL</td><td class="right">${formatAmount(erTotal)}</td>
-        <td class="right">${formatAmount(eeTotal)}</td><td class="right">${formatAmount(total)}</td></tr></table>`;
+      html += `<tr class="total"><td>TOTAL</td><td class="right">${formatAmount(eeTotal)}</td>
+        <td class="right">${formatAmount(erTotal)}</td><td class="right">${formatAmount(total)}</td></tr></table>`;
     });
   });
   target.innerHTML = html;
@@ -639,9 +648,8 @@ function printedTimestamp() {
   }).format(new Date());
 }
 function printFilterDescription(month) {
-  const status = currentStatus === "pending" ? "Unpaid / Pending" : "Paid";
-  return `Month: ${month}  |  Status: ${status}  |  Agency: ${selectedAgency || "All"}` +
-    `  |  Employee: ${selectedEmployee || "All Employees"}  |  Printed: ${printedTimestamp()}`;
+  const status = currentStatus === "pending" ? "Unpaid" : "Paid";
+  return `Month: ${month}  |  Status: ${status}  |  Employee: ${selectedEmployee || "All Employees"}`;
 }
 
 // The same print style works for a selected month and for all filtered months.
@@ -652,8 +660,8 @@ function preparePrint(month = null) {
     printButton.disabled = !selectedMonth || !filteredRecords(selectedMonth).length;
     return false;
   }
-  const eeTotal = filtered.reduce((sum, r) => sum + amount(r.empShare), 0);
-  const erTotal = filtered.reduce((sum, r) => sum + amount(r.emprShare), 0);
+  const eeTotal = filtered.reduce((sum, r) => sum + amount(r.emprShare), 0);
+  const erTotal = filtered.reduce((sum, r) => sum + amount(r.empShare), 0);
   const grandTotal = filtered.reduce((sum, r) => sum + amount(r.total), 0);
   const employeeCount = new Set(filtered.map(r => String(r.employee ?? "").trim()).filter(Boolean)).size;
   const months = [...new Set(filtered.map(r => String(r.month ?? "").trim()))]
@@ -663,13 +671,13 @@ function preparePrint(month = null) {
     <div class="print-report-header">
       <img src="FCIC Logo.png" alt="FCIC logo">
       <div>
-        <h1>Contributions Report</h1>
+        <h1>${selectedAgency}` +  `  Contributions Report</h1>
         <p>${escapeHtml(printFilterDescription(month === null ? "All Months" : String(month)))}</p>
       </div>
     </div>
     <div class="print-only-summary">
-      <div class="card"><h3>Employee Share</h3><div class="value">${peso(erTotal)}</div></div>
-      <div class="card"><h3>Employer Share</h3><div class="value">${peso(eeTotal)}</div></div>
+      <div class="card"><h3>Employee Share</h3><div class="value">${peso(eeTotal)}</div></div>
+      <div class="card"><h3>Employer Share</h3><div class="value">${peso(erTotal)}</div></div>
       <div class="card"><h3>Total Contributions</h3><div class="value">${peso(grandTotal)}</div></div>
       <div class="card"><h3>Employees</h3><div class="value">${employeeCount}</div></div>
     </div>`;
@@ -691,13 +699,13 @@ function preparePrint(month = null) {
       }), { ee: 0, er: 0, total: 0 });
 
       html += `<section class="print-agency-section">
-        <h2 class="print-agency-title">${escapeHtml(agency)}</h2>
+        ${!selectedAgency ? `<h2 class="print-agency-title">${escapeHtml(agency)}</h2>` : ""}
         <table class="print-report-table">
           <thead><tr>
-            <th class="col-employee">Employee</th>
-            <th class="right col-amount">Employee Share</th>
-            <th class="right col-amount">Employer Share</th>
-            <th class="right col-amount">Total</th>
+            <th class="col-employee">EMPLOYEES</th>
+            <th class="right col-amount">EMPLOYEE SHARE</th>
+            <th class="right col-amount">EMPLOYER SHARE</th>
+            <th class="right col-amount">TOTAL</th>
           </tr></thead><tbody>`;
       rows.forEach(r => {
         html += `<tr>
@@ -775,9 +783,12 @@ function paginatePrintReport() {
   function newAgencyChunk(template, continued) {
     const section = document.createElement("section");
     section.className = "print-agency-section";
-    const title = template.querySelector(".print-agency-title").cloneNode(true);
-    if (continued) title.textContent += " (continued)";
-    section.appendChild(title);
+    const sourceTitle = template.querySelector(".print-agency-title");
+    if (sourceTitle) {
+      const title = sourceTitle.cloneNode(true);
+      if (continued) title.textContent += " (continued)";
+      section.appendChild(title);
+    }
     const table = document.createElement("table");
     table.className = "print-report-table";
     table.appendChild(template.querySelector("thead").cloneNode(true));
@@ -826,10 +837,11 @@ function paginatePrintReport() {
     else addBlock(block);
   }
 
-  // Keep signatures together, at the physical bottom of the final page.
+  // Append the ONE sign-off to the final page. Print CSS anchors it to
+  // bottom: 1mm; pagination reserves enough clear space above it.
   page.appendChild(signoff);
   const lastPageRoom = () =>
-    content.getBoundingClientRect().height + signoff.getBoundingClientRect().height + 16 <=
+    content.getBoundingClientRect().height + signoff.getBoundingClientRect().height + 22 <=
     page.getBoundingClientRect().height;
   if (!lastPageRoom()) {
     signoff.remove();
