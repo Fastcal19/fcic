@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Monthly Contribution</title>
+<title>Monthly Contribution Payments</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -145,7 +145,7 @@ button {
 
 /* ================= COMMISSION-STYLE PRINT LAYOUT ================= */
 @media print {
-  @page { size: A4 portrait; margin: 12mm; }
+  @page { size: A4 landscape; margin: 12mm; }
 
   *, *::before, *::after { box-shadow: none !important; }
   html, body {
@@ -180,7 +180,7 @@ button {
     border-bottom: 2px solid #d86f0b;
     padding-bottom: 8px;
   }
-  .print-report-header img { width: 200px; height: 100px; object-fit: contain; }
+  .print-report-header img { width: 52px; height: 52px; object-fit: contain; }
   .print-report-header h1 { margin: 0 0 4px; font-size: 21px; }
   .print-report-header p { margin: 0; font-size: 11px; color: #444; }
 
@@ -277,12 +277,30 @@ button {
   #printDetails .print-report-table .col-employee { width: 46%; }
   #printDetails .print-report-table .col-amount { width: 18%; }
 
-  /* Keep the existing prepared/checked/approved signature workflow. */
+  /* Physical A4 page wrappers let the signatures sit at the foot of the
+     last page only, including reports spanning many sheets. */
+  #printDetails .print-page {
+    height: 186mm; /* A4 landscape minus the 12mm top and bottom margins */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    break-after: page;
+    page-break-after: always;
+  }
+  #printDetails .print-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  #printDetails .print-page-content { flex: 0 0 auto; }
+  #printDetails .print-page > .signatures {
+    margin-top: auto !important;
+    padding-bottom: 1mm;
+  }
   #printDetails .signatures {
     display: flex;
     justify-content: space-between;
     gap: 18px;
-    margin: 7px 0 16px;
+    margin: 0;
     break-inside: avoid;
     page-break-inside: avoid;
   }
@@ -604,11 +622,11 @@ function renderDetails(month = null) {
       rows.forEach(r => {
         const ee = amount(r.empShare), er = amount(r.emprShare), lineTotal = amount(r.total);
         eeTotal += ee; erTotal += er; total += lineTotal;
-        html += `<tr><td>${escapeHtml(r.employee)}</td><td class="right">${formatAmount(ee)}</td>
-          <td class="right">${formatAmount(er)}</td><td class="right">${formatAmount(lineTotal)}</td></tr>`;
+        html += `<tr><td>${escapeHtml(r.employee)}</td><td class="right">${formatAmount(er)}</td>
+          <td class="right">${formatAmount(ee)}</td><td class="right">${formatAmount(lineTotal)}</td></tr>`;
       });
-      html += `<tr class="total"><td>TOTAL</td><td class="right">${formatAmount(eeTotal)}</td>
-        <td class="right">${formatAmount(erTotal)}</td><td class="right">${formatAmount(total)}</td></tr></table>`;
+      html += `<tr class="total"><td>TOTAL</td><td class="right">${formatAmount(erTotal)}</td>
+        <td class="right">${formatAmount(eeTotal)}</td><td class="right">${formatAmount(total)}</td></tr></table>`;
     });
   });
   target.innerHTML = html;
@@ -650,8 +668,8 @@ function preparePrint(month = null) {
       </div>
     </div>
     <div class="print-only-summary">
-      <div class="card"><h3>Employer Share</h3><div class="value">${peso(eeTotal)}</div></div>
       <div class="card"><h3>Employee Share</h3><div class="value">${peso(erTotal)}</div></div>
+      <div class="card"><h3>Employer Share</h3><div class="value">${peso(eeTotal)}</div></div>
       <div class="card"><h3>Total Contributions</h3><div class="value">${peso(grandTotal)}</div></div>
       <div class="card"><h3>Employees</h3><div class="value">${employeeCount}</div></div>
     </div>`;
@@ -667,8 +685,8 @@ function preparePrint(month = null) {
       const rows = monthRows.filter(r => String(r.agency ?? "").trim() === agency)
         .sort((a, b) => String(a.employee ?? "").localeCompare(String(b.employee ?? "")));
       const totals = rows.reduce((t, r) => ({
-        ee: t.ee + amount(r.empShare),
-        er: t.er + amount(r.emprShare),
+        ee: t.ee + amount(r.emprShare),
+        er: t.er + amount(r.empShare),
         total: t.total + amount(r.total)
       }), { ee: 0, er: 0, total: 0 });
 
@@ -677,15 +695,15 @@ function preparePrint(month = null) {
         <table class="print-report-table">
           <thead><tr>
             <th class="col-employee">Employee</th>
-            <th class="right col-amount">Employer Share</th>
             <th class="right col-amount">Employee Share</th>
+            <th class="right col-amount">Employer Share</th>
             <th class="right col-amount">Total</th>
           </tr></thead><tbody>`;
       rows.forEach(r => {
         html += `<tr>
           <td>${escapeHtml(r.employee)}</td>
-          <td class="right">${formatAmount(r.empShare)}</td>
           <td class="right">${formatAmount(r.emprShare)}</td>
+          <td class="right">${formatAmount(r.empShare)}</td>
           <td class="right">${formatAmount(r.total)}</td>
         </tr>`;
       });
@@ -693,17 +711,19 @@ function preparePrint(month = null) {
         <td>TOTAL</td><td class="right">${formatAmount(totals.ee)}</td>
         <td class="right">${formatAmount(totals.er)}</td>
         <td class="right">${formatAmount(totals.total)}</td>
-      </tr></tfoot></table>
-      <div class="signatures">
-        <div class="sign-box"><div class="sign-line">Prepared By</div></div>
-        <div class="sign-box"><div class="sign-line">Checked By</div></div>
-        <div class="sign-box"><div class="sign-line">Approved By</div></div>
-      </div></section>`;
+      </tr></tfoot></table></section>`;
     });
   });
   if (month === null || months.length > 1 || new Set(filtered.map(r => r.agency)).size > 1) {
     html += `<div class="report-grand-total"><span>GRAND TOTAL</span><strong>${peso(grandTotal)}</strong></div>`;
   }
+  // The signatories approve the FULL report; show this block just once,
+  // after every month, agency subtotal and grand total.
+  html += `<div class="signatures" id="reportSignatures">
+      <div class="sign-box"><div class="sign-line">Prepared By</div></div>
+      <div class="sign-box"><div class="sign-line">Checked By</div></div>
+      <div class="sign-box"><div class="sign-line">Approved By</div></div>
+    </div>`;
   printDetails.innerHTML = html;
   printButton.disabled = !selectedMonth || !filteredRecords(selectedMonth).length;
   return true;
@@ -721,9 +741,112 @@ function printAllContributions() {
   preparePrint(null);
   window.print();
 }
+// Build physical print pages so the signatories appear once at the bottom of
+// the FINAL printed page. Print All can contain many months and agency tables.
+function paginatePrintReport() {
+  if (getComputedStyle(printDetails).display === "none") return;
+  const blocks = Array.from(printDetails.children);
+  const signoff = blocks.find(el => el.id === "reportSignatures");
+  if (!signoff) return;
+
+  const pages = [];
+  let page, content;
+  function newPage() {
+    page = document.createElement("div");
+    page.className = "print-page";
+    content = document.createElement("div");
+    content.className = "print-page-content";
+    page.appendChild(content);
+    printDetails.appendChild(page);
+    pages.push(page);
+  }
+  function fits(extra = 0) {
+    return content.getBoundingClientRect().bottom + extra <=
+      page.getBoundingClientRect().bottom - 3;
+  }
+  function addBlock(el) {
+    content.appendChild(el);
+    if (!fits() && content.childElementCount > 1) {
+      el.remove();
+      newPage();
+      content.appendChild(el);
+    }
+  }
+  function newAgencyChunk(template, continued) {
+    const section = document.createElement("section");
+    section.className = "print-agency-section";
+    const title = template.querySelector(".print-agency-title").cloneNode(true);
+    if (continued) title.textContent += " (continued)";
+    section.appendChild(title);
+    const table = document.createElement("table");
+    table.className = "print-report-table";
+    table.appendChild(template.querySelector("thead").cloneNode(true));
+    const tbody = document.createElement("tbody");
+    table.appendChild(tbody);
+    section.appendChild(table);
+    content.appendChild(section);
+    return {section, table, tbody};
+  }
+  function addAgency(original) {
+    const rows = [...original.querySelectorAll("tbody tr")];
+    const footer = original.querySelector("tfoot");
+    let chunk = newAgencyChunk(original, false);
+    for (const row of rows) {
+      const newRow = row.cloneNode(true);
+      chunk.tbody.appendChild(newRow);
+      if (!fits()) {
+        newRow.remove();
+        if (!chunk.tbody.children.length) chunk.section.remove();
+        newPage();
+        chunk = newAgencyChunk(original, true);
+        chunk.tbody.appendChild(newRow);
+      }
+    }
+    if (footer) {
+      chunk.table.appendChild(footer.cloneNode(true));
+      if (!fits() && rows.length) {
+        // Keep an agency subtotal with at least its final employee row.
+        chunk.table.querySelector("tfoot").remove();
+        const lastRow = chunk.tbody.lastElementChild;
+        if (lastRow) lastRow.remove();
+        if (!chunk.tbody.children.length) chunk.section.remove();
+        newPage();
+        chunk = newAgencyChunk(original, true);
+        if (lastRow) chunk.tbody.appendChild(lastRow);
+        chunk.table.appendChild(footer.cloneNode(true));
+      }
+    }
+  }
+
+  printDetails.replaceChildren();
+  newPage();
+  for (const block of blocks) {
+    if (block === signoff) continue;
+    if (block.classList.contains("print-agency-section")) addAgency(block);
+    else addBlock(block);
+  }
+
+  // Keep signatures together, at the physical bottom of the final page.
+  page.appendChild(signoff);
+  const lastPageRoom = () =>
+    content.getBoundingClientRect().height + signoff.getBoundingClientRect().height + 16 <=
+    page.getBoundingClientRect().height;
+  if (!lastPageRoom()) {
+    signoff.remove();
+    // Prefer moving the grand total along with the signature block rather
+    // than leaving a signatures-only final sheet.
+    const lastBlock = content.lastElementChild;
+    if (lastBlock && lastBlock.classList.contains("report-grand-total")) lastBlock.remove();
+    newPage();
+    if (lastBlock && lastBlock.classList.contains("report-grand-total")) content.appendChild(lastBlock);
+    page.appendChild(signoff);
+  }
+}
+
 window.addEventListener("beforeprint", () => {
   if (printScope === "all") preparePrint(null);
   else if (selectedMonth) preparePrint(selectedMonth);
+  paginatePrintReport();
 });
 window.addEventListener("afterprint", () => { printScope = "selected"; });
 </script>
