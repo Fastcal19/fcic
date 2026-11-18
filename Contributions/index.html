@@ -46,70 +46,26 @@ th {
   text-align:right;
 }
 
-/* ================= PRINT STYLES ================= */
-@media print {
-  body, .container {
-    background: #fff;
-    padding: 0;
-  }
-  .tabs,
-button,
-#pendingSection,
-#paidSection,
-#details,
-#paidDetails {
-    display: none !important;
+/* Print report elements are hidden in the live contributions dashboard. */
+#printDetails { display: none; }
+
+.print-report-button {
+  background: #1765ad;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font: 700 14px "Segoe UI", Tahoma, Arial, sans-serif;
+  cursor: pointer;
+  margin-bottom: 15px;
 }
-  #printDetails {
-    display: block !important;
-  }
-  table {
-    font-size: 12px;
-  }
-  th {
-    background: #eee !important;
-    color: #000 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .agency {
-    background: #ddd !important;
-  }
-  .total {
-    background: #f2f2f2 !important;
-    font-weight: bold;
-  }
-  .page-break {
-    page-break-before: always;
-  }
-  .print-header {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-  .print-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    margin-bottom: 10px;
-  }
-  .signatures {
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-  }
-  .sign-box {
-    width: 30%;
-    text-align: center;
-  }
-  .sign-line {
-    margin-top: 40px;
-    border-top: 1px solid #000;
-  }
-}
-#printDetails {
-  display: none;
-}
+.print-report-button:hover:not(:disabled) { background: #0b4f8c; }
+.print-report-button:disabled { opacity: .55; cursor: not-allowed; }
+.action-buttons { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:15px; }
+.action-buttons .print-report-button { margin-bottom:0; }
+.display-all-button { background:#d86f0b; }
+.display-all-button:hover:not(:disabled) { background:#b85d06; }
+.month-selected td { background: #e3f2fd; }
 
 /* ================= MOBILE STYLES ================= */
 @media (max-width: 768px) {
@@ -186,22 +142,200 @@ button {
   color:white;
 }
 
+
+/* ================= COMMISSION-STYLE PRINT LAYOUT ================= */
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+
+  *, *::before, *::after { box-shadow: none !important; }
+  html, body {
+    background: #fff !important;
+    color: #111 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .container {
+    background: #fff !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  /* Never print tabs, month lists, or on-screen detail panels. */
+  .screen-filters, .tabs, .action-buttons,
+  #pendingSection, #paidSection, .screen-page-heading {
+    display: none !important;
+  }
+  #printDetails { display: block !important; }
+  #printDetails:empty { display: none !important; }
+
+  /* Same FCIC logo/title/filter line as the Commission print report. */
+  .print-report-header {
+    display: flex !important;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid #d86f0b;
+    padding-bottom: 8px;
+  }
+  .print-report-header img { width: 200px; height: 100px; object-fit: contain; }
+  .print-report-header h1 { margin: 0 0 4px; font-size: 21px; }
+  .print-report-header p { margin: 0; font-size: 11px; color: #444; }
+
+  /* Four compact summary cards, matching Commission. */
+  .print-only-summary {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 12px;
+  }
+  .print-only-summary .card {
+    padding: 9px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+  }
+  .print-only-summary .card h3 {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: #222;
+  }
+  .print-only-summary .value {
+    margin-top: 5px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+  }
+
+  /* Light grey headers, fine borders, compact text, repeating table headings. */
+  #printDetails .print-month-heading {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 15px 0 7px;
+    padding: 6px 7px;
+    border-left: 3px solid #d86f0b;
+    background: #f3f3f3 !important;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  #printDetails .print-agency-section {
+    margin: 0 0 14px;
+    break-inside: auto;
+  }
+  #printDetails .print-agency-title {
+    font-size: 12px;
+    color: #111;
+    text-align: left;
+    margin: 10px 0 5px;
+    font-weight: 700;
+  }
+  #printDetails .print-report-table {
+    display: table !important; /* Overrides the mobile scrolling-table style. */
+    width: 100%;
+    table-layout: fixed;
+    margin: 0;
+    border-collapse: collapse;
+    white-space: normal !important;
+    overflow: visible !important;
+    border-radius: 0;
+  }
+  #printDetails .print-report-table th,
+  #printDetails .print-report-table td {
+    border: 1px solid #b9b9b9 !important;
+    padding: 5px 4px !important;
+    font-size: 9px !important;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+    color: #111 !important;
+  }
+  #printDetails .print-report-table thead {
+    display: table-header-group !important;
+    background: #e8e8e8 !important;
+  }
+  #printDetails .print-report-table thead th {
+    background: #e8e8e8 !important;
+    text-align: left;
+  }
+  #printDetails .print-report-table thead th.right { text-align: right; }
+  #printDetails .print-report-table tbody tr:nth-child(even) {
+    background: #f7f7f7 !important;
+  }
+  #printDetails .print-report-table tbody tr,
+  #printDetails .print-report-table tfoot tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  #printDetails .print-report-table .agency-total {
+    font-weight: 700;
+    background: #efefef !important;
+    border-top: 2px solid #333 !important;
+  }
+  #printDetails .print-report-table .right { text-align: right; }
+  #printDetails .print-report-table .col-employee { width: 46%; }
+  #printDetails .print-report-table .col-amount { width: 18%; }
+
+  /* Keep the existing prepared/checked/approved signature workflow. */
+  #printDetails .signatures {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    margin: 7px 0 16px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  #printDetails .sign-box {
+    width: 30%;
+    text-align: center;
+    font-size: 10px;
+  }
+  #printDetails .sign-line {
+    margin-top: 29px;
+    border-top: 1px solid #555;
+    padding-top: 4px;
+  }
+  #printDetails .report-grand-total {
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 16px;
+    border-top: 2px solid #333;
+    background: #efefef !important;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 10px;
+    padding: 8px;
+    break-inside: avoid;
+  }
+  #printDetails .report-grand-total strong { font-size: 14px; }
+}
+
 </style>
 </head>
 
 <body>
-  <div style="margin-bottom:10px;">
-  <label><strong>Filter Agency:</strong></label>
-  <select id="agencyFilter" onchange="loadMonths()">
-    <option value="">All</option>
-    <option value="SSS">SSS</option>
-    <option value="PHILHEALTH">PHILHEALTH</option>
-    <option value="PAG-IBIG">PAG-IBIG</option>
-  </select>
-</div>
+  <div class="screen-filters" style="margin-bottom:10px; display:flex; gap:10px; flex-wrap:wrap;">
+  <div>
+    <label><strong>Filter Agency:</strong></label><br>
+    <select id="agencyFilter" onchange="loadMonths()">
+      <option value="">All</option>
+      <option value="SSS">SSS</option>
+      <option value="PHILHEALTH">PHILHEALTH</option>
+      <option value="PAG-IBIG">PAG-IBIG</option>
+    </select>
+  </div>
 
+  <div>
+    <label><strong>Filter Employee:</strong></label><br>
+    <select id="employeeFilter" onchange="loadMonths()">
+      <option value="">All Employees</option>
+    </select>
+  </div>
+</div>
 <div class="container">
-  <h2></h2>
+  <h2 class="screen-page-heading"></h2>
 
   <div class="tabs">
   <button class="tab active" onclick="switchTab('pending')">Unpaid / Pending</button>
@@ -209,14 +343,11 @@ button {
 </div>
 
 
-<button onclick="printCurrentView()">
-    🖨 Print
-</button>
-
-<button onclick="renderAllDetails()" style="margin-bottom:15px">
-    📋 Display All
-</button>
-
+<div class="action-buttons">
+  <button type="button" id="displayAllButton" class="print-report-button display-all-button" onclick="toggleDisplayAll()" disabled>Display All</button>
+  <button type="button" id="printAllButton" class="print-report-button" onclick="printAllContributions()" disabled>🖨 Print All</button>
+  <button type="button" id="printReportButton" class="print-report-button" onclick="printSelectedContributions()" disabled>🖨 Print Selected Contributions</button>
+</div>
 
   <!-- Unpaid section (screen only) -->
   <div id="pendingSection" class="unpaid-section" style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
@@ -257,7 +388,7 @@ button {
 
 </div>
 
-  <!-- Selected unpaid contributions for printing -->
+  <!-- Selected paid or unpaid month: print-only Commission-style report -->
   <div id="printDetails"></div>
 </div>
 
@@ -268,376 +399,333 @@ let data = [];
 let selectedMonth = null;
 let currentStatus = "pending";
 let selectedAgency = "";
-let showAll = false;
+let selectedEmployee = "";
+let displayAllMode = false;
+let printScope = "selected";
 
-fetch(API_URL)
-  .then(res => res.json())
+const displayAllButton = document.getElementById("displayAllButton");
+const printAllButton = document.getElementById("printAllButton");
+const printButton = document.getElementById("printReportButton");
+const printDetails = document.getElementById("printDetails");
+
+// Display-only values: do not change the Google Sheet.
+function amount(value) {
+  const n = Number(String(value ?? 0).replace(/[₱,\s]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+function formatAmount(value) {
+  return amount(value).toLocaleString("en-PH", {
+    minimumFractionDigits: 2, maximumFractionDigits: 2
+  });
+}
+function peso(value) { return "₱" + formatAmount(value); }
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[c]);
+}
+function statusMatches(status) {
+  const s = String(status ?? "").trim().toLowerCase();
+  return currentStatus === "pending" ? (s === "pending" || s === "unpaid") : s === "paid";
+}
+function filteredRecords(month = null) {
+  return data.filter(r =>
+    statusMatches(r.status) &&
+    (!selectedAgency || String(r.agency) === selectedAgency) &&
+    (!selectedEmployee || String(r.employee) === selectedEmployee) &&
+    (month === null || String(r.month) === String(month))
+  );
+}
+function clearSelection() {
+  selectedMonth = null;
+  printButton.disabled = true;
+  printDetails.innerHTML = "";
+  const target = document.getElementById(currentStatus === "pending" ? "details" : "paidDetails");
+  target.innerHTML = `<p style="color:#667085">Click a ${currentStatus === "paid" ? "paid" : "pending"} month to view details.</p>`;
+}
+
+fetch(API_URL, { cache: "no-store" })
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  })
   .then(json => {
+    if (!Array.isArray(json)) throw new Error("Unexpected contribution data format.");
     data = json;
+    loadEmployees();
     loadMonths();
+  })
+  .catch(err => {
+    console.error("Unable to load contributions:", err);
+    document.getElementById("unpaidList").innerHTML =
+      '<tr><td colspan="2">Unable to load contributions. Please refresh the page.</td></tr>';
+    printButton.disabled = true;
+    printAllButton.disabled = true;
+    displayAllButton.disabled = true;
   });
 
-function switchTab(status){
-
+function switchTab(status) {
+  if (status !== "pending" && status !== "paid") return;
   currentStatus = status;
-
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-
-  if(status==="pending"){
-    document.querySelectorAll(".tab")[0].classList.add("active");
-    document.getElementById("pendingSection").style.display="grid";
-    document.getElementById("paidSection").style.display="none";
-  }else{
-    document.querySelectorAll(".tab")[1].classList.add("active");
-    document.getElementById("pendingSection").style.display="none";
-    document.getElementById("paidSection").style.display="grid";
-  }
-
+  displayAllMode = false;
+  displayAllButton.textContent = "Display All";
+  document.querySelectorAll(".tab").forEach((tab, i) => {
+    tab.classList.toggle("active", (status === "pending") === (i === 0));
+  });
+  document.getElementById("pendingSection").style.display = status === "pending" ? "grid" : "none";
+  document.getElementById("paidSection").style.display = status === "paid" ? "grid" : "none";
+  clearSelection();
   loadMonths();
 }
 
-/* Load unpaid contributions (screen only) */
-function loadMonths(){
+function loadEmployees() {
+  const select = document.getElementById("employeeFilter");
+  const prev = select.value;
+  const employees = [...new Set(data.map(r => String(r.employee ?? "").trim()))]
+    .filter(Boolean).sort((a, b) => a.localeCompare(b));
+  select.replaceChildren(new Option("All Employees", ""));
+  employees.forEach(emp => select.add(new Option(emp, emp)));
+  if (employees.includes(prev)) select.value = prev;
+}
 
-  selectedAgency = document.getElementById("agencyFilter")?.value || "";
+function monthSortValue(value) {
+  const text = String(value).trim();
+  let date = new Date(text);
+  if (!Number.isNaN(date.getTime())) return date.getTime();
+  // Handles "YYYY-MM", "MM/YYYY" and month names when parsing is inconsistent.
+  let match = /^(\d{4})[-/](\d{1,2})$/.exec(text);
+  if (match) return Date.UTC(+match[1], +match[2] - 1, 1);
+  match = /^(\d{1,2})[-/](\d{4})$/.exec(text);
+  if (match) return Date.UTC(+match[2], +match[1] - 1, 1);
+  return 0;
+}
 
-  const filtered = data.filter(d => 
-    d.status?.toLowerCase() === currentStatus &&
-    (selectedAgency === "" || d.agency === selectedAgency)
-  );
-
-  const list = currentStatus==="pending"
-    ? document.getElementById("unpaidList")
-    : document.getElementById("paidList");
-
-  if (!filtered.length) {
-    list.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#999">No records</td></tr>`;
-    return;
-  }
-
-  const months = {};
+function loadMonths() {
+  selectedAgency = document.getElementById("agencyFilter").value || "";
+  selectedEmployee = document.getElementById("employeeFilter").value || "";
+  const rows = filteredRecords();
+  const list = document.getElementById(currentStatus === "pending" ? "unpaidList" : "paidList");
+  const grouped = new Map();
   let grandTotal = 0;
-
-  filtered.forEach(r => {
-    months[r.month] = (months[r.month] || 0) + Number(r.total);
-    grandTotal += Number(r.total);
+  rows.forEach(r => {
+    const month = String(r.month ?? "").trim();
+    if (!month) return;
+    grouped.set(month, (grouped.get(month) || 0) + amount(r.total));
+    grandTotal += amount(r.total);
   });
-
-  // 👉 SORT months (latest first like your screenshot)
-  const sortedMonths = Object.entries(months).sort((a,b)=>{
-    return new Date(b[0]) - new Date(a[0]);
-  });
-
-  let html = "";
-
-  sortedMonths.forEach(([m, amt]) => {
-    html += `
-      <tr onclick="selectMonth('${m}')" style="cursor:pointer">
-        <td>${m}</td>
-        <td class="right">${formatAmount(amt)}</td>
-      </tr>
-    `;
-  });
-
-  // ✅ TOTAL ROW (THIS IS WHAT YOU NEED)
-  html += `
-    <tr class="total" style="background:#2c3e50;color:#fff;">
-      <td><strong>TOTAL</strong></td>
-      <td class="right"><strong>${formatAmount(grandTotal)}</strong></td>
-    </tr>
-  `;
-
-  list.innerHTML = html;
-}
-
-function loadPaid(){
-
-  const paid = data.filter(d => d.status?.toLowerCase() === "paid");
-  const paidList = document.getElementById("paidList");
-
-  if(!paid.length){
-    paidList.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#999">No paid contributions</td></tr>`;
+  list.innerHTML = "";
+  displayAllButton.disabled = grouped.size === 0;
+  printAllButton.disabled = grouped.size === 0;
+  if (!grouped.size) {
+    displayAllMode = false;
+    displayAllButton.textContent = "Display All";
+    list.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#999">No records</td></tr>';
+    clearSelection();
     return;
   }
-
-  const months = {};
-  paid.forEach(r => months[r.month] = (months[r.month] || 0) + Number(r.total));
-
-  paidList.innerHTML = Object.entries(months).map(([m, amt]) =>
-    `<tr>
-      <td>${m}</td>
-      <td class="right">${formatAmount(amt)}</td>
-    </tr>`
-  ).join("");
-
-}
-
-/* When user clicks a month */
-function selectMonth(month) {
-    showAll = false;
-    selectedMonth = month;
-    renderDetails(month);
-    preparePrint(month);
-}
-
-function formatAmount(val){
-  return Number(val || 0).toLocaleString("en-PH",{
-    minimumFractionDigits:2,
-    maximumFractionDigits:2
-  });
-}
-
-/* Render unpaid details for screen */
-function renderDetails(month) {
-
-  const filtered = data.filter(d =>
-  d.month === month &&
-  d.status?.toLowerCase() === currentStatus &&
-  (selectedAgency === "" || d.agency === selectedAgency)
-);
-
-  const agencies = [...new Set(filtered.map(d => d.agency))];
-
-  let html = `<div class="print-meta"><div><strong>Month:</strong> ${month}</div></div>`;
-
-  agencies.forEach((agency, idx) => {
-
-    if (idx > 0) html += `<div class="page-break"></div>`;
-
-    const rows = filtered.filter(r => r.agency === agency);
-
-    let empTotal = 0,
-        emprTotal = 0,
-        tot = 0;
-
-    html += `<table>
-      <tr class="agency"><td colspan="4">${agency}</td></tr>
-      <tr>
-        <th>Employee</th>
-        <th>Employee Share</th>
-        <th>Employer Share</th>
-        <th>Total</th>
-      </tr>`;
-
-    rows.forEach(r => {
-
-      empTotal += r.empShare;
-      emprTotal += r.emprShare;
-      tot += r.total;
-
-      html += `<tr>
-        <td>${r.employee}</td>
-        <td class="right">${formatAmount(r.emprShare)}</td>
-        <td class="right">${formatAmount(r.empShare)}</td>
-        <td class="right">${formatAmount(r.total)}</td>
-      </tr>`;
+  [...grouped].sort((a, b) => monthSortValue(b[0]) - monthSortValue(a[0]))
+    .forEach(([month, total]) => {
+      const tr = document.createElement("tr");
+      tr.style.cursor = "pointer";
+      tr.classList.toggle("month-selected", month === selectedMonth);
+      tr.innerHTML = `<td>${escapeHtml(month)}</td><td class="right">${formatAmount(total)}</td>`;
+      tr.addEventListener("click", () => selectMonth(month));
+      list.appendChild(tr);
     });
+  const totalRow = document.createElement("tr");
+  totalRow.className = "total";
+  totalRow.style.cssText = "background:#2c3e50;color:#fff";
+  totalRow.innerHTML = `<td><strong>TOTAL</strong></td><td class="right"><strong>${formatAmount(grandTotal)}</strong></td>`;
+  list.appendChild(totalRow);
 
-    html += `<tr class="total">
-      <td>TOTAL</td>
-      <td class="right">${formatAmount(emprTotal)}</td>
-<td class="right">${formatAmount(empTotal)}</td>
-<td class="right">${formatAmount(tot)}</td>
-    </tr></table>`;
-  });
-
-  if(currentStatus === "pending"){
-    document.getElementById("details").innerHTML = html;
-  }else{
-    document.getElementById("paidDetails").innerHTML = html;
+  if (displayAllMode) {
+    selectedMonth = null;
+    printButton.disabled = true;
+    printDetails.innerHTML = "";
+    renderDetails(null);
+  } else if (selectedMonth && grouped.has(selectedMonth)) {
+    renderDetails(selectedMonth);
+    preparePrint(selectedMonth);
+  } else {
+    clearSelection();
   }
-
 }
 
-function renderAllDetails() {
-    showAll = true;
-
-    const filtered = data.filter(d =>
-        d.status?.toLowerCase() === currentStatus &&
-        (selectedAgency === "" || d.agency === selectedAgency)
-    );
-
-    const months = [...new Set(filtered.map(d => d.month))]
-        .sort((a, b) => new Date(b) - new Date(a));
-
-           
-    let html = "";
-
-    months.forEach(month => {
-        
-
-        html += `
-            <h3 style="margin-top:20px;border-bottom:1px solid #ddd;">
-                ${month}
-            </h3>
-        `;
-
-        const monthData = filtered.filter(d => d.month === month);
-
-        const agencies = [...new Set(monthData.map(d => d.agency))];
-
-        agencies.forEach(agency => {
-
-            const rows = monthData.filter(r => r.agency === agency);
-
-            let empTotal = 0;
-            let emprTotal = 0;
-            let total = 0;
-
-            html += `
-                <table>
-                    <tr class="agency">
-                        <td colspan="4">${agency}</td>
-                    </tr>
-                    <tr>
-                        <th>Employee</th>
-                        <th>Employee Share</th>
-                        <th>Employer Share</th>
-                        <th>Total</th>
-                    </tr>
-            `;
-
-            rows.forEach(r => {
-                empTotal += Number(r.empShare);
-                emprTotal += Number(r.emprShare);
-                total += Number(r.total);
-
-                html += `
-                    <tr>
-                        <td>${r.employee}</td>
-                        <td class="right">${formatAmount(r.empShare)}</td>
-                        <td class="right">${formatAmount(r.emprShare)}</td>
-                        <td class="right">${formatAmount(r.total)}</td>
-                    </tr>
-                `;
-            });
-
-            html += `
-                <tr class="total">
-                    <td>TOTAL</td>
-                    <td class="right">${formatAmount(empTotal)}</td>
-                    <td class="right">${formatAmount(emprTotal)}</td>
-                    <td class="right">${formatAmount(total)}</td>
-                </tr>
-                </table>
-            `;
-        });
-    });
-
-    const target = currentStatus === "pending"
-        ? document.getElementById("details")
-        : document.getElementById("paidDetails");
-
-    target.innerHTML = html;
+function toggleDisplayAll() {
+  if (displayAllButton.disabled && !displayAllMode) return;
+  displayAllMode = !displayAllMode;
+  displayAllButton.textContent = displayAllMode ? "Hide All" : "Display All";
+  selectedMonth = null;
+  printButton.disabled = true;
+  printDetails.innerHTML = "";
+  const list = document.getElementById(currentStatus === "pending" ? "unpaidList" : "paidList");
+  list.querySelectorAll(".month-selected").forEach(tr => tr.classList.remove("month-selected"));
+  if (displayAllMode) renderDetails(null);
+  else clearSelection();
 }
 
-function printCurrentView() {
-
-    // ==========================================
-    // DISPLAY ALL
-    // ==========================================
-    if (showAll) {
-
-        const summary = currentStatus === "pending"
-            ? document.getElementById("unpaidList").innerHTML
-            : document.getElementById("paidList").innerHTML;
-
-        const details = currentStatus === "pending"
-            ? document.getElementById("details").innerHTML
-            : document.getElementById("paidDetails").innerHTML;
-
-        document.getElementById("printDetails").innerHTML = `
-            <div class="print-header">
-                <h2>MONTH SUMMARY</h2>
-            </div>
-
-            <table>
-                <tr>
-                    <th>Month</th>
-                    <th class="right">Amount</th>
-                </tr>
-
-                ${summary}
-            </table>
-
-            <div class="page-break"></div>
-
-            ${details}
-        `;
-
-    // ==========================================
-    // SINGLE MONTH
-    // ==========================================
-    } else {
-
-        const source = currentStatus === "pending"
-            ? document.getElementById("details")
-            : document.getElementById("paidDetails");
-
-        document.getElementById("printDetails").innerHTML =
-            source.innerHTML;
-    }
-
-    setTimeout(() => {
-        window.print();
-    }, 200);
-}
-
-/* Prepare selected month for printing (each agency has its own signature) */
-function preparePrint(month) {
-  const filtered = data.filter(d =>
-  d.month === month &&
-  d.status?.toLowerCase() === currentStatus &&
-  (selectedAgency === "" || d.agency === selectedAgency)
-);
-  const agencies = [...new Set(filtered.map(d => d.agency))];
-  let html = `<div class="print-header"><h3>Monthly Contribution</h3></div>`;
-  html += `<div class="print-meta"><div><strong>Month:</strong> ${month}</div></div>`;
-
-  agencies.forEach((agency, idx) => {
-    if (idx > 0) html += `<div class="page-break"></div>`;
-    const rows = filtered.filter(r => r.agency === agency);
-    let empTotal = 0, emprTotal = 0, tot = 0;
-
-    html += `<table>
-      <tr class="agency"><td colspan="4">${agency}</td></tr>
-      <tr>
-        <th>Employee</th>
-        <th>Employee Share</th>
-        <th>Employer Share</th>
-        <th>Total</th>
-      </tr>`;
-
-    rows.forEach(r => {
-  empTotal += r.empShare;
-  emprTotal += r.emprShare;
-  tot += r.total;
-
-  html += `<tr>
-    <td>${r.employee}</td>
-    <td class="right">${formatAmount(r.emprShare)}</td>
-    <td class="right">${formatAmount(r.empShare)}</td>
-    <td class="right">${formatAmount(r.total)}</td>
-  </tr>`;
-});
-
-html += `<tr class="total">
-  <td>TOTAL</td>
-  <td class="right">${formatAmount(emprTotal)}</td>
-  <td class="right">${formatAmount(empTotal)}</td>
-  <td class="right">${formatAmount(tot)}</td>
-</tr></table>`;
-
-    // Add signature lines **per agency**
-    html += `<div class="signatures">
-      <div class="sign-box"><div class="sign-line"></div>Prepared By</div>
-      <div class="sign-box"><div class="sign-line"></div>Checked By</div>
-      <div class="sign-box"><div class="sign-line"></div>Approved By</div>
-    </div>`;
+function selectMonth(month) {
+  displayAllMode = false;
+  displayAllButton.textContent = "Display All";
+  selectedMonth = month;
+  const rows = filteredRecords(month);
+  printButton.disabled = rows.length === 0;
+  const list = document.getElementById(currentStatus === "pending" ? "unpaidList" : "paidList");
+  [...list.querySelectorAll("tr")].forEach(tr => {
+    tr.classList.toggle("month-selected", tr.firstElementChild?.textContent === String(month));
   });
-
-  document.getElementById("printDetails").innerHTML = html;
+  renderDetails(month);
+  preparePrint(month);
 }
+
+// Display one month or all months (for the active status, agency and employee filters).
+function renderDetails(month = null) {
+  const filtered = filteredRecords(month);
+  const target = document.getElementById(currentStatus === "pending" ? "details" : "paidDetails");
+  if (!filtered.length) {
+    target.innerHTML = '<p style="color:#667085">No matching contributions.</p>';
+    return;
+  }
+  const months = [...new Set(filtered.map(r => String(r.month ?? "").trim()))]
+    .sort((a,b) => monthSortValue(b) - monthSortValue(a));
+  let html = month === null
+    ? '<h3>All ' + (currentStatus === "paid" ? 'Paid' : 'Unpaid / Pending') + ' Contributions</h3>'
+    : '';
+  months.forEach(m => {
+    const monthRows = filtered.filter(r => String(r.month ?? "").trim() === m);
+    html += `<h4 style="margin:14px 0 7px">Month: ${escapeHtml(m)}</h4>`;
+    const agencies = [...new Set(monthRows.map(r => String(r.agency ?? "")))].sort();
+    agencies.forEach(agency => {
+      const rows = monthRows.filter(r => String(r.agency ?? "") === agency)
+        .sort((a,b) => String(a.employee ?? "").localeCompare(String(b.employee ?? "")));
+      let eeTotal = 0, erTotal = 0, total = 0;
+      html += `<table><tr class="agency"><td colspan="4">${escapeHtml(agency)}</td></tr>
+        <tr><th>Employee</th><th>Employee Share</th><th>Employer Share</th><th>Total</th></tr>`;
+      rows.forEach(r => {
+        const ee = amount(r.empShare), er = amount(r.emprShare), lineTotal = amount(r.total);
+        eeTotal += ee; erTotal += er; total += lineTotal;
+        html += `<tr><td>${escapeHtml(r.employee)}</td><td class="right">${formatAmount(ee)}</td>
+          <td class="right">${formatAmount(er)}</td><td class="right">${formatAmount(lineTotal)}</td></tr>`;
+      });
+      html += `<tr class="total"><td>TOTAL</td><td class="right">${formatAmount(eeTotal)}</td>
+        <td class="right">${formatAmount(erTotal)}</td><td class="right">${formatAmount(total)}</td></tr></table>`;
+    });
+  });
+  target.innerHTML = html;
+}
+
+function printedTimestamp() {
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila", year: "numeric", month: "long", day: "numeric",
+    hour: "numeric", minute: "2-digit", hour12: true
+  }).format(new Date());
+}
+function printFilterDescription(month) {
+  const status = currentStatus === "pending" ? "Unpaid / Pending" : "Paid";
+  return `Month: ${month}  |  Status: ${status}  |  Agency: ${selectedAgency || "All"}` +
+    `  |  Employee: ${selectedEmployee || "All Employees"}  |  Printed: ${printedTimestamp()}`;
+}
+
+// The same print style works for a selected month and for all filtered months.
+function preparePrint(month = null) {
+  const filtered = filteredRecords(month);
+  if (!filtered.length) {
+    printDetails.innerHTML = "";
+    printButton.disabled = !selectedMonth || !filteredRecords(selectedMonth).length;
+    return false;
+  }
+  const eeTotal = filtered.reduce((sum, r) => sum + amount(r.empShare), 0);
+  const erTotal = filtered.reduce((sum, r) => sum + amount(r.emprShare), 0);
+  const grandTotal = filtered.reduce((sum, r) => sum + amount(r.total), 0);
+  const employeeCount = new Set(filtered.map(r => String(r.employee ?? "").trim()).filter(Boolean)).size;
+  const months = [...new Set(filtered.map(r => String(r.month ?? "").trim()))]
+    .sort((a, b) => monthSortValue(b) - monthSortValue(a));
+
+  let html = `
+    <div class="print-report-header">
+      <img src="logo.png" alt="FCIC logo">
+      <div>
+        <h1>Contributions Report</h1>
+        <p>${escapeHtml(printFilterDescription(month === null ? "All Months" : String(month)))}</p>
+      </div>
+    </div>
+    <div class="print-only-summary">
+      <div class="card"><h3>Employer Share</h3><div class="value">${peso(eeTotal)}</div></div>
+      <div class="card"><h3>Employee Share</h3><div class="value">${peso(erTotal)}</div></div>
+      <div class="card"><h3>Total Contributions</h3><div class="value">${peso(grandTotal)}</div></div>
+      <div class="card"><h3>Employees</h3><div class="value">${employeeCount}</div></div>
+    </div>`;
+
+  months.forEach(m => {
+    const monthRows = filtered.filter(r => String(r.month ?? "").trim() === m);
+    if (month === null) {
+      html += `<h2 class="print-month-heading">${escapeHtml(m)}</h2>`;
+    }
+    const agencies = [...new Set(monthRows.map(r => String(r.agency ?? "").trim()))]
+      .sort((a, b) => a.localeCompare(b));
+    agencies.forEach(agency => {
+      const rows = monthRows.filter(r => String(r.agency ?? "").trim() === agency)
+        .sort((a, b) => String(a.employee ?? "").localeCompare(String(b.employee ?? "")));
+      const totals = rows.reduce((t, r) => ({
+        ee: t.ee + amount(r.empShare),
+        er: t.er + amount(r.emprShare),
+        total: t.total + amount(r.total)
+      }), { ee: 0, er: 0, total: 0 });
+
+      html += `<section class="print-agency-section">
+        <h2 class="print-agency-title">${escapeHtml(agency)}</h2>
+        <table class="print-report-table">
+          <thead><tr>
+            <th class="col-employee">Employee</th>
+            <th class="right col-amount">Employer Share</th>
+            <th class="right col-amount">Employee Share</th>
+            <th class="right col-amount">Total</th>
+          </tr></thead><tbody>`;
+      rows.forEach(r => {
+        html += `<tr>
+          <td>${escapeHtml(r.employee)}</td>
+          <td class="right">${formatAmount(r.empShare)}</td>
+          <td class="right">${formatAmount(r.emprShare)}</td>
+          <td class="right">${formatAmount(r.total)}</td>
+        </tr>`;
+      });
+      html += `</tbody><tfoot><tr class="agency-total">
+        <td>TOTAL</td><td class="right">${formatAmount(totals.ee)}</td>
+        <td class="right">${formatAmount(totals.er)}</td>
+        <td class="right">${formatAmount(totals.total)}</td>
+      </tr></tfoot></table>
+      <div class="signatures">
+        <div class="sign-box"><div class="sign-line">Prepared By</div></div>
+        <div class="sign-box"><div class="sign-line">Checked By</div></div>
+        <div class="sign-box"><div class="sign-line">Approved By</div></div>
+      </div></section>`;
+    });
+  });
+  if (month === null || months.length > 1 || new Set(filtered.map(r => r.agency)).size > 1) {
+    html += `<div class="report-grand-total"><span>GRAND TOTAL</span><strong>${peso(grandTotal)}</strong></div>`;
+  }
+  printDetails.innerHTML = html;
+  printButton.disabled = !selectedMonth || !filteredRecords(selectedMonth).length;
+  return true;
+}
+
+function printSelectedContributions() {
+  if (!selectedMonth || !filteredRecords(selectedMonth).length) return;
+  printScope = "selected";
+  preparePrint(selectedMonth);
+  window.print();
+}
+function printAllContributions() {
+  if (!filteredRecords().length) return;
+  printScope = "all";
+  preparePrint(null);
+  window.print();
+}
+window.addEventListener("beforeprint", () => {
+  if (printScope === "all") preparePrint(null);
+  else if (selectedMonth) preparePrint(selectedMonth);
+});
+window.addEventListener("afterprint", () => { printScope = "selected"; });
 </script>
 </body>
 </html>
